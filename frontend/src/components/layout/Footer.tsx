@@ -93,9 +93,9 @@ const TRUST_BADGES = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: "#2B2B2B", color: "rgba(255,255,255,0.8)", marginTop: "auto" }}>
+    <footer style={{ background: "var(--primary-dark)", color: "rgba(255,255,255,0.8)", marginTop: "auto" }}>
       {/* Trust strip */}
-      <div style={{ background: "var(--bm-green)", padding: "1rem 0" }}>
+      <div style={{ background: "var(--primary)", borderBottom: "1px solid rgba(255,255,255,0.1)", padding: "1rem 0" }}>
         <div className="container">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "2.5rem", flexWrap: "wrap" }}>
             {TRUST_BADGES.map((badge) => (
@@ -116,7 +116,7 @@ export default function Footer() {
           <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
             <div
               style={{
-                background: "var(--bm-green)",
+                background: "var(--secondary)",
                 borderRadius: "4px 0 0 4px",
                 padding: "4px 8px",
                 display: "flex",
@@ -131,7 +131,7 @@ export default function Footer() {
             </div>
             <div
               style={{
-                background: "var(--bm-orange)",
+                background: "var(--primary)",
                 borderRadius: "0 4px 4px 0",
                 padding: "4px 10px",
               }}

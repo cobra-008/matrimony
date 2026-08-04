@@ -48,18 +48,18 @@
   --accent:           #C8973A;       /* Deep gold accent — stars, premium badges */
   --accent-dark:      #A07028;
 
-  /* ── SUCCESS / INFO ── */
-  --success:          #2BA745;       /* Green — verified, success */
-  --success-light:    #E6F7EC;
-  --info:             #1565C0;
-  --info-light:       #E3F2FD;
+  /* ── SUCCESS / INFO (Mapped to Gold/Maroon for strict theme) ── */
+  --success:          #C8973A;       /* Gold — verified, success */
+  --success-light:    #FBF6EC;
+  --info:             #C8973A;
+  --info-light:       #FBF6EC;
 
-  /* ── BACKWARD COMPAT — remapped to maroon ── */
-  --bm-green:         #2BA745;
-  --bm-green-light:   #43C95B;
-  --bm-green-dark:    #1E7C33;
-  --bm-green-bg:      #E6F7EC;
-  --bm-green-muted:   #E6F7EC;
+  /* ── BACKWARD COMPAT — remapped to maroon/gold ── */
+  --bm-green:         #6B1A2A;       /* Remapped to primary maroon */
+  --bm-green-light:   #8B2535;
+  --bm-green-dark:    #4A0F1C;
+  --bm-green-bg:      #F5E6E9;
+  --bm-green-muted:   #F5E6E9;
   --bm-orange:        #6B1A2A;
   --bm-orange-light:  #8B2535;
   --bm-orange-dark:   #4A0F1C;
