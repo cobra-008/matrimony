@@ -1,0 +1,825 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import PlanTabs from "@/components/ui/PlanTabs";
+import { useAuth } from "@/context/AuthContext";
+import {
+  getInterestsReceived,
+  getInterestsSent,
+  acceptInterest,
+  declineInterest,
+  withdrawInterest,
+  sendInterest,
+  type InterestRow,
+} from "@/lib/auth-store";
+import toast from "react-hot-toast";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { SlidersHorizontal, Search, MoreVertical, MessageSquare, CheckCircle, XCircle, Undo2 } from "lucide-react";
+
+type ReceivedFilter = "all" | "pending" | "accepted" | "declined";
+type SentFilter = "all" | "pending" | "accepted" | "declined";
+type ActiveSection = "received" | "sent";
+
+// ── Photo helpers ─────────────────────────────────────────────────────
+const MALE_PHOTOS = [
+  "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=300",
+  "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=300",
+  "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=300",
+];
+const FEMALE_PHOTOS = [
+  "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=300",
+  "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=300",
+  "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=300",
+];
+
+function getPhoto(gender?: string, idx = 0): string {
+  return gender === "female"
+    ? FEMALE_PHOTOS[idx % 3]
+    : MALE_PHOTOS[idx % 3];
+}
+
+// ── Format date ───────────────────────────────────────────────────────
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" })
+    .replace(/ /g, " ");
+}
+
+// ── Paid Member badge ─────────────────────────────────────────────────
+function PaidBadge() {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "4px",
+        background: "#fff3e0",
+        border: "1px solid #E8401A",
+        borderRadius: "3px",
+        padding: "1px 7px",
+        fontSize: "0.6875rem",
+        fontWeight: 700,
+        color: "#E8401A",
+      }}
+    >
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="#E8401A">
+        <path d="M12 1l3 8H23l-7 5 3 8-7-5-7 5 3-8-7-5h8z"/>
+      </svg>
+      Paid Member
+    </span>
+  );
+}
+
+// ── Online dot ────────────────────────────────────────────────────────
+function OnlineDot() {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        width: "8px",
+        height: "8px",
+        borderRadius: "50%",
+        background: "#4CAF50",
+        marginRight: "3px",
+        verticalAlign: "middle",
+      }}
+    />
+  );
+}
+
+// ── Interest Card — Received ──────────────────────────────────────────
+function ReceivedCard({
+  row,
+  idx,
+  onAccept,
+  onDecline,
+  loading,
+}: {
+  row: InterestRow;
+  idx: number;
+  onAccept: () => void;
+  onDecline: () => void;
+  loading: boolean;
+}) {
+  const p = row.profile;
+  if (!p) return null;
+
+  const age = p.dob
+    ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+    : 0;
+  const photo = p.photoUrl || getPhoto(p.gender, idx);
+  const profileCode = `M${p.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+
+  const attrs = [
+    age > 0 ? `${age} yrs` : null,
+    p.height,
+    p.caste,
+    p.education,
+    p.occupation,
+    p.income ? `₹ ${p.income}` : null,
+    p.city,
+  ].filter(Boolean);
+
+  const genderPronoun = p.gender === "male" ? "He" : "She";
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e0e0e0",
+        borderRadius: "8px",
+        display: "flex",
+        gap: 0,
+        overflow: "hidden",
+        marginBottom: "1rem",
+        position: "relative",
+      }}
+    >
+      {/* Photo */}
+      <Link href={`/profile/${p.id}`} style={{ display: "block", flexShrink: 0, width: "148px" }}>
+        <img
+          src={photo}
+          alt={p.name}
+          style={{ width: "148px", height: "200px", objectFit: "cover", objectPosition: "top", display: "block" }}
+        />
+      </Link>
+
+      {/* Content */}
+      <div style={{ flex: 1, padding: "0.875rem 1rem", display: "flex", flexDirection: "column", minWidth: 0 }}>
+        {/* Top: badge + 3-dot menu */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.375rem" }}>
+          <PaidBadge />
+          <button
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", color: "#aaa" }}
+            title="More options"
+          >
+            <MoreVertical size={16} />
+          </button>
+        </div>
+
+        {/* Name */}
+        <Link
+          href={`/profile/${p.id}`}
+          style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#111", textDecoration: "none", marginBottom: "2px" }}
+        >
+          {p.name}
+        </Link>
+
+        {/* Profile code + online */}
+        <div style={{ fontSize: "0.75rem", color: "#555", marginBottom: "0.5rem" }}>
+          {profileCode} &nbsp;|&nbsp; <OnlineDot /><span style={{ color: "#4CAF50", fontWeight: 600 }}>Online</span>
+        </div>
+
+        {/* Attributes */}
+        <p style={{ fontSize: "0.8125rem", color: "#555", margin: "0 0 0.625rem", lineHeight: 1.5 }}>
+          {attrs.map((a, i) => (
+            <span key={i}>
+              {a}
+              {i < attrs.length - 1 && <span style={{ color: "#ccc", margin: "0 5px" }}>•</span>}
+            </span>
+          ))}
+        </p>
+
+        {/* "He/She sent you an interest" */}
+        {row.status === "pending" && (
+          <p style={{ fontSize: "0.8125rem", color: "#555", marginBottom: "4px" }}>
+            <strong>{genderPronoun} sent you an interest</strong> - {fmtDate(row.createdAt)}
+          </p>
+        )}
+        {row.status === "pending" && (
+          <p style={{ fontSize: "0.75rem", color: "#888", marginBottom: "0.75rem" }}>
+            Accept {genderPronoun.toLowerCase()} interest to start a conversation
+          </p>
+        )}
+        {row.status === "accepted" && (
+          <p style={{ fontSize: "0.8125rem", color: "#2e7d32", fontWeight: 600, marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "5px" }}>
+            <CheckCircle size={14} /> Interest Accepted
+          </p>
+        )}
+        {row.status === "declined" && (
+          <p style={{ fontSize: "0.8125rem", color: "#c62828", fontWeight: 600, marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "5px" }}>
+            <XCircle size={14} /> Interest Declined
+          </p>
+        )}
+
+        {/* Actions */}
+        {row.status === "pending" && (
+          <div style={{ display: "flex", gap: "0.625rem", marginTop: "auto" }}>
+            <button
+              onClick={onDecline}
+              disabled={loading}
+              style={{
+                display: "flex", alignItems: "center", gap: "5px",
+                padding: "0.4375rem 1.125rem",
+                border: "1.5px solid #ccc",
+                borderRadius: "20px",
+                background: "#fff",
+                color: "#555",
+                fontSize: "0.8125rem", fontWeight: 600,
+                cursor: loading ? "wait" : "pointer",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              Decline
+            </button>
+            <button
+              onClick={onAccept}
+              disabled={loading}
+              style={{
+                display: "flex", alignItems: "center", gap: "5px",
+                padding: "0.4375rem 1.25rem",
+                border: "none",
+                borderRadius: "20px",
+                background: "#E8401A",
+                color: "#fff",
+                fontSize: "0.8125rem", fontWeight: 700,
+                cursor: loading ? "wait" : "pointer",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+              </svg>
+              Accept Interest
+            </button>
+          </div>
+        )}
+
+        {row.status === "accepted" && (
+          <div style={{ display: "flex", gap: "0.625rem", marginTop: "auto" }}>
+            <Link
+              href={`/messages?to=${p.id}`}
+              style={{
+                display: "flex", alignItems: "center", gap: "5px",
+                padding: "0.4375rem 1.25rem",
+                border: "none", borderRadius: "20px",
+                background: "#E8401A", color: "#fff",
+                fontSize: "0.8125rem", fontWeight: 700,
+                textDecoration: "none",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              <MessageSquare size={13} /> Send Message
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Interest Card — Sent ──────────────────────────────────────────────
+function SentCard({
+  row,
+  idx,
+  onWithdraw,
+  loading,
+}: {
+  row: InterestRow;
+  idx: number;
+  onWithdraw: () => void;
+  loading: boolean;
+}) {
+  const p = row.profile;
+  if (!p) return null;
+
+  const age = p.dob
+    ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+    : 0;
+  const photo = p.photoUrl || getPhoto(p.gender, idx);
+  const profileCode = `M${p.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+
+  const attrs = [
+    age > 0 ? `${age} yrs` : null,
+    p.height,
+    p.caste,
+    p.education,
+    p.occupation,
+    p.income ? `₹ ${p.income}` : null,
+    p.city,
+  ].filter(Boolean);
+
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid #e0e0e0",
+        borderRadius: "8px",
+        display: "flex",
+        gap: 0,
+        overflow: "hidden",
+        marginBottom: "1rem",
+        position: "relative",
+      }}
+    >
+      {/* Photo */}
+      <Link href={`/profile/${p.id}`} style={{ display: "block", flexShrink: 0, width: "148px" }}>
+        <img
+          src={photo}
+          alt={p.name}
+          style={{ width: "148px", height: "200px", objectFit: "cover", objectPosition: "top", display: "block" }}
+        />
+      </Link>
+
+      {/* Content */}
+      <div style={{ flex: 1, padding: "0.875rem 1rem", display: "flex", flexDirection: "column", minWidth: 0 }}>
+        {/* Top: badge + 3-dot menu */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.375rem" }}>
+          <PaidBadge />
+          <button
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", color: "#aaa" }}
+            title="More options"
+          >
+            <MoreVertical size={16} />
+          </button>
+        </div>
+
+        {/* Name */}
+        <Link
+          href={`/profile/${p.id}`}
+          style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#111", textDecoration: "none", marginBottom: "2px" }}
+        >
+          {p.name}
+        </Link>
+
+        {/* Profile code */}
+        <div style={{ fontSize: "0.75rem", color: "#555", marginBottom: "0.5rem" }}>
+          {profileCode}
+        </div>
+
+        {/* Attributes */}
+        <p style={{ fontSize: "0.8125rem", color: "#555", margin: "0 0 0.625rem", lineHeight: 1.5 }}>
+          {attrs.map((a, i) => (
+            <span key={i}>
+              {a}
+              {i < attrs.length - 1 && <span style={{ color: "#ccc", margin: "0 5px" }}>•</span>}
+            </span>
+          ))}
+        </p>
+
+        {/* Status info */}
+        <p style={{ fontSize: "0.8125rem", color: "#555", marginBottom: "4px" }}>
+          <strong>Interest sent</strong> — {fmtDate(row.createdAt)}
+        </p>
+
+        {row.status === "pending" && (
+          <p style={{ fontSize: "0.75rem", color: "#888", marginBottom: "0.75rem" }}>
+            Awaiting response
+          </p>
+        )}
+        {row.status === "accepted" && (
+          <p style={{ fontSize: "0.8125rem", color: "#2e7d32", fontWeight: 600, marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "5px" }}>
+            <CheckCircle size={14} /> Interest Accepted — You can now message each other
+          </p>
+        )}
+        {row.status === "declined" && (
+          <p style={{ fontSize: "0.8125rem", color: "#c62828", fontWeight: 600, marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "5px" }}>
+            <XCircle size={14} /> Interest Declined
+          </p>
+        )}
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: "0.625rem", marginTop: "auto", flexWrap: "wrap" }}>
+          {/* Message — only if accepted */}
+          {row.status === "accepted" && (
+            <Link
+              href={`/messages?to=${p.id}`}
+              style={{
+                display: "flex", alignItems: "center", gap: "5px",
+                padding: "0.4375rem 1.125rem",
+                border: "none", borderRadius: "20px",
+                background: "#E8401A", color: "#fff",
+                fontSize: "0.8125rem", fontWeight: 700,
+                textDecoration: "none",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              <MessageSquare size={13} /> Send Message
+            </Link>
+          )}
+
+          {/* View Profile */}
+          <Link
+            href={`/profile/${p.id}`}
+            style={{
+              display: "flex", alignItems: "center", gap: "5px",
+              padding: "0.4375rem 1.125rem",
+              border: "1.5px solid #ccc",
+              borderRadius: "20px",
+              background: "#fff", color: "#444",
+              fontSize: "0.8125rem", fontWeight: 600,
+              textDecoration: "none",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
+            View Profile
+          </Link>
+
+          {/* Withdraw — only if pending */}
+          {row.status === "pending" && (
+            <button
+              onClick={onWithdraw}
+              disabled={loading}
+              style={{
+                display: "flex", alignItems: "center", gap: "5px",
+                padding: "0.4375rem 1rem",
+                border: "1.5px solid #eee",
+                borderRadius: "20px",
+                background: "#fff", color: "#999",
+                fontSize: "0.8125rem", fontWeight: 500,
+                cursor: loading ? "wait" : "pointer",
+                fontFamily: "var(--font-sans)",
+              }}
+              title="Withdraw interest"
+            >
+              <Undo2 size={12} /> Withdraw
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px", display: "flex", marginBottom: "1rem", overflow: "hidden", height: "200px" }}>
+      <div style={{ width: "148px", background: "#f0f0f0", flexShrink: 0, animation: "pulse 1.5s ease-in-out infinite" }} />
+      <div style={{ flex: 1, padding: "1rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ width: "80px", height: "18px", background: "#f0f0f0", borderRadius: "4px", animation: "pulse 1.5s ease-in-out infinite" }} />
+        <div style={{ width: "180px", height: "22px", background: "#f0f0f0", borderRadius: "4px", animation: "pulse 1.5s ease-in-out infinite" }} />
+        <div style={{ width: "60%", height: "14px", background: "#f0f0f0", borderRadius: "4px", animation: "pulse 1.5s ease-in-out infinite" }} />
+        <div style={{ width: "80%", height: "14px", background: "#f0f0f0", borderRadius: "4px", animation: "pulse 1.5s ease-in-out infinite" }} />
+      </div>
+    </div>
+  );
+}
+
+// ── Sidebar link ──────────────────────────────────────────────────────
+function SidebarLink({
+  label,
+  count,
+  active,
+  onClick,
+  color,
+}: {
+  label: string;
+  count?: number;
+  active: boolean;
+  onClick: () => void;
+  color?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex", alignItems: "center", gap: "5px",
+        padding: "0.375rem 0.875rem",
+        background: "none", border: "none",
+        textAlign: "left", width: "100%",
+        cursor: "pointer", fontFamily: "var(--font-sans)",
+        fontSize: "0.875rem",
+        fontWeight: active ? 700 : 400,
+        color: color || (active ? "#E8401A" : "#333"),
+        borderLeft: active ? "3px solid #E8401A" : "3px solid transparent",
+        transition: "all 0.12s",
+      }}
+    >
+      {label}
+      {count !== undefined && count > 0 && (
+        <span
+          style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: "18px", height: "18px",
+            background: "#E8401A", color: "#fff",
+            borderRadius: "50%", fontSize: "0.625rem", fontWeight: 700,
+          }}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────
+export default function InterestsPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const [section, setSection] = useState<ActiveSection>("received");
+  const [receivedFilter, setReceivedFilter] = useState<ReceivedFilter>("pending");
+  const [sentFilter, setSentFilter] = useState<SentFilter>("all");
+
+  const [received, setReceived] = useState<InterestRow[]>([]);
+  const [sent, setSent] = useState<InterestRow[]>([]);
+
+  // Count cache for badge numbers
+  const [receivedCounts, setReceivedCounts] = useState({ all: 0, pending: 0, accepted: 0, declined: 0 });
+  const [sentCounts, setSentCounts] = useState({ all: 0, pending: 0, accepted: 0, declined: 0 });
+
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+
+  const loadData = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      // Load all for counts, then filter client-side
+      const [allRec, allSent] = await Promise.all([
+        getInterestsReceived(user.id, "all"),
+        getInterestsSent(user.id, "all"),
+      ]);
+
+      setReceivedCounts({
+        all: allRec.length,
+        pending: allRec.filter((r) => r.status === "pending").length,
+        accepted: allRec.filter((r) => r.status === "accepted").length,
+        declined: allRec.filter((r) => r.status === "declined").length,
+      });
+      setSentCounts({
+        all: allSent.length,
+        pending: allSent.filter((r) => r.status === "pending").length,
+        accepted: allSent.filter((r) => r.status === "accepted").length,
+        declined: allSent.filter((r) => r.status === "declined").length,
+      });
+
+      setReceived(allRec);
+      setSent(allSent);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) loadData();
+  }, [user?.id]);
+
+  const handleAccept = async (interestId: string) => {
+    setActionLoading(interestId);
+    const { error } = await acceptInterest(interestId);
+    setActionLoading(null);
+    if (error) { toast.error("Failed to accept. Try again."); return; }
+    toast.success("Interest accepted! You can now message each other.");
+    setReceived((prev) =>
+      prev.map((r) => r.id === interestId ? { ...r, status: "accepted" } : r)
+    );
+    setReceivedCounts((c) => ({ ...c, pending: c.pending - 1, accepted: c.accepted + 1 }));
+  };
+
+  const handleDecline = async (interestId: string) => {
+    setActionLoading(interestId);
+    const { error } = await declineInterest(interestId);
+    setActionLoading(null);
+    if (error) { toast.error("Failed to decline. Try again."); return; }
+    toast("Interest declined.");
+    setReceived((prev) =>
+      prev.map((r) => r.id === interestId ? { ...r, status: "declined" } : r)
+    );
+    setReceivedCounts((c) => ({ ...c, pending: c.pending - 1, declined: c.declined + 1 }));
+  };
+
+  const handleWithdraw = async (interestId: string) => {
+    setActionLoading(interestId);
+    const { error } = await withdrawInterest(interestId);
+    setActionLoading(null);
+    if (error) { toast.error("Failed to withdraw."); return; }
+    toast("Interest withdrawn.");
+    setSent((prev) => prev.filter((r) => r.id !== interestId));
+    setSentCounts((c) => ({ ...c, all: c.all - 1, pending: c.pending - 1 }));
+  };
+
+  // Filter + search applied client-side
+  const filteredReceived = received
+    .filter((r) => receivedFilter === "all" || r.status === receivedFilter)
+    .filter((r) => !searchQuery || r.profile?.name?.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const filteredSent = sent
+    .filter((r) => sentFilter === "all" || r.status === sentFilter)
+    .filter((r) => !searchQuery || r.profile?.name?.toLowerCase().includes(searchQuery.toLowerCase()));
+
+  const displayed = section === "received" ? filteredReceived : filteredSent;
+  const currentFilter = section === "received" ? receivedFilter : sentFilter;
+
+  const headingMap: Record<string, string> = {
+    pending: "Pending interests",
+    accepted: "Accepted interests",
+    declined: "Declined interests",
+    all: "All interests",
+  };
+
+  const subtitleMap: Record<string, Record<string, string>> = {
+    received: {
+      pending: "Interests from members awaiting your response",
+      accepted: "Interests you have accepted",
+      declined: "Interests you have declined",
+      all: "All interests received",
+    },
+    sent: {
+      pending: "Interests you sent, awaiting their response",
+      accepted: "Interests they accepted",
+      declined: "Interests they declined",
+      all: "All interests you sent",
+    },
+  };
+
+  return (
+    <>
+      <Navbar />
+      <PlanTabs activeTab="regular" />
+
+      <main style={{ background: "#f2f2f2", minHeight: "100vh", padding: "1rem 0" }}>
+        <div style={{ maxWidth: "1060px", margin: "0 auto", padding: "0 1rem", display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+
+          {/* ── SIDEBAR ─────────────────────────────────────────────── */}
+          <aside
+            style={{
+              width: "220px", flexShrink: 0,
+              background: "#fff",
+              border: "1px solid #e0e0e0",
+              borderRadius: "6px",
+              overflow: "hidden",
+              position: "sticky", top: "72px",
+            }}
+          >
+            {/* Interests Received */}
+            <div style={{ padding: "0.625rem 0.875rem 0.25rem", fontSize: "0.875rem", fontWeight: 700, color: "#111" }}>
+              Interests Received
+            </div>
+            {(["all", "pending", "accepted", "declined"] as ReceivedFilter[]).map((f) => (
+              <SidebarLink
+                key={f}
+                label={f === "accepted" ? "Accepted/Replied" : f.charAt(0).toUpperCase() + f.slice(1)}
+                count={f === "pending" ? receivedCounts.pending : undefined}
+                active={section === "received" && receivedFilter === f}
+                onClick={() => { setSection("received"); setReceivedFilter(f); }}
+                color={f === "declined" ? "#E8401A" : undefined}
+              />
+            ))}
+
+            {/* Divider */}
+            <div style={{ height: "1px", background: "#eee", margin: "0.5rem 0" }} />
+
+            {/* Interests Sent */}
+            <div style={{ padding: "0.625rem 0.875rem 0.25rem", fontSize: "0.875rem", fontWeight: 700, color: "#111" }}>
+              Interests Sent
+            </div>
+            {(["all", "pending", "accepted", "declined"] as SentFilter[]).map((f) => (
+              <SidebarLink
+                key={`sent-${f}`}
+                label={f === "accepted" ? "Accepted/Replied" : f.charAt(0).toUpperCase() + f.slice(1)}
+                count={f === "pending" ? sentCounts.pending : undefined}
+                active={section === "sent" && sentFilter === f}
+                onClick={() => { setSection("sent"); setSentFilter(f); }}
+                color={f === "declined" ? "#E8401A" : undefined}
+              />
+            ))}
+
+            <div style={{ height: "0.5rem" }} />
+          </aside>
+
+          {/* ── MAIN ────────────────────────────────────────────────── */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Heading row */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "0.875rem", gap: "1rem" }}>
+              <div>
+                <h1 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#111", margin: "0 0 3px" }}>
+                  {headingMap[currentFilter]}{" "}
+                  <span style={{ color: "#E8401A" }}>
+                    ({section === "received"
+                      ? receivedCounts[receivedFilter]
+                      : sentCounts[sentFilter]})
+                  </span>
+                </h1>
+                <p style={{ fontSize: "0.8125rem", color: "#888", margin: 0 }}>
+                  {subtitleMap[section][currentFilter]}
+                </p>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                {/* Search toggle */}
+                {showSearch ? (
+                  <input
+                    type="text"
+                    placeholder="Search by name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                    style={{
+                      padding: "0.3125rem 0.75rem",
+                      border: "1.5px solid #ccc",
+                      borderRadius: "20px",
+                      fontSize: "0.8125rem",
+                      fontFamily: "var(--font-sans)",
+                      outline: "none",
+                      width: "180px",
+                    }}
+                    onBlur={() => { if (!searchQuery) setShowSearch(false); }}
+                  />
+                ) : (
+                  <button
+                    onClick={() => setShowSearch(true)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "5px",
+                      padding: "0.3125rem 0.75rem",
+                      border: "1.5px solid #ccc",
+                      borderRadius: "20px",
+                      background: "#fff", color: "#555",
+                      fontSize: "0.8125rem", fontWeight: 500,
+                      cursor: "pointer", fontFamily: "var(--font-sans)",
+                    }}
+                  >
+                    <Search size={13} /> Search in Interests
+                  </button>
+                )}
+
+                {/* Filter button */}
+                <button
+                  style={{
+                    display: "flex", alignItems: "center", gap: "5px",
+                    padding: "0.3125rem 0.75rem",
+                    border: "1.5px solid #ccc",
+                    borderRadius: "6px",
+                    background: "#fff", color: "#555",
+                    fontSize: "0.8125rem", fontWeight: 500,
+                    cursor: "pointer", fontFamily: "var(--font-sans)",
+                  }}
+                >
+                  <SlidersHorizontal size={13} /> Filter
+                </button>
+              </div>
+            </div>
+
+            {/* Cards */}
+            {loading
+              ? Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+              : !user
+              ? (
+                <div style={{ background: "#fff", borderRadius: "8px", padding: "3rem", textAlign: "center", border: "1px solid #e0e0e0" }}>
+                  <p style={{ color: "#888" }}>Please <Link href="/login" style={{ color: "#E8401A" }}>log in</Link> to view interests.</p>
+                </div>
+              )
+              : displayed.length === 0
+              ? (
+                <div style={{ background: "#fff", borderRadius: "8px", padding: "3rem 2rem", textAlign: "center", border: "1px solid #e0e0e0" }}>
+                  <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#e0e0e0" strokeWidth="1.2" style={{ margin: "0 auto 1rem", display: "block" }}>
+                    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                  </svg>
+                  <p style={{ fontWeight: 700, color: "#555", fontSize: "1rem", margin: "0 0 0.5rem" }}>
+                    No interests {section === "received" ? "received" : "sent"} yet
+                  </p>
+                  <p style={{ color: "#aaa", fontSize: "0.875rem", margin: "0 0 1.25rem" }}>
+                    {section === "received"
+                      ? "When someone sends you interest, it will appear here."
+                      : "Browse matches and send interest to start connecting."}
+                  </p>
+                  <Link
+                    href="/matches"
+                    style={{
+                      display: "inline-block", padding: "0.5rem 1.5rem",
+                      background: "#E8401A", color: "#fff", borderRadius: "20px",
+                      textDecoration: "none", fontWeight: 700, fontSize: "0.875rem",
+                      fontFamily: "var(--font-sans)",
+                    }}
+                  >
+                    Browse Matches
+                  </Link>
+                </div>
+              )
+              : section === "received"
+              ? filteredReceived.map((row, idx) => (
+                  <ReceivedCard
+                    key={row.id}
+                    row={row}
+                    idx={idx}
+                    onAccept={() => handleAccept(row.id)}
+                    onDecline={() => handleDecline(row.id)}
+                    loading={actionLoading === row.id}
+                  />
+                ))
+              : filteredSent.map((row, idx) => (
+                  <SentCard
+                    key={row.id}
+                    row={row}
+                    idx={idx}
+                    onWithdraw={() => handleWithdraw(row.id)}
+                    loading={actionLoading === row.id}
+                  />
+                ))
+            }
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}

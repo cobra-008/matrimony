@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 80" width="260" height="80">
+  <!-- Background: cream -->
+  <rect width="260" height="80" fill="#FFF8F0" rx="4"/>
+  
+  <!-- Heart shape in maroon -->
+  <path d="M30 28 C30 20 20 14 14 20 C8 26 10 34 20 42 L30 52 L40 42 C50 34 52 26 46 20 C40 14 30 20 30 28 Z" 
+        fill="#6B1A2A" opacity="0.9"/>
+  <!-- Gold accent on right half of heart -->
+  <path d="M30 28 C30 20 22 15 18 20 L30 52 L40 42 C50 34 52 26 46 20 C40 14 32 20 30 28 Z" 
+        fill="url(#goldGrad)" opacity="0.7"/>
+
+  <!-- Bride silhouette (gold) -->
+  <circle cx="32" cy="33" r="4" fill="#C8973A"/>
+  <path d="M26 42 Q30 38 32 37 Q34 38 38 42 L37 52 L27 52 Z" fill="#C8973A" opacity="0.8"/>
+  
+  <!-- Groom silhouette (maroon) -->
+  <circle cx="22" cy="33" r="4" fill="#6B1A2A"/>
+  <path d="M16 42 Q20 38 22 37 Q24 38 28 42 L29 52 L17 52 Z" fill="#6B1A2A" opacity="0.8"/>
+
+  <!-- Gold gradient -->
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#C8973A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E8C060;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- "ELITE" in bold maroon -->
+  <text x="62" y="32" font-family="Georgia, serif" font-size="22" font-weight="900" 
+        fill="#6B1A2A" letter-spacing="4">ELITE</text>
+  
+  <!-- Gold horizontal rules around TAMIL MATRIMONY -->
+  <line x1="62" y1="40" x2="78" y2="40" stroke="#C8973A" stroke-width="1"/>
+  <line x1="200" y1="40" x2="216" y2="40" stroke="#C8973A" stroke-width="1"/>
+  
+  <!-- "TAMIL MATRIMONY" in gold -->
+  <text x="82" y="43" font-family="Georgia, serif" font-size="9" font-weight="700" 
+        fill="#C8973A" letter-spacing="2.5">TAMIL MATRIMONY</text>
+  
+  <!-- Tagline in light maroon -->
+  <text x="62" y="58" font-family="Georgia, serif" font-size="7.5" font-style="italic"
+        fill="#8B2535" letter-spacing="0.5">— Where Tradition Meets Forever —</text>
+</svg>
