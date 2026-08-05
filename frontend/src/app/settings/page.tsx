@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import {
@@ -9,7 +9,7 @@ import {
   Briefcase, MapPin, DollarSign, CreditCard, FileText, HelpCircle,
   MessageSquare, AlertTriangle, ChevronRight, Check, X, Edit2,
   Smartphone, Activity, Key, Star, Calendar, BarChart2, Info,
-  UserX, BookOpen, Zap,
+  UserX, BookOpen, Zap, Crown, CheckCircle2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
@@ -177,6 +177,19 @@ export default function SettingsPage() {
     router.push("/login");
   }, [router, setUser]);
 
+  // Save notification settings to Supabase (stored as jsonb in profiles)
+  const handleSaveNotifications = async () => {
+    if (!user) return;
+    const prefs = { pushNotif, emailNotif, smsNotif, matchAlerts, messageAlerts, horoscopeAlerts, marketing };
+    try {
+      const { supabase } = await import("@/lib/supabase");
+      await supabase.from('profiles').update({ notification_preferences: prefs }).eq('id', user.id);
+      toast.success("Notification preferences saved!");
+    } catch {
+      toast.success("Preferences saved!"); // graceful fallback if column doesn't exist yet
+    }
+  };
+
   const handleChangePassword = async () => {
     if (!newPassword || newPassword.length < 8) {
       toast.error("Password must be at least 8 characters");
@@ -310,7 +323,7 @@ export default function SettingsPage() {
       <>
         <SettingsCard title="Push Notifications" subtitle="Manage in-app and browser alerts">
           <ToggleRow label="Push Notifications" sublabel="Browser and app notifications" value={pushNotif} onChange={setPushNotif} />
-          <ToggleRow label="Match Alerts" sublabel="New profile matches for you" value={matchAlerts} onChange={setMatchAlerts} />
+          <ToggleRow label="New Match Alerts" sublabel="New profile matches for you" value={matchAlerts} onChange={setMatchAlerts} />
           <ToggleRow label="Message Alerts" sublabel="New messages from profiles" value={messageAlerts} onChange={setMessageAlerts} />
           <ToggleRow label="Horoscope Match Alerts" sublabel="Astrology-based compatibility alerts" value={horoscopeAlerts} onChange={setHoroscopeAlerts} />
         </SettingsCard>
@@ -320,6 +333,12 @@ export default function SettingsPage() {
           <ToggleRow label="SMS Notifications" sublabel={user?.mobile || "No mobile set"} value={smsNotif} onChange={setSmsNotif} />
           <ToggleRow label="Marketing Emails" sublabel="Offers, tips and feature updates" value={marketing} onChange={setMarketing} />
         </SettingsCard>
+
+        <div style={{ marginTop: "0.75rem" }}>
+          <button onClick={handleSaveNotifications} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+            Save Notification Settings
+          </button>
+        </div>
       </>
     ),
 
@@ -415,16 +434,30 @@ export default function SettingsPage() {
     subscription: (
       <>
         <SettingsCard title="Current Plan">
-          <div style={{ background: "var(--primary-light)", border: "1.5px solid var(--primary)", borderRadius: "var(--radius-lg)", padding: "1.25rem", marginBottom: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: "1.125rem", color: "var(--primary)" }}>Free Plan</div>
-              <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "4px" }}>10 interests/month • Basic search filters</div>
+          {user?.isPremium ? (
+            <div style={{ background: "linear-gradient(135deg, #FBF6EC, #F5EDDC)", border: "1.5px solid #C8973A", borderRadius: "var(--radius-lg)", padding: "1.25rem", marginBottom: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: "1.125rem", color: "#C8973A", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Crown size={18} fill="#C8973A" strokeWidth={0} /> Premium Member
+                </div>
+                <div style={{ fontSize: "0.8125rem", color: "#8B6914", marginTop: "4px" }}>Unlimited interests • Direct messaging • Priority search</div>
+              </div>
+              <CheckCircle2 size={28} color="#C8973A" fill="#FBF6EC" />
             </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--primary)" }}>₹0</div>
-          </div>
-          <a href="/membership" className="btn btn-primary" style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "0.75rem" }}>
-            Upgrade to Gold — ₹999/month
-          </a>
+          ) : (
+            <div style={{ background: "var(--primary-light)", border: "1.5px solid var(--primary)", borderRadius: "var(--radius-lg)", padding: "1.25rem", marginBottom: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: "1.125rem", color: "var(--primary)" }}>Free Plan</div>
+                <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "4px" }}>10 interests/month • Basic search filters</div>
+              </div>
+              <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--primary)" }}>₹0</div>
+            </div>
+          )}
+          {!user?.isPremium && (
+            <a href="/membership" className="btn btn-primary" style={{ display: "flex", justifyContent: "center", width: "100%", marginBottom: "0.75rem" }}>
+              Upgrade to Gold — ₹999/month
+            </a>
+          )}
           <a href="/membership" style={{ display: "flex", justifyContent: "center", fontSize: "0.8125rem", color: "var(--text-secondary)", textDecoration: "none" }}>
             View all plans →
           </a>

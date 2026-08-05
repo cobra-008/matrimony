@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { ChevronDown, ArrowRight, CheckCircle, Shield, Users, Star } from "lucide-react";
+import {
+  ChevronDown, ArrowRight, CheckCircle, Shield, Users, Star,
+  Crown, Camera, Briefcase, FileText, MapPin, Heart,
+  Users2, Sparkles, Eye, Search, User, Settings2, Mail,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import ProfileCard from "@/components/ui/ProfileCard";
@@ -240,6 +244,14 @@ function AuthenticatedDashboard() {
   const [dailyRecs, setDailyRecs] = useState<RegisteredUser[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(true);
   const [timeLeft, setTimeLeft] = useState("");
+  const [matchCounts, setMatchCounts] = useState({
+    allMatches: 0,
+    newMatches: 0,
+    whoViewedYou: 0,
+    whoShortlistedYou: 0,
+    profilesYouViewed: 0,
+    shortlistedByYou: 0,
+  });
 
   // Countdown until midnight
   useEffect(() => {
@@ -260,11 +272,37 @@ function AuthenticatedDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    const { getDailyRecommendations } = require("@/lib/auth-store");
+    const {
+      getDailyRecommendations, fetchMatchProfiles, getViewedMe, getShortlistedMe,
+      getViewedByMe, getShortlistedProfiles, getNewlyJoined,
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    } = require("@/lib/auth-store");
+    const opp = user.gender === "male" ? "female" : user.gender === "female" ? "male" : null;
+
     getDailyRecommendations(user.id, user.gender)
       .then((data: RegisteredUser[]) => setDailyRecs(data.slice(0, 10)))
       .catch(() => setDailyRecs([]))
       .finally(() => setLoadingRecs(false));
+
+    // Load counts
+    Promise.all([
+      fetchMatchProfiles(user.id, user.gender),
+      getNewlyJoined(user.id, opp),
+      getViewedMe(user.id, opp),
+      getShortlistedMe(user.id, opp),
+      getViewedByMe(user.id, opp),
+      getShortlistedProfiles(user.id),
+    ]).then(([all, newM, viewedMe, shortlistedMe, viewedByMe, shortlisted]: RegisteredUser[][]) => {
+      setMatchCounts({
+        allMatches: all.length,
+        newMatches: newM.length,
+        whoViewedYou: viewedMe.length,
+        whoShortlistedYou: shortlistedMe.length,
+        profilesYouViewed: viewedByMe.length,
+        shortlistedByYou: shortlisted.length,
+      });
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   if (!user) return null;
@@ -281,13 +319,13 @@ function AuthenticatedDashboard() {
   ];
 
   // Profile completeness — which fields are missing
-  const missing: { label: string; section: string; icon: string }[] = [];
-  if (!user.photoUrl) missing.push({ label: "Add Photo", section: "photo", icon: "📷" });
-  if (!user.education && !user.occupation) missing.push({ label: "Professional Details", section: "professional", icon: "💼" });
-  if (!user.star && !user.rasi) missing.push({ label: "Horoscope", section: "religion", icon: "⭐" });
-  if (!user.about) missing.push({ label: "About Me", section: "about", icon: "📝" });
-  if (!user.city) missing.push({ label: "Location", section: "location", icon: "📍" });
-  if (!user.partnerAgeMin) missing.push({ label: "Partner Preferences", section: "partner", icon: "❤️" });
+  const missing: { label: string; href: string; icon: React.ReactNode }[] = [];
+  if (!user.photoUrl) missing.push({ label: "Add Photo", href: "/profile/edit?section=photo", icon: <Camera size={16} color="#6B1A2A" /> });
+  if (!user.education && !user.occupation) missing.push({ label: "Professional Details", href: "/profile/edit?section=professional", icon: <Briefcase size={16} color="#6B1A2A" /> });
+  if (!user.star && !user.rasi) missing.push({ label: "Horoscope Details", href: "/profile/edit?section=religion", icon: <Star size={16} color="#C8973A" /> });
+  if (!user.about) missing.push({ label: "About Me", href: "/profile/edit?section=about", icon: <FileText size={16} color="#6B1A2A" /> });
+  if (!user.city) missing.push({ label: "Location", href: "/profile/edit?section=location", icon: <MapPin size={16} color="#6B1A2A" /> });
+  if (!user.partnerAgeMin || user.partnerAgeMin === 22) missing.push({ label: "Set Partner Preferences", href: "/settings?tab=preferences", icon: <Heart size={16} color="#C8973A" /> });
 
   const totalFields = 10;
   const pct = Math.round(((totalFields - missing.length) / totalFields) * 100);
@@ -295,8 +333,18 @@ function AuthenticatedDashboard() {
   const profileCode = `ETM${user.id.replace(/-/g, "").slice(0, 7).toUpperCase()}`;
   const userPhoto = user.photoUrl || (user.gender === "female" ? FEMALE_PHOTOS[0] : MALE_PHOTOS[0]);
 
+  // Match stat tiles
+  const STAT_TILES: { label: string; count: number; href: string; icon: React.ReactNode }[] = [
+    { label: "All Matches", count: matchCounts.allMatches, href: "/matches", icon: <Users2 size={20} color="#6B1A2A" /> },
+    { label: "New Matches", count: matchCounts.newMatches, href: "/matches?tab=newly_joined", icon: <Sparkles size={20} color="#C8973A" /> },
+    { label: "Who Viewed You", count: matchCounts.whoViewedYou, href: "/matches?tab=viewed_you", icon: <Eye size={20} color="#6B1A2A" /> },
+    { label: "Who Shortlisted You", count: matchCounts.whoShortlistedYou, href: "/matches?tab=shortlisted_you", icon: <Star size={20} color="#C8973A" fill="#C8973A" /> },
+    { label: "Profiles You Viewed", count: matchCounts.profilesYouViewed, href: "/matches?tab=viewed_by_you", icon: <Search size={20} color="#6B1A2A" /> },
+    { label: "Shortlisted By You", count: matchCounts.shortlistedByYou, href: "/shortlisted", icon: <Heart size={20} color="#6B1A2A" /> },
+  ];
+
   return (
-    <div style={{ background: "#f2f2f2", minHeight: "100vh" }}>
+    <div style={{ background: "#FFF8F0", minHeight: "100vh" }}>
       <Navbar />
       <PlanTabs activeTab="regular" />
 
@@ -310,13 +358,13 @@ function AuthenticatedDashboard() {
           alignItems: "flex-start",
         }}
       >
-        {/* ── LEFT SIDEBAR ─────────────────────────────────────── */}
+        {/* ── LEFT SIDEBAR ─────────────────────────────────────────────────────── */}
         <aside
           style={{
             width: "230px",
             flexShrink: 0,
             background: "#fff",
-            border: "1px solid #e0e0e0",
+            border: "1px solid #E8D5B7",
             borderRadius: "6px",
             overflow: "hidden",
             position: "sticky",
@@ -324,7 +372,7 @@ function AuthenticatedDashboard() {
           }}
         >
           {/* Avatar + name */}
-          <div style={{ padding: "1.25rem 1rem 1rem", textAlign: "center", borderBottom: "1px solid #f0f0f0" }}>
+          <div style={{ padding: "1.25rem 1rem 1rem", textAlign: "center", borderBottom: "1px solid #F2E8D6" }}>
             <div style={{ position: "relative", display: "inline-block", marginBottom: "0.75rem" }}>
               <img
                 src={userPhoto}
@@ -332,7 +380,7 @@ function AuthenticatedDashboard() {
                 style={{
                   width: "72px", height: "72px", borderRadius: "50%",
                   objectFit: "cover", objectPosition: "top",
-                  border: "2px solid #e0e0e0",
+                  border: "2px solid #E8D5B7",
                   display: "block",
                 }}
               />
@@ -341,13 +389,13 @@ function AuthenticatedDashboard() {
                 style={{
                   position: "absolute", bottom: 0, right: 0,
                   width: "22px", height: "22px",
-                  background: "#fff", border: "1px solid #ddd",
+                  background: "#fff", border: "1px solid #E8D5B7",
                   borderRadius: "50%",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}
                 title="Change photo"
               >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6B1A2A" strokeWidth="2">
                   <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
                   <circle cx="12" cy="13" r="4"/>
                 </svg>
@@ -355,41 +403,55 @@ function AuthenticatedDashboard() {
             </div>
 
             <div style={{ fontWeight: 700, fontSize: "1rem", color: "#111", marginBottom: "2px" }}>{user.name}</div>
-            <div style={{ fontSize: "0.75rem", color: "#888", marginBottom: "4px" }}>BharatMatrimony</div>
+            <div style={{ fontSize: "0.75rem", color: "#888", marginBottom: "4px" }}>Elite Tamil Matrimony</div>
             <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>{profileCode}</div>
-            <div style={{ fontSize: "0.75rem", color: "#aaa" }}>Free member</div>
+            {/* Premium badge — only for paid members */}
+            {user.isPremium ? (
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: "4px",
+                background: "linear-gradient(135deg, #C8973A, #E8C060)",
+                color: "#fff", borderRadius: "20px",
+                padding: "2px 10px", fontSize: "0.6875rem", fontWeight: 700,
+              }}>
+                <Crown size={11} fill="#fff" strokeWidth={0} /> Premium Member
+              </div>
+            ) : (
+              <div style={{ fontSize: "0.75rem", color: "#aaa" }}>Free member</div>
+            )}
           </div>
 
-          {/* Upgrade CTA */}
-          <div
-            style={{
-              margin: "0.875rem 0.875rem 0",
-              background: "linear-gradient(135deg, #fff8f0, #fff3e8)",
-              border: "1px solid #ffcc80",
-              borderRadius: "6px",
-              padding: "0.75rem",
-            }}
-          >
-            <p style={{ fontSize: "0.75rem", color: "#555", margin: "0 0 0.5rem", lineHeight: 1.4 }}>
-              Upgrade membership to call or message with matches
-            </p>
-            <Link
-              href="/membership"
+          {/* Upgrade CTA — only for free members */}
+          {!user.isPremium && (
+            <div
               style={{
-                display: "block", textAlign: "center",
-                padding: "0.375rem",
-                background: "#E8401A", color: "#fff",
-                borderRadius: "20px", textDecoration: "none",
-                fontSize: "0.8125rem", fontWeight: 700,
-                fontFamily: "var(--font-sans)",
+                margin: "0.875rem 0.875rem 0",
+                background: "linear-gradient(135deg, #FBF6EC, #F5EDDC)",
+                border: "1px solid #E0C070",
+                borderRadius: "6px",
+                padding: "0.75rem",
               }}
             >
-              Upgrade now
-            </Link>
-          </div>
+              <p style={{ fontSize: "0.75rem", color: "#6B1A2A", margin: "0 0 0.5rem", lineHeight: 1.4, fontWeight: 600 }}>
+                Upgrade to call or message matches
+              </p>
+              <Link
+                href="/membership"
+                style={{
+                  display: "block", textAlign: "center",
+                  padding: "0.375rem",
+                  background: "#6B1A2A", color: "#fff",
+                  borderRadius: "20px", textDecoration: "none",
+                  fontSize: "0.8125rem", fontWeight: 700,
+                  fontFamily: "var(--font-sans)",
+                }}
+              >
+                Upgrade now
+              </Link>
+            </div>
+          )}
 
-          {/* Switch account — links to login page which has multi-profile picker */}
-          <div style={{ margin: "0.875rem 0 0", padding: "0.625rem 0.875rem", borderTop: "1px solid #f0f0f0" }}>
+          {/* Switch account */}
+          <div style={{ margin: "0.875rem 0 0", padding: "0.625rem 0.875rem", borderTop: "1px solid #F2E8D6" }}>
             <Link
               href="/login"
               style={{
@@ -409,10 +471,12 @@ function AuthenticatedDashboard() {
 
           {/* Quick links */}
           <div style={{ padding: "0.25rem 0 0.875rem" }}>
-            {[
-              { href: "/profile/edit", icon: "👤", label: "Edit profile" },
-              { href: "/settings", icon: "⚙️", label: "Edit preferences" },
-            ].map((item) => (
+            {([
+              { href: "/profile/edit", icon: <User size={15} color="#6B1A2A" />, label: "Edit profile" },
+              { href: "/settings", icon: <Settings2 size={15} color="#6B1A2A" />, label: "Edit preferences" },
+              { href: "/shortlisted", icon: <Heart size={15} color="#6B1A2A" />, label: "Shortlisted" },
+              { href: "/interests", icon: <Mail size={15} color="#6B1A2A" />, label: "Interests" },
+            ] as { href: string; icon: React.ReactNode; label: string }[]).map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -421,10 +485,10 @@ function AuthenticatedDashboard() {
                   padding: "0.5rem 0.875rem",
                   color: "#444", textDecoration: "none",
                   fontSize: "0.875rem", fontWeight: 500,
-                  borderTop: "1px solid #f8f8f8",
+                  borderTop: "1px solid #F8F8F8",
                 }}
               >
-                <span>{item.icon}</span> {item.label}
+                {item.icon} {item.label}
               </Link>
             ))}
           </div>
@@ -433,12 +497,54 @@ function AuthenticatedDashboard() {
         {/* ── RIGHT MAIN ──────────────────────────────────────── */}
         <div style={{ flex: 1, minWidth: 0 }}>
 
+          {/* ── Match Stat Tiles ── */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "0.625rem",
+              marginBottom: "1rem",
+            }}
+          >
+            {STAT_TILES.map((tile) => (
+              <Link
+                key={tile.href}
+                href={tile.href}
+                style={{
+                  background: "#fff",
+                  border: "1px solid #E8D5B7",
+                  borderRadius: "6px",
+                  padding: "0.75rem 0.875rem",
+                  textDecoration: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
+                  transition: "box-shadow 0.15s, border-color 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "#6B1A2A";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(107,26,42,0.12)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "#E8D5B7";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                }}
+              >
+                {tile.icon}
+                <span style={{ fontSize: "1.25rem", fontWeight: 900, color: "#6B1A2A", lineHeight: 1 }}>
+                  {tile.count}
+                </span>
+                <span style={{ fontSize: "0.6875rem", color: "#888", lineHeight: 1.3 }}>{tile.label}</span>
+              </Link>
+            ))}
+          </div>
+
           {/* Complete Your Profile */}
           {missing.length > 0 && (
             <div
               style={{
                 background: "#fff",
-                border: "1px solid #e0e0e0",
+                border: "1px solid #E8D5B7",
                 borderRadius: "6px",
                 padding: "1rem 1.125rem",
                 marginBottom: "1rem",
@@ -449,12 +555,12 @@ function AuthenticatedDashboard() {
                   <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#111", margin: "0 0 3px" }}>Complete Your Profile</h2>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ fontSize: "0.75rem", color: "#888" }}>Profile completeness score {pct}%</span>
-                    <div style={{ width: "80px", height: "6px", background: "#e0e0e0", borderRadius: "3px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${pct}%`, background: "#4CAF50", borderRadius: "3px" }} />
+                    <div style={{ width: "80px", height: "6px", background: "#E8D5B7", borderRadius: "3px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: "#C8973A", borderRadius: "3px" }} />
                     </div>
                   </div>
                 </div>
-                <Link href="/profile/edit" style={{ fontSize: "0.75rem", color: "#E8401A", fontWeight: 600, textDecoration: "none" }}>
+                <Link href="/profile/edit" style={{ fontSize: "0.75rem", color: "#6B1A2A", fontWeight: 600, textDecoration: "none" }}>
                   Edit all →
                 </Link>
               </div>
@@ -462,21 +568,21 @@ function AuthenticatedDashboard() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
                 {missing.map((m) => (
                   <Link
-                    key={m.section}
-                    href={`/profile/edit?section=${m.section}`}
+                    key={m.href}
+                    href={m.href}
                     style={{
                       display: "flex", alignItems: "center", gap: "5px",
                       padding: "0.5rem 0.875rem",
-                      background: "#fff",
-                      border: "1px solid #e0e0e0",
+                      background: m.label === "Set Partner Preferences" ? "#FBF6EC" : "#fff",
+                      border: m.label === "Set Partner Preferences" ? "1px solid #E0C070" : "1px solid #E8D5B7",
                       borderRadius: "8px",
-                      color: "#333",
+                      color: m.label === "Set Partner Preferences" ? "#6B1A2A" : "#333",
                       textDecoration: "none",
                       fontSize: "0.875rem",
-                      fontWeight: 500,
+                      fontWeight: m.label === "Set Partner Preferences" ? 700 : 500,
                     }}
                   >
-                    <span style={{ fontSize: "1.125rem" }}>{m.icon}</span>
+                    {m.icon}
                     {m.label}
                   </Link>
                 ))}
@@ -773,154 +879,16 @@ export default function HomePage() {
                   className="animate-fade-in"
                   style={{ margin: "1.5rem 0" }}
                 >
-                  <svg
-                    width="320"
-                    height="260"
-                    viewBox="0 0 320 260"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Tamil newly married couple illustration"
-                    role="img"
+                  <img
+                    src="/wedding-couple.png"
+                    alt="Tamil wedding couple illustration"
                     style={{
-                      maxWidth: "100%",
-                      filter: "drop-shadow(0 8px 24px rgba(107,26,42,0.12))",
+                      maxWidth: "340px",
+                      width: "100%",
+                      borderRadius: "16px",
+                      filter: "drop-shadow(0 8px 32px rgba(107,26,42,0.15))",
                     }}
-                  >
-                    {/* Background arch */}
-                    <ellipse cx="160" cy="240" rx="130" ry="20" fill="#F5E6E9" opacity="0.6"/>
-
-                    {/* === BRIDE (left) === */}
-                    {/* Saree body — deep maroon */}
-                    <path d="M85 145 Q78 180 75 230 L115 230 Q118 180 120 145 Z" fill="#8B1A2A"/>
-                    {/* Saree gold border */}
-                    <path d="M85 145 Q78 180 75 230 L80 230 Q83 180 90 145 Z" fill="#C8973A"/>
-                    <path d="M115 145 Q118 180 115 230 L120 230 Q122 180 120 145 Z" fill="#C8973A"/>
-                    {/* Saree pleats */}
-                    <path d="M90 170 L110 170" stroke="#6B1A2A" strokeWidth="0.5" opacity="0.4"/>
-                    <path d="M89 180 L111 180" stroke="#6B1A2A" strokeWidth="0.5" opacity="0.4"/>
-                    <path d="M88 190 L112 190" stroke="#6B1A2A" strokeWidth="0.5" opacity="0.4"/>
-                    <path d="M87 200 L113 200" stroke="#6B1A2A" strokeWidth="0.5" opacity="0.4"/>
-                    {/* Blouse (upper body) */}
-                    <path d="M90 115 Q85 125 85 145 L120 145 Q120 125 115 115 Z" fill="#8B1A2A"/>
-                    {/* Blouse gold trim */}
-                    <line x1="90" y1="115" x2="120" y2="115" stroke="#C8973A" strokeWidth="1.5"/>
-                    {/* Saree pallu draped over shoulder */}
-                    <path d="M88 120 Q70 130 65 155 Q70 160 75 155 Q80 135 95 125 Z" fill="#8B1A2A" opacity="0.85"/>
-                    <path d="M88 120 Q70 130 65 155 Q67 157 70 155 Q75 136 90 126 Z" fill="#C8973A"/>
-                    {/* Bride neck */}
-                    <rect x="98" y="100" width="9" height="16" rx="4" fill="#D4956E"/>
-                    {/* Necklace / thali */}
-                    <ellipse cx="102.5" cy="118" rx="8" ry="3" stroke="#C8973A" strokeWidth="1.2" fill="none"/>
-                    <circle cx="102.5" cy="121" r="3" fill="#C8973A"/>
-                    {/* Bride head */}
-                    <ellipse cx="102" cy="88" rx="15" ry="16" fill="#D4956E"/>
-                    {/* Hair bun at top — elaborate */}
-                    <path d="M90 78 Q102 65 114 78 Q112 70 102 68 Q92 70 90 78 Z" fill="#1A0A0E"/>
-                    <path d="M96 72 Q102 66 108 72 Q106 68 102 67 Q98 68 96 72 Z" fill="#1A0A0E"/>
-                    {/* Jasmine flowers in hair */}
-                    <circle cx="90" cy="76" r="3" fill="white"/>
-                    <circle cx="93" cy="73" r="2.5" fill="white"/>
-                    <circle cx="96" cy="71" r="2" fill="white"/>
-                    <circle cx="99" cy="70" r="2" fill="white"/>
-                    <circle cx="102" cy="69.5" r="2" fill="white"/>
-                    <circle cx="105" cy="70" r="2" fill="white"/>
-                    <circle cx="108" cy="71" r="2.5" fill="white"/>
-                    <circle cx="111" cy="73" r="2.5" fill="white"/>
-                    <circle cx="113" cy="76" r="3" fill="white"/>
-                    {/* Bindi */}
-                    <circle cx="102" cy="82" r="2" fill="#6B1A2A"/>
-                    {/* Bride eyes */}
-                    <ellipse cx="97" cy="88" rx="3" ry="2.5" fill="#fff"/>
-                    <circle cx="97" cy="88" r="1.5" fill="#3D1A1F"/>
-                    <ellipse cx="107" cy="88" rx="3" ry="2.5" fill="#fff"/>
-                    <circle cx="107" cy="88" r="1.5" fill="#3D1A1F"/>
-                    {/* Bride smile */}
-                    <path d="M98 95 Q102 99 106 95" stroke="#8B2535" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-                    {/* Earrings */}
-                    <circle cx="87" cy="92" r="3" fill="#C8973A"/>
-                    <line x1="87" y1="95" x2="87" y2="100" stroke="#C8973A" strokeWidth="1"/>
-                    <circle cx="87" cy="100" r="2" fill="#C8973A"/>
-                    <circle cx="117" cy="92" r="3" fill="#C8973A"/>
-                    <line x1="117" y1="95" x2="117" y2="100" stroke="#C8973A" strokeWidth="1"/>
-                    <circle cx="117" cy="100" r="2" fill="#C8973A"/>
-                    {/* Bride arms */}
-                    <path d="M85 130 Q70 140 68 160" stroke="#D4956E" strokeWidth="8" strokeLinecap="round" fill="none"/>
-                    <path d="M120 130 Q132 140 134 160" stroke="#D4956E" strokeWidth="8" strokeLinecap="round" fill="none"/>
-                    {/* Bangles on bride arms */}
-                    <circle cx="72" cy="150" r="5" stroke="#C8973A" strokeWidth="2" fill="none"/>
-                    <circle cx="71" cy="155" r="5" stroke="#8B1A2A" strokeWidth="2" fill="none"/>
-                    <circle cx="130" cy="150" r="5" stroke="#C8973A" strokeWidth="2" fill="none"/>
-                    <circle cx="131" cy="155" r="5" stroke="#8B1A2A" strokeWidth="2" fill="none"/>
-                    {/* Hands with garland */}
-                    <ellipse cx="73" cy="163" rx="6" ry="5" fill="#D4956E"/>
-                    <ellipse cx="133" cy="163" rx="6" ry="5" fill="#D4956E"/>
-
-                    {/* === GROOM (right) === */}
-                    {/* Veshti — cream/off-white */}
-                    <path d="M195 145 Q192 180 190 230 L230 230 Q232 180 230 145 Z" fill="#FFFDF0"/>
-                    {/* Veshti gold border */}
-                    <path d="M195 145 Q192 180 190 230 L195 230 Q196 180 200 145 Z" fill="#C8973A"/>
-                    <path d="M230 145 Q232 180 230 230 L235 230 Q234 180 232 145 Z" fill="#C8973A"/>
-                    {/* Veshti pleats */}
-                    <path d="M200 170 L225 170" stroke="#E8D5A0" strokeWidth="0.7" opacity="0.7"/>
-                    <path d="M200 180 L225 180" stroke="#E8D5A0" strokeWidth="0.7" opacity="0.7"/>
-                    <path d="M200 190 L225 190" stroke="#E8D5A0" strokeWidth="0.7" opacity="0.7"/>
-                    <path d="M200 200 L225 200" stroke="#E8D5A0" strokeWidth="0.7" opacity="0.7"/>
-                    {/* Shirt — cream */}
-                    <path d="M193 115 Q188 125 190 145 L230 145 Q232 125 227 115 Z" fill="#FFFDF0"/>
-                    {/* Shirt collar */}
-                    <path d="M205 115 L210 125 L215 115" stroke="#E8D5A0" strokeWidth="1.5" fill="none"/>
-                    {/* Shirt gold buttons */}
-                    <circle cx="210" cy="130" r="1.5" fill="#C8973A"/>
-                    <circle cx="210" cy="137" r="1.5" fill="#C8973A"/>
-                    {/* Groom neck */}
-                    <rect x="207" y="100" width="9" height="16" rx="4" fill="#C47B4E"/>
-                    {/* Groom head */}
-                    <ellipse cx="211" cy="86" rx="16" ry="17" fill="#C47B4E"/>
-                    {/* Groom hair — short neat */}
-                    <path d="M196 83 Q211 70 226 83 Q224 74 211 72 Q198 74 196 83 Z" fill="#1A0A0E"/>
-                    {/* Groom eyes */}
-                    <ellipse cx="206" cy="87" rx="3" ry="2.5" fill="#fff"/>
-                    <circle cx="206" cy="87" r="1.5" fill="#3D1A1F"/>
-                    <ellipse cx="216" cy="87" rx="3" ry="2.5" fill="#fff"/>
-                    <circle cx="216" cy="87" r="1.5" fill="#3D1A1F"/>
-                    {/* Groom smile */}
-                    <path d="M206 95 Q211 100 216 95" stroke="#8B2535" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-                    {/* Groom arms */}
-                    <path d="M190 130 Q178 140 175 160" stroke="#C47B4E" strokeWidth="8" strokeLinecap="round" fill="none"/>
-                    <path d="M230 130 Q242 140 245 160" stroke="#C47B4E" strokeWidth="8" strokeLinecap="round" fill="none"/>
-                    {/* Groom hands */}
-                    <ellipse cx="178" cy="164" rx="6" ry="5" fill="#C47B4E"/>
-                    <ellipse cx="242" cy="164" rx="6" ry="5" fill="#C47B4E"/>
-
-                    {/* === GARLANDS connecting them === */}
-                    {/* Bride garland */}
-                    <path d="M100 120 Q130 108 160 115 Q155 108 150 112 Q135 105 100 120 Z"
-                      fill="none" stroke="#3D7A28" strokeWidth="3" strokeLinecap="round" opacity="0.8"/>
-                    {/* Groom garland */}
-                    <path d="M212 118 Q185 108 160 115 Q165 108 170 112 Q188 105 212 118 Z"
-                      fill="none" stroke="#3D7A28" strokeWidth="3" strokeLinecap="round" opacity="0.8"/>
-                    {/* Garland flowers */}
-                    {[130, 140, 150, 160, 170, 180].map((x) => (
-                      <circle key={x} cx={x} cy={Math.sin((x - 130) * 0.18) * 6 + 112} r="3.5" fill="#FFD54F" opacity="0.9"/>
-                    ))}
-                    {[132, 142, 152, 162, 172, 182].map((x) => (
-                      <circle key={x + "g"} cx={x} cy={Math.sin((x - 130) * 0.18) * 6 + 112} r="1.5" fill="#3D7A28" opacity="0.7"/>
-                    ))}
-
-                    {/* Heart between them */}
-                    <path
-                      d="M157 100 C157 97 153 94 150 97 C147 94 143 97 143 100 C143 104 150 110 150 110 C150 110 157 104 157 100 Z"
-                      transform="translate(10, -5)"
-                      fill="#8B1A2A"
-                      opacity="0.85"
-                    />
-
-                    {/* Subtle decorative kolam dots at bottom */}
-                    {[130, 145, 160, 175, 190].map((x, i) => (
-                      <circle key={i} cx={x} cy={248} r={i === 2 ? 3 : 2} fill="#C8973A" opacity="0.4"/>
-                    ))}
-                  </svg>
+                  />
                 </div>
               </div>
 

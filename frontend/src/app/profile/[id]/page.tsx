@@ -5,10 +5,11 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { MOCK_PROFILES, MOCK_GROOM_PROFILES } from "@/data/mock-profiles";
-import { Heart, BookmarkPlus, MessageCircle, Phone, Share2, Flag, ArrowLeft, ChevronRight, Edit2, CheckCircle, Camera, UserCircle } from "lucide-react";
+import { Heart, BookmarkPlus, MessageCircle, Phone, Share2, Flag, ArrowLeft, ChevronRight, Edit2, CheckCircle, Camera, UserCircle, Briefcase, Star, FileText, MapPin, Crown, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import { getUserById, sendInterest, shortlistProfile } from "@/lib/auth-store";
 import { useAuth } from "@/context/AuthContext";
+import { useMembership } from "@/hooks/useMembership";
 import { ProfileViewSkeleton } from "@/components/ui/Skeleton";
 import { useRouter } from "next/navigation";
 
@@ -88,10 +89,12 @@ function InfoRow({
   label,
   value,
   addLink,
+  isOwnProfile,
 }: {
   label: string;
   value?: string | null;
   addLink?: boolean;
+  isOwnProfile?: boolean;
 }) {
   return (
     <tr>
@@ -121,7 +124,7 @@ function InfoRow({
         <span style={{ marginRight: "0.375rem", color: "#ccc" }}>:</span>
         {value ? (
           value
-        ) : addLink ? (
+        ) : addLink && isOwnProfile ? (
           <a
             href="/settings"
             style={{
@@ -134,7 +137,10 @@ function InfoRow({
               gap: "2px",
             }}
           >
-            Add ▶
+            Add
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: 2 }}>
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </a>
         ) : (
           <span style={{ color: "#ccc" }}>—</span>
@@ -219,13 +225,13 @@ function OwnProfileFallback({ id }: { id: string }) {
                 <>
                   {/* Profile completion — specific missing fields */}
                   {(() => {
-                    const missing: { label: string; section: string; icon: string }[] = [];
-                    if (!storeUser.photoUrl) missing.push({ label: "Add Photo", section: "photo", icon: "📷" });
-                    if (!storeUser.education && !storeUser.occupation) missing.push({ label: "Professional Details", section: "professional", icon: "💼" });
-                    if (!storeUser.star && !storeUser.rasi) missing.push({ label: "Horoscope", section: "religion", icon: "⭐" });
-                    if (!storeUser.about) missing.push({ label: "About Me", section: "about", icon: "📝" });
-                    if (!storeUser.city) missing.push({ label: "Location", section: "location", icon: "📍" });
-                    if (!storeUser.partnerAgeMin) missing.push({ label: "Partner Preferences", section: "partner", icon: "❤️" });
+                    const missing: { label: string; section: string; icon: React.ReactNode }[] = [];
+                    if (!storeUser.photoUrl) missing.push({ label: "Add Photo", section: "photo", icon: <Camera size={14} /> });
+                    if (!storeUser.education && !storeUser.occupation) missing.push({ label: "Professional Details", section: "professional", icon: <Briefcase size={14} /> });
+                    if (!storeUser.star && !storeUser.rasi) missing.push({ label: "Horoscope", section: "religion", icon: <Star size={14} /> });
+                    if (!storeUser.about) missing.push({ label: "About Me", section: "about", icon: <FileText size={14} /> });
+                    if (!storeUser.city) missing.push({ label: "Location", section: "location", icon: <MapPin size={14} /> });
+                    if (!storeUser.partnerAgeMin) missing.push({ label: "Partner Preferences", section: "partner", icon: <Heart size={14} /> });
 
                     const totalFields = 10;
                     const filled = totalFields - missing.length;
@@ -339,6 +345,10 @@ export default function ProfileDetailPage({
 }) {
   const { id } = use(params);
   const { user } = useAuth();
+  const { can } = useMembership();
+  const canMessage     = can("messages");
+  const canViewContact = can("contacts");
+  const canHoroscope   = can("horoscope_view");
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [dbProfile, setDbProfile] = useState<Awaited<ReturnType<typeof getUserById>> | null>(null);
@@ -704,39 +714,41 @@ export default function ProfileDetailPage({
                           ? "Not working"
                           : profile.occupation}
                       </div>
-                      {/* Phone (blurred) */}
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          marginTop: "4px",
-                        }}
-                      >
-                        <Phone size={13} style={{ color: "var(--primary)" }} />
-                        <span
+                      {/* Phone (blurred) — only show Edit/Verify to own profile */}
+                      {isOwnProfile && (
+                        <div
                           style={{
-                            filter: "blur(4px)",
-                            userSelect: "none",
-                            fontSize: "0.8125rem",
-                            color: "var(--text-dark)",
-                            fontWeight: 600,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            marginTop: "4px",
                           }}
                         >
-                          +91-9342024748
-                        </span>
-                        <a
-                          href="/membership"
-                          style={{
-                            fontSize: "0.75rem",
-                            color: "var(--primary)",
-                            fontWeight: 700,
-                            textDecoration: "none",
-                          }}
-                        >
-                          Edit / Verify
-                        </a>
-                      </div>
+                          <Phone size={13} style={{ color: "var(--primary)" }} />
+                          <span
+                            style={{
+                              filter: "blur(4px)",
+                              userSelect: "none",
+                              fontSize: "0.8125rem",
+                              color: "var(--text-dark)",
+                              fontWeight: 600,
+                            }}
+                          >
+                            +91-9342024748
+                          </span>
+                          <a
+                            href="/membership"
+                            style={{
+                              fontSize: "0.75rem",
+                              color: "var(--primary)",
+                              fontWeight: 700,
+                              textDecoration: "none",
+                            }}
+                          >
+                            Edit / Verify
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -767,7 +779,11 @@ export default function ProfileDetailPage({
                           textDecoration: "none",
                         }}
                       >
-                        👁 Profile Preview
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Profile Preview
                       </a>
                     )}
 
@@ -828,27 +844,53 @@ export default function ProfileDetailPage({
                           {shortlisted ? "Shortlisted" : "Shortlist"}
                         </button>
 
-                        {/* Message */}
-                        <button
-                          onClick={() => toast("Upgrade to Gold to send messages")}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            padding: "0.4375rem 0.875rem",
-                            background: "#fff",
-                            border: "1.5px solid #ccc",
-                            borderRadius: "var(--radius-full)",
-                            color: "#555",
-                            fontWeight: 600,
-                            fontSize: "0.8125rem",
-                            cursor: "pointer",
-                            fontFamily: "var(--font-sans)",
-                          }}
-                        >
-                          <MessageCircle size={13} />
-                          Message
-                        </button>
+                        {/* Message — Gold+ functional */}
+                        {canMessage ? (
+                          <Link
+                            href={`/messages?partnerId=${id}`}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "5px",
+                              padding: "0.4375rem 0.875rem",
+                              background: "#fff",
+                              border: "1.5px solid #6B1A2A",
+                              borderRadius: "var(--radius-full)",
+                              color: "#6B1A2A",
+                              fontWeight: 600,
+                              fontSize: "0.8125rem",
+                              cursor: "pointer",
+                              fontFamily: "var(--font-sans)",
+                              textDecoration: "none",
+                            }}
+                          >
+                            <MessageCircle size={13} />
+                            Message
+                          </Link>
+                        ) : (
+                          <Link
+                            href="/membership"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "5px",
+                              padding: "0.4375rem 0.875rem",
+                              background: "#FFF8E8",
+                              border: "1.5px solid #E8D5B7",
+                              borderRadius: "var(--radius-full)",
+                              color: "#C8973A",
+                              fontWeight: 600,
+                              fontSize: "0.8125rem",
+                              cursor: "pointer",
+                              fontFamily: "var(--font-sans)",
+                              textDecoration: "none",
+                              gap: "5px",
+                            }}
+                          >
+                            <Crown size={12} />
+                            Message (Gold+)
+                          </Link>
+                        )}
 
                         {/* Share + Report */}
                         <div style={{ display: "flex", gap: "0.75rem", marginTop: "4px" }}>
@@ -980,11 +1022,11 @@ export default function ProfileDetailPage({
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <tbody>
                       <InfoRow label="Profile created for" value={profile.gender === "female" ? "Friend" : "Son"} />
-                      <InfoRow label="Body Type" addLink />
+                      <InfoRow label="Body Type" addLink isOwnProfile={isOwnProfile} />
                       <InfoRow label="Physical Status" value="Normal" />
-                      <InfoRow label="Weight" addLink />
+                      <InfoRow label="Weight" addLink isOwnProfile={isOwnProfile} />
                       <InfoRow label="Marital Status" value="Never Married" />
-                      <InfoRow label="Drinking Habits" addLink />
+                      <InfoRow label="Drinking Habits" addLink isOwnProfile={isOwnProfile} />
                     </tbody>
                   </table>
                   {/* Right column */}
@@ -994,8 +1036,8 @@ export default function ProfileDetailPage({
                       <InfoRow label="Age" value={`${profile.age} Years`} />
                       <InfoRow label="Height" value={profile.height || "5 Ft 4 In / 163 Cms"} />
                       <InfoRow label="Mother Tongue" value="Tamil" />
-                      <InfoRow label="Eating Habits" addLink />
-                      <InfoRow label="Smoking Habits" addLink />
+                      <InfoRow label="Eating Habits" addLink isOwnProfile={isOwnProfile} />
+                      <InfoRow label="Smoking Habits" addLink isOwnProfile={isOwnProfile} />
                     </tbody>
                   </table>
                 </div>
@@ -1097,25 +1139,47 @@ export default function ProfileDetailPage({
                       background: "var(--primary-light)",
                     }}
                   >
-                    <p style={{ fontSize: "0.8125rem", color: "var(--primary)", fontWeight: 600, marginBottom: "0.625rem" }}>
-                      🔒 Horoscope chart
+                    <p style={{ fontSize: "0.8125rem", color: "var(--primary)", fontWeight: 600, marginBottom: "0.625rem", display: "flex", alignItems: "center", gap: "5px", justifyContent: "center" }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                      Horoscope chart
                     </p>
-                    <button
-                      onClick={() => toast("Upgrade to view horoscope")}
-                      style={{
-                        background: "var(--primary)",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "var(--radius-full)",
-                        padding: "0.375rem 1rem",
-                        fontWeight: 700,
-                        fontSize: "0.75rem",
-                        cursor: "pointer",
-                        fontFamily: "var(--font-sans)",
-                      }}
-                    >
-                      View Horoscope
-                    </button>
+                    {canHoroscope ? (
+                      <button
+                        onClick={() => toast("Horoscope chart will open here.")}
+                        style={{
+                          background: "var(--primary)",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "var(--radius-full)",
+                          padding: "0.375rem 1rem",
+                          fontWeight: 700,
+                          fontSize: "0.75rem",
+                          cursor: "pointer",
+                          fontFamily: "var(--font-sans)",
+                        }}
+                      >
+                        View Horoscope
+                      </button>
+                    ) : (
+                      <Link
+                        href="/membership"
+                        style={{
+                          background: "var(--primary)",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "var(--radius-full)",
+                          padding: "0.375rem 1rem",
+                          fontWeight: 700,
+                          fontSize: "0.75rem",
+                          cursor: "pointer",
+                          fontFamily: "var(--font-sans)",
+                          textDecoration: "none",
+                          display: "inline-block",
+                        }}
+                      >
+                        Upgrade to View
+                      </Link>
+                    )}
                   </div>
                 </div>
               </SectionCard>
@@ -1130,30 +1194,54 @@ export default function ProfileDetailPage({
                       fontSize: "0.9375rem",
                       color: "var(--text-dark)",
                       marginBottom: "0.75rem",
-                      filter: "blur(4px)",
-                      userSelect: "none",
+                      filter: canViewContact ? "none" : "blur(4px)",
+                      userSelect: canViewContact ? "auto" : "none",
                       fontWeight: 600,
                     }}
                   >
-                    +91 98765 43210
+                    +91 {profile.mobile || "98765 43210"}
                   </div>
-                  <button
-                    onClick={() => toast("Upgrade to Gold to view contact details", { icon: "🔒" })}
-                    style={{
-                      background: "var(--primary)",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "var(--radius-full)",
-                      padding: "0.5rem 1.75rem",
-                      fontWeight: 700,
-                      fontSize: "0.875rem",
-                      cursor: "pointer",
-                      fontFamily: "var(--font-sans)",
-                      boxShadow: "var(--shadow-pink)",
-                    }}
-                  >
-                    Upgrade to View Contact
-                  </button>
+                  {canViewContact ? (
+                    <a
+                      href={`tel:+91${profile.mobile || "9876543210"}`}
+                      style={{
+                        background: "#10b981", // Green color for Call Now
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "var(--radius-full)",
+                        padding: "0.5rem 1.75rem",
+                        fontWeight: 700,
+                        fontSize: "0.875rem",
+                        cursor: "pointer",
+                        fontFamily: "var(--font-sans)",
+                        boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
+                        textDecoration: "none",
+                        display: "inline-block",
+                      }}
+                    >
+                      Call Now
+                    </a>
+                  ) : (
+                    <Link
+                      href="/membership"
+                      style={{
+                        background: "var(--primary)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "var(--radius-full)",
+                        padding: "0.5rem 1.75rem",
+                        fontWeight: 700,
+                        fontSize: "0.875rem",
+                        cursor: "pointer",
+                        fontFamily: "var(--font-sans)",
+                        boxShadow: "var(--shadow-pink)",
+                        textDecoration: "none",
+                        display: "inline-block",
+                      }}
+                    >
+                      Upgrade to View Contact
+                    </Link>
+                  )}
                 </div>
               </SectionCard>
             </div>
@@ -1242,7 +1330,7 @@ export default function ProfileDetailPage({
                         flexShrink: 0,
                       }}
                     >
-                      <span style={{ fontSize: "18px" }}>📷</span>
+                      <Camera size={20} color="#1565C0" />
                     </div>
                     <div>
                       <p style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--text-dark)" }}>

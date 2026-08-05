@@ -70,6 +70,8 @@ export interface RegisteredUser {
   sisters?: number;
   createdAt: string;
   lastActive?: string;
+  membershipPlan?: 'Gold' | 'Diamond' | 'Platinum' | null;  // active plan name
+  membershipExpiry?: string;  // ISO datetime
 }
 
 export type RegisterPayload = Omit<RegisteredUser, 'id' | 'createdAt' | 'isVerified' | 'isPremium'> & {
@@ -143,6 +145,8 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     sisters: row.sisters ?? 0,
     createdAt: row.created_at ?? new Date().toISOString(),
     lastActive: row.last_active ?? undefined,
+    membershipPlan: row.membership_plan ?? null,
+    membershipExpiry: row.membership_expiry ?? undefined,
   };
 }
 
@@ -551,6 +555,58 @@ export async function getUserById(id: string): Promise<RegisteredUser | null> {
  */
 export async function logout(): Promise<void> {
   await supabase.auth.signOut();
+}
+
+/**
+ * Upgrade user to a paid membership plan.
+ * Two-phase: tries full update (new columns) first; falls back to
+ * just is_premium=true if membership_plan column doesn't exist yet.
+ * Always returns the freshly-fetched profile on success.
+ */
+export async function upgradeMembership(
+  userId: string,
+  plan: 'Gold' | 'Diamond' | 'Platinum'
+): Promise<RegisteredUser | null> {
+  const months = plan === 'Platinum' ? 3 : 1;
+  const expiry = new Date();
+  expiry.setMonth(expiry.getMonth() + months);
+
+  // Phase 1: full update including new columns
+  const { error: fullErr } = await supabase
+    .from('profiles')
+    .update({
+      is_premium: true,
+      membership_plan: plan,
+      membership_expiry: expiry.toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', userId);
+
+  if (!fullErr) {
+    return fetchProfile(userId);
+  }
+
+  // Phase 2: fallback — just set is_premium (column definitely exists)
+  console.warn('[upgradeMembership] Full update failed (columns may be missing), falling back:', fullErr.message);
+  const { error: fallbackErr } = await supabase
+    .from('profiles')
+    .update({
+      is_premium: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', userId);
+
+  if (fallbackErr) {
+    console.error('[upgradeMembership] Fallback also failed:', fallbackErr.message);
+    return null;
+  }
+
+  // Return profile with plan injected manually since DB column doesn't have it yet
+  const profile = await fetchProfile(userId);
+  if (profile) {
+    return { ...profile, isPremium: true, membershipPlan: plan };
+  }
+  return null;
 }
 
 /**
@@ -1302,4 +1358,339 @@ export async function getHoroscopeMatches(
   if (data && data.length > 0) return data.map(dbToUser);
 
   return getWithHoroscope(currentUserId, oppositeGender);
+}
+
+// ── REAL NOTIFICATION SYSTEM ───────────────────────────────────────────
+
+export interface NotificationRow {
+  id: string;
+  userId: string;
+  type: 'interest' | 'view' | 'message' | 'shortlist' | 'match' | 'system';
+  title: string;
+  body: string;
+  href?: string;
+  read: boolean;
+  data?: Record<string, unknown>;
+  createdAt: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function dbToNotification(row: Record<string, any>): NotificationRow {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    type: row.type,
+    title: row.title,
+    body: row.body,
+    href: row.href ?? undefined,
+    read: row.read ?? false,
+    data: row.data ?? {},
+    createdAt: row.created_at,
+  };
+}
+
+export async function createNotification(
+  userId: string,
+  type: NotificationRow['type'],
+  title: string,
+  body: string,
+  href?: string,
+  data?: Record<string, unknown>
+): Promise<void> {
+  await supabase.from('notifications').insert({
+    user_id: userId,
+    type,
+    title,
+    body,
+    href: href ?? null,
+    data: data ?? {},
+  });
+}
+
+export async function getNotifications(userId: string): Promise<NotificationRow[]> {
+  const { data } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  return (data || []).map(dbToNotification);
+}
+
+export async function markNotificationRead(id: string): Promise<void> {
+  await supabase.from('notifications').update({ read: true }).eq('id', id);
+}
+
+export async function markAllNotificationsRead(userId: string): Promise<void> {
+  await supabase.from('notifications').update({ read: true }).eq('user_id', userId);
+}
+
+export async function deleteNotification(id: string): Promise<void> {
+  await supabase.from('notifications').delete().eq('id', id);
+}
+
+// ── REAL CHAT / MESSAGES SYSTEM ───────────────────────────────────────
+
+export interface MessageRow {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  readAt?: string;
+  sentAt: string;
+}
+
+export interface ConversationSummary {
+  partnerId: string;
+  partnerProfile?: RegisteredUser;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
+  isInitiatedByPartner: boolean; // partner sent first message
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function dbToMessage(row: Record<string, any>): MessageRow {
+  return {
+    id: row.id,
+    senderId: row.sender_id,
+    receiverId: row.receiver_id,
+    content: row.content,
+    readAt: row.read_at ?? undefined,
+    sentAt: row.sent_at,
+  };
+}
+
+/**
+ * Get all conversation partners for a user.
+ */
+export async function getConversations(userId: string): Promise<ConversationSummary[]> {
+  // Get all messages involving this user
+  const { data: msgs } = await supabase
+    .from('messages')
+    .select('*')
+    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+    .order('sent_at', { ascending: false });
+
+  if (!msgs || msgs.length === 0) return [];
+
+  // Group by conversation partner
+  const partnersMap = new Map<string, {
+    lastMessage: string;
+    lastMessageAt: string;
+    unread: number;
+    initiatedByPartner: boolean;
+  }>();
+
+  for (const msg of msgs) {
+    const partnerId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+    if (!partnersMap.has(partnerId)) {
+      // Check if partner sent first (they initiated)
+      const partnerInitiated = msg.sender_id !== userId;
+      partnersMap.set(partnerId, {
+        lastMessage: msg.content,
+        lastMessageAt: msg.sent_at,
+        unread: (!msg.read_at && msg.receiver_id === userId) ? 1 : 0,
+        initiatedByPartner: partnerInitiated,
+      });
+    } else {
+      const existing = partnersMap.get(partnerId)!;
+      if (!msg.read_at && msg.receiver_id === userId) {
+        existing.unread += 1;
+      }
+    }
+  }
+
+  // Fetch profiles for all partners
+  const partnerIds = [...partnersMap.keys()];
+  const { data: profileRows } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', partnerIds);
+
+  const profilesById = new Map<string, RegisteredUser>();
+  for (const row of profileRows || []) {
+    profilesById.set(row.id, dbToUser(row));
+  }
+
+  return partnerIds.map((partnerId) => {
+    const info = partnersMap.get(partnerId)!;
+    return {
+      partnerId,
+      partnerProfile: profilesById.get(partnerId),
+      lastMessage: info.lastMessage,
+      lastMessageAt: info.lastMessageAt,
+      unreadCount: info.unread,
+      isInitiatedByPartner: info.initiatedByPartner,
+    };
+  });
+}
+
+/**
+ * Get messages between two users.
+ */
+export async function getMessages(userId: string, otherId: string): Promise<MessageRow[]> {
+  const { data } = await supabase
+    .from('messages')
+    .select('*')
+    .or(
+      `and(sender_id.eq.${userId},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${userId})`
+    )
+    .order('sent_at', { ascending: true });
+
+  // Mark as read
+  await supabase
+    .from('messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('sender_id', otherId)
+    .eq('receiver_id', userId)
+    .is('read_at', null);
+
+  return (data || []).map(dbToMessage);
+}
+
+/**
+ * Send a message — with premium gating logic.
+ * Rules:
+ *   - Paid senders: always allowed
+ *   - Free senders: allowed ONLY if the receiver has previously sent them a message
+ */
+export async function sendMessage(
+  senderId: string,
+  receiverId: string,
+  content: string
+): Promise<{ error?: string }> {
+  // Fetch sender profile to check premium
+  const { data: senderProfile } = await supabase
+    .from('profiles')
+    .select('is_premium')
+    .eq('id', senderId)
+    .single();
+
+  const isPremium = senderProfile?.is_premium ?? false;
+
+  if (!isPremium) {
+    // Check if receiver has previously messaged sender (allowing free reply)
+    const { data: priorMsg } = await supabase
+      .from('messages')
+      .select('id')
+      .eq('sender_id', receiverId)
+      .eq('receiver_id', senderId)
+      .limit(1)
+      .maybeSingle();
+
+    if (!priorMsg) {
+      return { error: 'upgrade' }; // signal upgrade needed
+    }
+  }
+
+  const { error } = await supabase.from('messages').insert({
+    sender_id: senderId,
+    receiver_id: receiverId,
+    content,
+  });
+
+  if (!error) {
+    // Create notification for receiver
+    await createNotification(
+      receiverId,
+      'message',
+      'New Message',
+      `You have a new message.`,
+      '/messages'
+    );
+  }
+
+  return { error: error?.message };
+}
+
+/**
+ * Mark messages as read in a conversation.
+ */
+export async function markMessagesRead(userId: string, senderId: string): Promise<void> {
+  await supabase
+    .from('messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('sender_id', senderId)
+    .eq('receiver_id', userId)
+    .is('read_at', null);
+}
+
+// ── NOTIFICATION-CREATING WRAPPERS ────────────────────────────────────
+
+/**
+ * Record a profile view AND create notification for the viewed user.
+ */
+export async function recordProfileViewWithNotification(
+  viewerId: string,
+  viewedId: string,
+  viewerName?: string
+): Promise<void> {
+  await supabase
+    .from('profile_views')
+    .insert({ viewer_id: viewerId, viewed_id: viewedId });
+
+  await createNotification(
+    viewedId,
+    'view',
+    'Profile Viewed',
+    viewerName
+      ? `${viewerName} viewed your profile.`
+      : 'Someone viewed your profile.',
+    '/matches?tab=viewed_you'
+  );
+}
+
+/**
+ * Shortlist a profile AND create notification.
+ */
+export async function shortlistProfileWithNotification(
+  userId: string,
+  targetId: string,
+  userName?: string
+): Promise<void> {
+  await supabase
+    .from('shortlists')
+    .upsert({ user_id: userId, target_id: targetId });
+
+  await createNotification(
+    targetId,
+    'shortlist',
+    'Shortlisted by Someone',
+    userName
+      ? `${userName} shortlisted your profile.`
+      : 'A member shortlisted your profile.',
+    '/matches?tab=shortlisted_you'
+  );
+}
+
+/**
+ * Send interest AND create notification.
+ */
+export async function sendInterestWithNotification(
+  senderId: string,
+  receiverId: string,
+  senderName?: string,
+  message?: string
+): Promise<{ error?: string }> {
+  const { error } = await supabase
+    .from('interests')
+    .upsert(
+      { sender_id: senderId, receiver_id: receiverId, status: 'pending', message: message || null },
+      { onConflict: 'sender_id,receiver_id', ignoreDuplicates: false }
+    );
+
+  if (!error) {
+    await createNotification(
+      receiverId,
+      'interest',
+      'New Interest Received',
+      senderName
+        ? `${senderName} sent you an interest.`
+        : 'Someone sent you an interest.',
+      '/interests'
+    );
+  }
+
+  return { error: error?.message };
 }

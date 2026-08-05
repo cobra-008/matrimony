@@ -846,6 +846,11 @@ body {
   50%       { opacity: 0.4; }
 }
 
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 @media (max-width: 768px) {
   .desktop-nav {
     display: none !important;

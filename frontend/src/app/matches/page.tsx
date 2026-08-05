@@ -4,13 +4,14 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
+import { useMembership } from "@/hooks/useMembership";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { HEIGHTS } from "@/data/matrimony-data";
 import {
   fetchMatchProfiles,
-  shortlistProfile,
-  sendInterest,
+  shortlistProfileWithNotification,
+  sendInterestWithNotification,
   getShortlistedProfiles,
   getShortlistedMe,
   getViewedByMe,
@@ -107,15 +108,15 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-const BookmarkIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+const BookmarkIcon = ({ filled }: { filled?: boolean }) => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill={filled ? "#C8973A" : "none"} stroke={filled ? "#C8973A" : "white"} strokeWidth="2">
     <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
   </svg>
 );
 
 const VerifiedIcon = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="12" fill="#1565C0" />
+    <circle cx="12" cy="12" r="12" fill="#6B1A2A" />
     <polyline points="7 12 10 15 17 9" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
@@ -125,12 +126,20 @@ function ProfileCard({
   profile,
   index,
   onShortlist,
+  onHide,
   onSendInterest,
+  shortlisted,
+  canMessage = false,
+  canViewContact = false,
 }: {
   profile: RegisteredUser;
   index: number;
   onShortlist: () => void;
+  onHide: () => void;
   onSendInterest: () => void;
+  shortlisted?: boolean;
+  canMessage?: boolean;
+  canViewContact?: boolean;
 }) {
   const age = profile.dob
     ? Math.floor((Date.now() - new Date(profile.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
@@ -156,7 +165,7 @@ function ProfileCard({
   const profileCode = `ETM${String(index + 1).padStart(3, "0")}`;
   const location = [profile.city, profile.state].filter(Boolean).join(", ") || profile.country || "India";
 
-  // Build attribute string like in screenshot: "30 yrs · 5'10" · Brahmin · M.Tech IIT Madras · Software Architect · ₹ 25 - 35 Lakhs per annum · Chennai, Tamil Nadu"
+  // Build attribute string
   const attrs: string[] = [
     age > 0 ? `${age} yrs` : "",
     profile.height || "",
@@ -173,7 +182,7 @@ function ProfileCard({
         background: "#fff",
         border: "1px solid #e8e8e8",
         borderRadius: "6px",
-        overflow: "hidden",
+        overflow: "visible",
         display: "flex",
         marginBottom: "10px",
         position: "relative",
@@ -195,30 +204,55 @@ function ProfileCard({
           />
         </Link>
 
-        {/* Shortlist badge — top left, dark bg */}
-        <button
-          onClick={onShortlist}
-          style={{
-            position: "absolute",
-            top: "8px",
-            left: "8px",
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            background: "rgba(0,0,0,0.62)",
-            border: "none",
-            borderRadius: "3px",
-            padding: "3px 7px",
-            color: "#fff",
-            fontSize: "0.6875rem",
-            fontWeight: 600,
-            cursor: "pointer",
-            fontFamily: "var(--font-sans)",
-          }}
-        >
-          <BookmarkIcon />
-          Shortlist
-        </button>
+        {/* Shortlist badge — top left */}
+        {shortlisted ? (
+          /* Static gold badge when already shortlisted */
+          <div
+            style={{
+              position: "absolute",
+              top: "8px",
+              left: "8px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              background: "rgba(200,151,58,0.90)",
+              border: "none",
+              borderRadius: "3px",
+              padding: "3px 7px",
+              color: "#fff",
+              fontSize: "0.6875rem",
+              fontWeight: 700,
+            }}
+          >
+            <BookmarkIcon filled />
+            Shortlisted
+          </div>
+        ) : (
+          /* Click to shortlist when not yet saved */
+          <button
+            onClick={onShortlist}
+            style={{
+              position: "absolute",
+              top: "8px",
+              left: "8px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              background: "rgba(0,0,0,0.62)",
+              border: "none",
+              borderRadius: "3px",
+              padding: "3px 7px",
+              color: "#fff",
+              fontSize: "0.6875rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "var(--font-sans)",
+            }}
+          >
+            <BookmarkIcon filled={false} />
+            Shortlist
+          </button>
+        )}
 
         {/* Photo count badge — bottom right */}
         <div
@@ -364,16 +398,17 @@ function ProfileCard({
             alignItems: "center",
             gap: "0.5rem",
             marginTop: "auto",
+            flexWrap: "wrap",
           }}
         >
           {/* Don't Show */}
           <button
-            onClick={() => toast("Profile hidden")}
+            onClick={onHide}
             style={{
               display: "flex",
               alignItems: "center",
               gap: "5px",
-              padding: "0.4375rem 1rem",
+              padding: "0.4375rem 0.875rem",
               border: "1.5px solid #ccc",
               borderRadius: "20px",
               background: "#fff",
@@ -390,6 +425,72 @@ function ProfileCard({
             </svg>
             Don&apos;t Show
           </button>
+
+          {/* Shortlist button (bottom row) */}
+          {shortlisted ? (
+            /* Already shortlisted — show saved state + remove option */
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "0.4375rem 0.875rem",
+                  border: "1.5px solid #C8973A",
+                  borderRadius: "20px",
+                  background: "#FBF6EC",
+                  color: "#C8973A",
+                  fontSize: "0.8125rem",
+                  fontWeight: 700,
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#C8973A" stroke="#C8973A" strokeWidth="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+                </svg>
+                Saved
+              </div>
+              <button
+                onClick={onShortlist}
+                title="Remove from shortlist"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#aaa",
+                  fontSize: "0.75rem",
+                  fontFamily: "var(--font-sans)",
+                  padding: "2px 4px",
+                  textDecoration: "underline",
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onShortlist}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "0.4375rem 0.875rem",
+                border: "1.5px solid #ccc",
+                borderRadius: "20px",
+                background: "#fff",
+                color: "#444",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "var(--font-sans)",
+                transition: "all 0.2s",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+              </svg>
+              Shortlist
+            </button>
+          )}
 
           {/* Send Interest — dark maroon */}
           <button
@@ -414,6 +515,84 @@ function ProfileCard({
             </svg>
             Send Interest
           </button>
+
+          {/* View Contact — Gold+ */}
+          {canViewContact ? (
+            <Link
+              href={`/profile/${profile.id}`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "0.4375rem 1rem",
+                border: "1.5px solid #E8401A",
+                borderRadius: "20px",
+                background: "#fff",
+                color: "#E8401A",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "var(--font-sans)",
+                textDecoration: "none",
+              }}
+            >
+              <PhoneIcon />
+              View Contact
+            </Link>
+          ) : (
+            <Link
+              href="/membership"
+              title="Upgrade to Gold to view contacts"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                padding: "0.4375rem 1rem",
+                border: "1.5px solid #E8D5B7",
+                borderRadius: "20px",
+                background: "#FFF8E8",
+                color: "#C8973A",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "var(--font-sans)",
+                textDecoration: "none",
+              }}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#C8973A" strokeWidth="2.5">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+              Gold+
+            </Link>
+          )}
+
+          {/* Message — Gold+ */}
+          {canMessage && (
+            <Link
+              href={`/messages?partnerId=${profile.id}`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "0.4375rem 1rem",
+                border: "1.5px solid #6B1A2A",
+                borderRadius: "20px",
+                background: "#fff",
+                color: "#6B1A2A",
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "var(--font-sans)",
+                textDecoration: "none",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+              </svg>
+              Message
+            </Link>
+          )}
         </div>
       </div>
     </div>
@@ -450,6 +629,9 @@ function SkeletonCard() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function MatchesPage() {
   const { user, loading: authLoading } = useAuth();
+  const { can } = useMembership();
+  const canMessage     = can("messages");
+  const canViewContact = can("contacts");
   const [activeSection, setActiveSection] = useState("your_matches");
   const [profiles, setProfiles] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -457,6 +639,8 @@ export default function MatchesPage() {
   const [sortOpen, setSortOpen] = useState(false);
   const [sort, setSort] = useState("Best Match");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(new Set());
   // Track last user ID to detect account switches
   const lastUserIdRef = useRef<string | null>(null);
 
@@ -513,8 +697,9 @@ export default function MatchesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id]);
 
-  // Client-side chip filtering
+  // Client-side chip filtering + hide
   const displayed = profiles.filter((p) => {
+    if (hiddenIds.has(p.id)) return false;
     if (activeChips.includes("Profiles with photo") && !p.photoUrl) return false;
     if (activeChips.includes("Matches with horoscope") && !p.star && !p.rasi) return false;
     if (activeChips.includes("Newly joined")) {
@@ -530,13 +715,25 @@ export default function MatchesPage() {
 
   const handleShortlist = async (profileId: string, name: string) => {
     if (!user) { toast.error("Please login"); return; }
-    await shortlistProfile(user.id, profileId);
-    toast.success(`${name} added to shortlist!`);
+    const isAlreadyShortlisted = shortlistedIds.has(profileId);
+    if (isAlreadyShortlisted) {
+      setShortlistedIds((prev) => { const s = new Set(prev); s.delete(profileId); return s; });
+      toast("Removed from shortlist");
+    } else {
+      setShortlistedIds((prev) => new Set([...prev, profileId]));
+      await shortlistProfileWithNotification(user.id, profileId, user.name);
+      toast.success(`${name} shortlisted!`);
+    }
+  };
+
+  const handleHide = (profileId: string) => {
+    setHiddenIds((prev) => new Set([...prev, profileId]));
+    toast("Profile hidden");
   };
 
   const handleSendInterest = async (profileId: string, name: string) => {
     if (!user) { toast.error("Please login"); return; }
-    await sendInterest(user.id, profileId);
+    await sendInterestWithNotification(user.id, profileId, user.name);
     toast.success(`Interest sent to ${name}!`);
   };
 
@@ -943,7 +1140,11 @@ export default function MatchesPage() {
                   profile={profile}
                   index={idx}
                   onShortlist={() => handleShortlist(profile.id, profile.name)}
+                  onHide={() => handleHide(profile.id)}
                   onSendInterest={() => handleSendInterest(profile.id, profile.name)}
+                  shortlisted={shortlistedIds.has(profile.id)}
+                  canMessage={canMessage}
+                  canViewContact={canViewContact}
                 />
               ))
             }

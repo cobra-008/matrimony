@@ -8,6 +8,8 @@ import {
   Check, CreditCard, Lock, Shield, Star, Award, Crown, ChevronLeft,
   Building2, Wallet, Smartphone,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { upgradeMembership } from "@/lib/auth-store";
 
 // ── Plan configuration ────────────────────────────────────────────────────
 const PLAN_CONFIG = {
@@ -174,6 +176,7 @@ function FieldError({ msg }: { msg?: string }) {
 function PaymentForm({ planKey }: { planKey: PlanKey }) {
   const plan = PLAN_CONFIG[planKey];
   const router = useRouter();
+  const { user, setUser } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
@@ -267,8 +270,19 @@ function PaymentForm({ planKey }: { planKey: PlanKey }) {
     }
 
     setSubmitting(true);
-    // Simulate payment processing
-    await new Promise((r) => setTimeout(r, 1500));
+    // ── OPTIMISTIC UPDATE: instantly reflect premium in UI ──────────────
+    // Do this FIRST so the Navbar badge updates immediately even if DB fails
+    if (user) {
+      setUser({ ...user, isPremium: true, membershipPlan: planKey });
+    }
+    // Brief UX delay (simulated payment processing)
+    await new Promise((r) => setTimeout(r, 1200));
+    // ── PERSIST TO SUPABASE in background ──────────────────────────────
+    if (user?.id) {
+      upgradeMembership(user.id, planKey).then((upgraded) => {
+        if (upgraded) setUser(upgraded); // sync with DB data if successful
+      });
+    }
     setSubmitting(false);
     setSuccess(true);
   };
@@ -300,37 +314,55 @@ function PaymentForm({ planKey }: { planKey: PlanKey }) {
         textAlign: "center",
         maxWidth: "480px",
         margin: "0 auto",
+        boxShadow: "0 8px 32px rgba(107,26,42,0.12)",
       }}>
+        {/* Animated success ring */}
         <div style={{
-          width: "72px",
-          height: "72px",
-          borderRadius: "50%",
-          background: "#E8F5E9",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          margin: "0 auto 1.25rem",
+          width: "80px", height: "80px", borderRadius: "50%",
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          margin: "0 auto 1.5rem",
+          boxShadow: "0 4px 20px rgba(107,26,42,0.3)",
         }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2BA745" strokeWidth="2.5">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
             <path d="M20 6L9 17l-5-5" />
           </svg>
         </div>
-        <h2 style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-dark)", marginBottom: "0.5rem" }}>
+        <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-dark)", marginBottom: "0.5rem" }}>
           Payment Successful!
         </h2>
-        <p style={{ color: "var(--text-medium)", marginBottom: "0.5rem" }}>
-          Your <strong>{plan.name}</strong> plan has been activated.
+        {/* Plan badge */}
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: "6px",
+          background: plan.gradient, color: "#fff",
+          padding: "0.375rem 1.25rem", borderRadius: "var(--radius-full)",
+          fontSize: "0.875rem", fontWeight: 700, margin: "0 auto 1rem",
+        }}>
+          {plan.icon}
+          {plan.name} Member
+        </div>
+        <p style={{ color: "var(--text-medium)", marginBottom: "0.375rem", fontSize: "0.9375rem" }}>
+          Your <strong>{plan.name}</strong> plan is now active.
         </p>
-        <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "1.75rem" }}>
+        <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "2rem" }}>
           A confirmation has been sent to your registered email.
         </p>
-        <button
-          onClick={() => router.push("/matches")}
-          className="btn btn-primary"
-          style={{ display: "inline-flex", justifyContent: "center" }}
-        >
-          Start Finding Matches
-        </button>
+        <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
+          <button
+            onClick={() => router.push("/")}
+            className="btn"
+            style={{ border: "1.5px solid var(--primary)", color: "var(--primary)", background: "#fff" }}
+          >
+            Go to Dashboard
+          </button>
+          <button
+            onClick={() => router.push("/matches")}
+            className="btn btn-primary"
+            style={{ display: "inline-flex", justifyContent: "center" }}
+          >
+            Start Finding Matches
+          </button>
+        </div>
       </div>
     );
   }

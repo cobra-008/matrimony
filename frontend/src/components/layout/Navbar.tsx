@@ -6,9 +6,10 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronDown, HelpCircle, Menu, X,
   Home, Heart, Send, MessageSquare, Search, Bell,
-  LogOut, Sparkles, RefreshCw,
+  LogOut, Sparkles, Crown, Lock, RefreshCw,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useMembership } from "@/hooks/useMembership";
 
 // ── SVG Icon Components (no emojis) ─────────────────────────────────────────
 
@@ -19,14 +20,75 @@ const UserIcon = () => (
   </svg>
 );
 
-// ── Logged-in icon nav items ─────────────────────────────────────────────────
+// ── Logged-in icon nav items with preview data ──────────────────────────────
+
 const LOGGED_IN_NAV = [
-  { label: "Home", href: "/", icon: <Home size={18} /> },
-  { label: "Matches", href: "/matches", icon: <Heart size={18} /> },
-  { label: "Interests", href: "/interests", icon: <Send size={18} /> },
-  { label: "Messages", href: "/messages", icon: <MessageSquare size={18} /> },
-  { label: "Search", href: "/search", icon: <Search size={18} /> },
-  { label: "Notification", href: "/notifications", icon: <Bell size={18} /> },
+  {
+    label: "Home",
+    href: "/",
+    icon: <Home size={18} />,
+    preview: {
+      title: "Dashboard",
+      desc: "Your daily match recommendations and profile completeness.",
+      stats: [{ label: "New Matches", val: "6" }, { label: "Profile Views", val: "175" }],
+      locked: false,
+    },
+  },
+  {
+    label: "Matches",
+    href: "/matches",
+    icon: <Heart size={18} />,
+    preview: {
+      title: "All Matches",
+      desc: "Browse profiles matching your partner preferences.",
+      stats: [{ label: "Matches", val: "72" }, { label: "Shortlisted", val: "12" }],
+      locked: false,
+    },
+  },
+  {
+    label: "Interests",
+    href: "/interests",
+    icon: <Send size={18} />,
+    preview: {
+      title: "Interests Sent & Received",
+      desc: "Track all interests you have sent and received.",
+      stats: [{ label: "Sent", val: "8" }, { label: "Received", val: "14" }],
+      locked: false,
+    },
+  },
+  {
+    label: "Messages",
+    href: "/messages",
+    icon: <MessageSquare size={18} />,
+    preview: {
+      title: "Messages",
+      desc: "Chat with matched profiles. Available for Gold and above.",
+      stats: [{ label: "Conversations", val: "5" }, { label: "Unread", val: "2" }],
+      locked: true, // Gold+
+    },
+  },
+  {
+    label: "Search",
+    href: "/search",
+    icon: <Search size={18} />,
+    preview: {
+      title: "Advanced Search",
+      desc: "Filter by caste, city, education, income and 25+ filters.",
+      stats: [{ label: "Profiles", val: "25L+" }, { label: "Filters", val: "25+" }],
+      locked: false,
+    },
+  },
+  {
+    label: "Notification",
+    href: "/notifications",
+    icon: <Bell size={18} />,
+    preview: {
+      title: "Notifications",
+      desc: "Stay updated on views, interests, and messages.",
+      stats: [{ label: "New", val: "3" }, { label: "Today", val: "7" }],
+      locked: false,
+    },
+  },
 ];
 
 // Stored profile shape for switch-account
@@ -86,10 +148,12 @@ export default function Navbar() {
   };
 
   const otherProfiles = storedProfiles.filter((p) => p.id !== user?.id);
+  const { can, planName } = useMembership();
 
   // ── LOGGED-IN NAVBAR ─────────────────────────────────────────────────────
   if (user) {
     return (
+      <>
       <header
         style={{
           background: "#fff",
@@ -121,41 +185,143 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Icon nav */}
+          {/* Icon nav with hover preview cards */}
           <nav style={{ display: "flex", alignItems: "center", gap: "0" }}>
             {LOGGED_IN_NAV.map((item) => {
               const active = isActive(item.href);
+              const isLocked = item.preview.locked && !can("messages");
               return (
-                <Link
+                <div
                   key={item.label}
-                  href={item.href}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: "2px",
-                    padding: "0 0.75rem",
-                    height: "56px",
-                    justifyContent: "center",
-                    color: active ? "var(--primary)" : "#555",
-                    textDecoration: "none",
-                    fontSize: "0.6875rem",
-                    fontWeight: active ? 700 : 500,
-                    borderBottom: active ? "2px solid var(--primary)" : "2px solid transparent",
-                    position: "relative",
-                  }}
+                  className="nav-preview-wrap"
+                  style={{ position: "relative" }}
                 >
-                  {item.icon}
-                  {item.label}
-                </Link>
+                  <Link
+                    href={item.href}
+                    className="nav-link-item"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "2px",
+                      padding: "0 0.75rem",
+                      height: "56px",
+                      justifyContent: "center",
+                      color: active ? "var(--primary)" : isLocked ? "#aaa" : "#555",
+                      textDecoration: "none",
+                      fontSize: "0.6875rem",
+                      fontWeight: active ? 700 : 500,
+                      borderBottom: active ? "2px solid var(--primary)" : "2px solid transparent",
+                      position: "relative",
+                    }}
+                  >
+                    {item.icon}
+                    {item.label}
+                    {isLocked && (
+                      <Lock size={8} style={{ position: "absolute", top: "8px", right: "8px", color: "#C8973A" }} />
+                    )}
+                  </Link>
+                  {/* Hover Preview Card */}
+                  <div className="nav-preview-card">
+                    <div style={{
+                      background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)",
+                      padding: "0.625rem 0.875rem",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}>
+                      <span style={{ color: "#fff", opacity: 0.9 }}>{item.icon}</span>
+                      <span style={{ fontWeight: 700, fontSize: "0.8125rem", color: "#fff" }}>{item.preview.title}</span>
+                      {isLocked && (
+                        <span style={{
+                          marginLeft: "auto",
+                          background: "rgba(255,255,255,0.2)",
+                          borderRadius: "4px",
+                          padding: "1px 6px",
+                          fontSize: "0.625rem",
+                          color: "#FFD54F",
+                          fontWeight: 700,
+                        }}>GOLD+</span>
+                      )}
+                    </div>
+                    <div style={{ padding: "0.625rem 0.875rem" }}>
+                      <p style={{ fontSize: "0.75rem", color: "#555", lineHeight: 1.5, margin: "0 0 0.5rem" }}>
+                        {item.preview.desc}
+                      </p>
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        {item.preview.stats.map((s) => (
+                          <div key={s.label} style={{
+                            flex: 1,
+                            background: "#FBF0F5",
+                            borderRadius: "6px",
+                            padding: "0.375rem 0.5rem",
+                            textAlign: "center",
+                          }}>
+                            <div style={{ fontSize: "0.9375rem", fontWeight: 800, color: "#6B1A2A" }}>{s.val}</div>
+                            <div style={{ fontSize: "0.625rem", color: "#888", fontWeight: 500 }}>{s.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {isLocked && (
+                        <div style={{
+                          marginTop: "0.5rem",
+                          padding: "0.375rem 0.625rem",
+                          background: "#FFF8E8",
+                          border: "1px solid #E8D5B7",
+                          borderRadius: "5px",
+                          fontSize: "0.6875rem",
+                          color: "#C8973A",
+                          fontWeight: 600,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}>
+                          <Lock size={10} />
+                          Upgrade to Gold to unlock
+                        </div>
+                      )}
+                    </div>
+                    <div style={{
+                      padding: "0.375rem 0.875rem",
+                      borderTop: "1px solid #F0E8E8",
+                      fontSize: "0.6875rem",
+                      color: "#6B1A2A",
+                      fontWeight: 600,
+                    }}>Click to open {item.label} →</div>
+                  </div>
+                </div>
               );
             })}
           </nav>
 
-          {/* Right: Upgrade + Avatar */}
+          {/* Right: Premium badge OR Upgrade CTA */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", flexShrink: 0 }}>
-            {/* Gold Upgrade CTA */}
-            {!user.isPremium && (
+            {user.isPremium ? (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  background: {
+                    Gold: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
+                    Diamond: "linear-gradient(135deg, hsl(253,70%,45%) 0%, hsl(217,91%,55%) 100%)",
+                    Platinum: "linear-gradient(135deg, #E69C00 0%, #FFB703 100%)",
+                  }[user.membershipPlan ?? "Gold"] ?? "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
+                  border: "none",
+                  borderRadius: "20px",
+                  padding: "0.3rem 0.875rem",
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  color: "#fff",
+                  letterSpacing: "0.02em",
+                  boxShadow: "0 2px 8px rgba(200,151,58,0.35)",
+                }}
+              >
+                <Crown size={12} fill="#fff" strokeWidth={0} />
+                {user.membershipPlan ?? 'Premium'}
+              </div>
+            ) : (
+              /* Gold Upgrade CTA for free members */
               <button
                 onClick={() => router.push("/membership")}
                 style={{
@@ -376,6 +542,46 @@ export default function Navbar() {
           </div>
         </div>
       </header>
+      <style>{`
+        /* ── Nav preview card system ── */
+        .nav-preview-wrap { position: relative; }
+        .nav-link-item   { position: relative; }
+
+        .nav-preview-card {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 50%;
+          transform: translateX(-50%) translateY(-4px);
+          width: 220px;
+          background: #fff;
+          border: 1px solid #E8D5B7;
+          border-radius: 10px;
+          box-shadow: 0 8px 32px rgba(107,26,42,0.18);
+          overflow: hidden;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.18s ease, transform 0.18s ease;
+          z-index: 500;
+          font-family: var(--font-sans);
+        }
+        .nav-preview-wrap:hover .nav-preview-card {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translateX(-50%) translateY(0);
+        }
+        /* Arrow pointer above card */
+        .nav-preview-card::before {
+          content: '';
+          position: absolute;
+          top: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-width: 0 6px 6px;
+          border-style: solid;
+          border-color: transparent transparent #6B1A2A;
+        }
+      `}</style>
+      </>
     );
   }
 
