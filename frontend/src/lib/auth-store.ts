@@ -768,10 +768,28 @@ export async function sendInterest(
  * Accept an interest (receiver calls this).
  */
 export async function acceptInterest(interestId: string): Promise<{ error?: string }> {
+  // Fetch interest details to know sender and receiver
+  const { data: interest } = await supabase
+    .from('interests')
+    .select('sender_id, receiver_id, profiles!interests_receiver_id_fkey(name)')
+    .eq('id', interestId)
+    .single();
+
   const { error } = await supabase
     .from('interests')
     .update({ status: 'accepted' })
     .eq('id', interestId);
+
+  if (!error && interest) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const receiverName = (interest.profiles as any)?.name || "Someone";
+    await supabase.from('messages').insert({
+      sender_id: interest.receiver_id,
+      receiver_id: interest.sender_id,
+      content: `${receiverName} has accepted your interest!`
+    });
+  }
+
   return { error: error?.message };
 }
 

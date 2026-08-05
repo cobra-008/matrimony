@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { Suspense, useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { Crown, Lock } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
@@ -627,12 +629,21 @@ function SkeletonCard() {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-export default function MatchesPage() {
+function MatchesContent() {
   const { user, loading: authLoading } = useAuth();
   const { can } = useMembership();
   const canMessage     = can("messages");
   const canViewContact = can("contacts");
-  const [activeSection, setActiveSection] = useState("your_matches");
+  const searchParams = useSearchParams();
+  const tab = searchParams?.get("tab");
+  const [activeSection, setActiveSection] = useState(tab || "your_matches");
+
+  useEffect(() => {
+    if (tab && tab !== activeSection) {
+      setActiveSection(tab);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
   const [profiles, setProfiles] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChips, setActiveChips] = useState<string[]>([]);
@@ -1134,6 +1145,36 @@ export default function MatchesPage() {
                   </button>
                 </div>
               )
+              : activeSection === "shortlisted_you" && !user?.isPremium ? (
+                <div style={{ padding: "4rem 2rem", textAlign: "center", background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px" }}>
+                  <div style={{
+                    width: "64px", height: "64px", borderRadius: "50%",
+                    background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    margin: "0 auto 1rem",
+                  }}>
+                    <Lock size={28} color="#fff" />
+                  </div>
+                  <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "0.5rem" }}>
+                    See Who Shortlisted You
+                  </h3>
+                  <p style={{ color: "#666", fontSize: "0.9375rem", marginBottom: "1.5rem", maxWidth: "400px", margin: "0 auto 1.5rem" }}>
+                    Upgrade to Gold to unlock this feature and see all the members who have expressed interest in your profile.
+                  </p>
+                  <Link href="/membership"
+                    style={{
+                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                      background: "linear-gradient(135deg, #C8973A 0%, #E8C060 100%)",
+                      color: "#fff", fontWeight: 700, fontSize: "0.9375rem",
+                      borderRadius: "30px", padding: "0.75rem 2rem",
+                      textDecoration: "none", boxShadow: "0 4px 16px rgba(200,151,58,0.35)",
+                    }}
+                  >
+                    <Crown size={16} />
+                    Upgrade to Gold — ₹999/mo
+                  </Link>
+                </div>
+              )
               : displayed.map((profile, idx) => (
                 <ProfileCard
                   key={profile.id}
@@ -1176,5 +1217,13 @@ export default function MatchesPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function MatchesPage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: "center", padding: "3rem" }}>Loading...</div>}>
+      <MatchesContent />
+    </Suspense>
   );
 }

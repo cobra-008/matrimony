@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { useMembership } from "@/hooks/useMembership";
+
 import Navbar from "@/components/layout/Navbar";
 import {
   Search, Phone, Video, MoreVertical,
@@ -137,7 +137,7 @@ function MessageBubble({ msg, isMe }: { msg: MessageRow; isMe: boolean }) {
 // ── MAIN PAGE ─────────────────────────────────────────────────────────
 function MessagesContent() {
   const { user, loading: authLoading } = useAuth();
-  const { can } = useMembership();
+
   const searchParams = useSearchParams();
   const initPartnerId = searchParams?.get("partnerId");
   const router = useRouter();
@@ -155,57 +155,7 @@ function MessagesContent() {
   const selectedConv = conversations.find((c) => c.partnerId === selectedId);
   const selectedProfile = selectedConv?.partnerProfile;
 
-  // ── MEMBERSHIP GATE ────────────────────────────────────────
-  // Wait for auth to load before gating (prevents false lock on refresh)
-  if (!authLoading && !can("messages")) {
-    return (
-      <>
-        <Navbar />
-        <main style={{ background: "var(--bg-page)", minHeight: "80vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{
-            background: "#fff",
-            borderRadius: "16px",
-            border: "1px solid #E8D5B7",
-            padding: "3rem 2.5rem",
-            textAlign: "center",
-            maxWidth: "440px",
-            boxShadow: "0 8px 32px rgba(107,26,42,0.12)",
-          }}>
-            <div style={{
-              width: "72px", height: "72px", borderRadius: "50%",
-              background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 1.25rem",
-            }}>
-              <Lock size={32} color="#fff" />
-            </div>
-            <h2 style={{ fontSize: "1.375rem", fontWeight: 800, color: "#1a1a1a", marginBottom: "0.5rem" }}>Messages for Gold Members</h2>
-            <p style={{ color: "#666", fontSize: "0.9375rem", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-              Upgrade to <strong>Gold</strong> or higher to chat with all matched profiles.
-              Free members can only reply after a mutual connection.
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <Link href="/membership"
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
-                  background: "linear-gradient(135deg, #C8973A 0%, #E8C060 100%)",
-                  color: "#fff", fontWeight: 700, fontSize: "0.9375rem",
-                  borderRadius: "30px", padding: "0.75rem 2rem",
-                  textDecoration: "none", boxShadow: "0 4px 16px rgba(200,151,58,0.35)",
-                }}
-              >
-                <Crown size={16} />
-                Upgrade to Gold — ₹999/mo
-              </Link>
-              <Link href="/matches" style={{ color: "#6B1A2A", fontWeight: 600, fontSize: "0.875rem" }}>
-                Back to Matches
-              </Link>
-            </div>
-          </div>
-        </main>
-      </>
-    );
-  }
+  // Members can now view their inbox regardless of premium status
 
   // Load conversations
   const loadConversations = useCallback(async () => {
@@ -516,21 +466,22 @@ function MessagesContent() {
 
                   {/* Input bar */}
                   <div style={{ padding: "0.875rem 1.25rem", borderTop: "1px solid #F2E8D6", background: "#fff", flexShrink: 0 }}>
-                    {!user.isPremium && !selectedConv?.isInitiatedByPartner ? (
+                    {!user.isPremium ? (
                       <div style={{ textAlign: "center", padding: "0.5rem" }}>
-                        <p style={{ fontSize: "0.8125rem", color: "#888", marginBottom: "0.75rem" }}>
-                          Upgrade to Premium to send messages
+                        <p style={{ fontSize: "0.875rem", color: "#1a1a1a", fontWeight: 600, marginBottom: "0.75rem" }}>
+                          Upgrade to Gold to unlock messaging
                         </p>
                         <Link
                           href="/membership"
                           style={{
-                            display: "inline-flex", alignItems: "center", gap: "6px",
-                            background: "#6B1A2A", color: "#fff", borderRadius: "20px",
-                            padding: "0.625rem 1.5rem", fontSize: "0.875rem",
-                            fontWeight: 700, textDecoration: "none",
+                            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                            background: "linear-gradient(135deg, #C8973A 0%, #E8C060 100%)",
+                            color: "#fff", fontWeight: 700, fontSize: "0.9375rem",
+                            borderRadius: "30px", padding: "0.75rem 2rem",
+                            textDecoration: "none", boxShadow: "0 4px 16px rgba(200,151,58,0.35)",
                           }}
                         >
-                          <Crown size={14} /> Upgrade Now
+                          <Crown size={16} /> Upgrade to Gold — ₹999/mo
                         </Link>
                       </div>
                     ) : (
@@ -574,5 +525,13 @@ function MessagesContent() {
         </div>
       </main>
     </>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div>Loading messages...</div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }

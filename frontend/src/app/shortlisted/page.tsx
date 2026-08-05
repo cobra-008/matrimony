@@ -3,20 +3,81 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProfileCard from "@/components/ui/ProfileCard";
-import { MOCK_PROFILES } from "@/data/mock-profiles";
 import { BookmarkPlus, Trash2, Heart } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
+import { getShortlistedProfiles, removeShortlist, type RegisteredUser } from "@/lib/auth-store";
+import { useRouter } from "next/navigation";
 
 export default function ShortlistedPage() {
-  // Mock: first 3 profiles are shortlisted
-  const [shortlisted, setShortlisted] = useState(MOCK_PROFILES.slice(0, 3));
+  const { user, loading: authLoading } = useAuth();
+  const [shortlisted, setShortlisted] = useState<RegisteredUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  const remove = (id: string) => {
-    setShortlisted((v) => v.filter((p) => p.id !== id));
-    toast.success("Removed from shortlist");
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+      loadShortlisted();
+    }
+  }, [user, authLoading, router]);
+
+  const loadShortlisted = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const profiles = await getShortlistedProfiles(user.id);
+      setShortlisted(profiles);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load shortlisted profiles");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const remove = async (id: string) => {
+    if (!user) return;
+    try {
+      await removeShortlist(user.id, id);
+      setShortlisted((v) => v.filter((p) => p.id !== id));
+      toast.success("Removed from shortlist");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to remove shortlist");
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!user) return;
+    try {
+      for (const p of shortlisted) {
+        await removeShortlist(user.id, p.id);
+      }
+      setShortlisted([]);
+      toast.success("Shortlist cleared");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to clear shortlists");
+    }
+  };
+
+  if (authLoading || loading) {
+    return (
+      <>
+        <Navbar />
+        <main style={{ background: "var(--cream-bg)", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div>Loading...</div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
@@ -40,7 +101,7 @@ export default function ShortlistedPage() {
             </div>
             {shortlisted.length > 0 && (
               <button
-                onClick={() => { setShortlisted([]); toast.success("Shortlist cleared"); }}
+                onClick={handleClearAll}
                 className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-red-500 transition-colors"
               >
                 <Trash2 size={14} />
@@ -65,11 +126,13 @@ export default function ShortlistedPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {shortlisted.map((profile) => (
                 <div key={profile.id} className="relative">
+                  {/* @ts-ignore - allow slightly different types for profile if there's any mismatch between Mock and Real types */}
                   <ProfileCard profile={profile} variant="full" />
                   <button
                     onClick={() => remove(profile.id)}
                     className="absolute top-2 left-2 w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-md hover:bg-red-50 hover:text-red-500 transition-colors"
                     title="Remove from shortlist"
+                    style={{ zIndex: 10 }}
                   >
                     <Trash2 size={14} />
                   </button>
