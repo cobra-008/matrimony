@@ -53,7 +53,7 @@ const FOOTER_LINKS = {
 const TRUST_BADGES = [
   {
     icon: (
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="white" strokeWidth="1.8">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="white" strokeWidth="1.8">
         <circle cx="16" cy="11" r="6" />
         <path d="M5 29c0-6 5-11 11-11s11 5 11 11" />
         <polyline points="13,25 15.5,27.5 20,22" strokeWidth="2" />
@@ -63,7 +63,7 @@ const TRUST_BADGES = [
   },
   {
     icon: (
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="white" strokeWidth="1.8">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="white" strokeWidth="1.8">
         <rect x="6" y="13" width="20" height="15" rx="2" />
         <path d="M10 13V9a6 6 0 0 1 12 0v4" />
         <circle cx="16" cy="21" r="2" fill="white" stroke="none" />
@@ -73,7 +73,7 @@ const TRUST_BADGES = [
   },
   {
     icon: (
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="white" strokeWidth="1.8">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="white" strokeWidth="1.8">
         <path d="M16 3 L28 9 V17 C28 23 22 28 16 30 C10 28 4 23 4 17 V9 Z" />
         <polyline points="11,16 14,19 21,13" strokeWidth="2" />
       </svg>
@@ -82,7 +82,7 @@ const TRUST_BADGES = [
   },
   {
     icon: (
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="white" strokeWidth="1.8">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="white" strokeWidth="1.8">
         <rect x="4" y="6" width="24" height="20" rx="2" />
         <polyline points="4,12 16,20 28,12" />
       </svg>
@@ -95,24 +95,43 @@ export default function Footer() {
   return (
     <footer style={{ background: "var(--primary-dark)", color: "rgba(255,255,255,0.8)", marginTop: "auto" }}>
       {/* Trust strip */}
-      <div style={{ background: "var(--primary)", borderBottom: "1px solid rgba(255,255,255,0.1)", padding: "1rem 0" }}>
+      <div style={{ background: "var(--primary)", borderBottom: "1px solid rgba(255,255,255,0.1)", padding: "0.875rem 0" }}>
         <div className="container">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "2.5rem", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: "0.75rem 1rem",
+            }}
+          >
             {TRUST_BADGES.map((badge) => (
-              <div key={badge.label} style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+              <div key={badge.label} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 {badge.icon}
-                <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#fff" }}>{badge.label}</span>
+                <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#fff" }}>{badge.label}</span>
               </div>
             ))}
           </div>
         </div>
+
+        {/* Larger screens: single row */}
+        <style>{`
+          @media (min-width: 640px) {
+            .footer-trust-grid { grid-template-columns: repeat(4, 1fr) !important; }
+          }
+        `}</style>
       </div>
 
       {/* Main footer */}
-      <div className="container" style={{ padding: "2.5rem 1.25rem" }}>
+      <div className="container" style={{ padding: "2rem 1rem" }}>
         {/* Brand row */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem", marginBottom: "2rem" }}>
-          {/* Logo */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            marginBottom: "1.5rem",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
             <div
               style={{
@@ -124,7 +143,7 @@ export default function Footer() {
                 justifyContent: "center",
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="7" r="4" fill="white" />
                 <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" fill="white" />
               </svg>
@@ -143,13 +162,12 @@ export default function Footer() {
               </span>
             </div>
           </div>
-          <div style={{ marginLeft: "0.5rem" }}>
+          <div>
             <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", maxWidth: "360px", lineHeight: 1.6 }}>
-              India&rsquo;s most trusted Tamil matrimony platform. AI-powered matching, verified profiles, 
+              India&rsquo;s most trusted Tamil matrimony platform. AI-powered matching, verified profiles,
               and a community built on trust and culture.
             </p>
-            {/* Contact */}
-            <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", gap: "3px" }}>
+            <div style={{ marginTop: "0.625rem", display: "flex", flexDirection: "column", gap: "3px" }}>
               <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)" }}>
                 support@elitetamilmatrimony.com
               </span>
@@ -160,32 +178,37 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Links grid */}
+        {/* Links grid — responsive */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-            gap: "1.5rem 1rem",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: "1.25rem 1rem",
             borderTop: "1px solid rgba(255,255,255,0.1)",
-            paddingTop: "1.75rem",
-            marginBottom: "1.75rem",
+            paddingTop: "1.5rem",
+            marginBottom: "1.5rem",
           }}
         >
+          <style>{`
+            @media (min-width: 640px) { .footer-links-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+            @media (min-width: 900px) { .footer-links-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; } }
+            @media (min-width: 640px) { .footer-brand-row { flex-direction: row !important; align-items: flex-start !important; } }
+          `}</style>
           {Object.entries(FOOTER_LINKS).map(([category, links]) => (
             <div key={category}>
               <h4
                 style={{
-                  fontSize: "0.8125rem",
+                  fontSize: "0.75rem",
                   fontWeight: 700,
                   color: "#fff",
-                  marginBottom: "0.625rem",
+                  marginBottom: "0.5rem",
                   textTransform: "uppercase",
                   letterSpacing: "0.04em",
                 }}
               >
                 {category}
               </h4>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.375rem" }}>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                 {links.map((link) => (
                   <li key={link.href}>
                     <Link
@@ -194,6 +217,7 @@ export default function Footer() {
                         fontSize: "0.8125rem",
                         color: "rgba(255,255,255,0.5)",
                         textDecoration: "none",
+                        lineHeight: 1.6,
                       }}
                     >
                       {link.label}
@@ -209,16 +233,13 @@ export default function Footer() {
         <div
           style={{
             display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "1rem",
-            padding: "1rem 1.25rem",
+            flexDirection: "column",
+            gap: "0.875rem",
+            padding: "1rem",
             background: "rgba(255,255,255,0.06)",
             borderRadius: "var(--radius-lg)",
             border: "1px solid rgba(255,255,255,0.1)",
-            marginBottom: "1.5rem",
-            flexWrap: "wrap",
+            marginBottom: "1.25rem",
           }}
         >
           <div>
@@ -229,7 +250,7 @@ export default function Footer() {
               Find your match on the go &mdash; 4.8 rated on App Store &amp; Google Play
             </p>
           </div>
-          <div style={{ display: "flex", gap: "0.75rem" }}>
+          <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
             <a
               href="#"
               style={{
@@ -279,18 +300,16 @@ export default function Footer() {
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
+            flexDirection: "column",
             gap: "0.5rem",
             borderTop: "1px solid rgba(255,255,255,0.1)",
-            paddingTop: "1.25rem",
+            paddingTop: "1rem",
           }}
         >
           <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)", margin: 0 }}>
             &copy; {new Date().getFullYear()} Elite Tamil Matrimony. All rights reserved.
           </p>
-          <div style={{ display: "flex", gap: "1.25rem" }}>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             {[
               { label: "Privacy Policy", href: "/privacy" },
               { label: "Terms of Service", href: "/terms" },

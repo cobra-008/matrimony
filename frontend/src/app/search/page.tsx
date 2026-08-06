@@ -381,7 +381,7 @@ function SearchContent() {
           </p>
         </div>
 
-        <div style={{ maxWidth: "960px", margin: "0 auto", padding: "1.5rem 1rem 6rem" }}>
+        <div style={{ maxWidth: "960px", margin: "0 auto", padding: "1.25rem 0.875rem 6rem" }}>
           {/* Tab card */}
           <div
             style={{
@@ -405,7 +405,7 @@ function SearchContent() {
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
                   style={{
-                    padding: "0.875rem 1.5rem",
+                    padding: "0.75rem 1rem",
                     border: "none",
                     background: "transparent",
                     cursor: "pointer",
@@ -417,6 +417,7 @@ function SearchContent() {
                     marginBottom: "-2px",
                     position: "relative",
                     transition: "color 0.15s",
+                    minHeight: "44px",
                   }}
                 >
                   {t.label}
@@ -704,7 +705,8 @@ function SearchContent() {
               right: 0,
               background: "#fff",
               borderTop: "1px solid var(--border-color)",
-              padding: "0.875rem 1.25rem",
+              padding: "0.75rem 1.25rem",
+              paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -712,10 +714,10 @@ function SearchContent() {
               boxShadow: "0 -2px 12px rgba(0,0,0,0.06)",
             }}
           >
-            <span style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
-              <strong style={{ color: "var(--text-dark)" }}>25 Lakh+</strong> profiles available
+            <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+              <strong style={{ color: "var(--text-dark)" }}>25 Lakh+</strong> profiles
             </span>
-            <div style={{ display: "flex", gap: "0.75rem" }}>
+            <div style={{ display: "flex", gap: "0.625rem" }}>
               <button
                 onClick={handleReset}
                 className="btn btn-ghost"
@@ -725,6 +727,7 @@ function SearchContent() {
                   gap: "5px",
                   border: "1.5px solid var(--border-color)",
                   borderRadius: "var(--radius-full)",
+                  minHeight: "40px",
                 }}
               >
                 <RotateCcw size={13} />
@@ -733,10 +736,10 @@ function SearchContent() {
               <button
                 onClick={handleSearch}
                 className="btn btn-primary"
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+                style={{ display: "flex", alignItems: "center", gap: "6px", minHeight: "40px" }}
               >
                 <Search size={15} />
-                Search Profiles
+                Search
               </button>
             </div>
           </div>

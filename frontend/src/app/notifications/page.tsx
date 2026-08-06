@@ -145,7 +145,7 @@ export default function NotificationsPage() {
     <>
       <Navbar />
       <main style={{ background: "#FFF8F0", minHeight: "100vh" }}>
-        <div style={{ maxWidth: "780px", margin: "0 auto", padding: "1.5rem 1rem 2.5rem" }}>
+        <div style={{ maxWidth: "780px", margin: "0 auto", padding: "1rem 0.875rem 4rem" }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
             <div>
@@ -316,13 +316,15 @@ export default function NotificationsPage() {
                         handleDelete(notif.id);
                       }}
                       style={{
-                        flexShrink: 0, width: "28px", height: "28px", borderRadius: "50%",
+                        flexShrink: 0, width: "36px", height: "36px", borderRadius: "50%",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         background: "none", border: "none", cursor: "pointer",
                         color: "#ccc", opacity: 0.7,
+                        touchAction: "manipulation",
                       }}
+                      aria-label="Delete notification"
                     >
-                      <Trash2 size={13} />
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 );

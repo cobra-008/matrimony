@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
 import {
   Search, Phone, Video, MoreVertical,
-  Send, CheckCheck, Check, Crown, MessageCircle, Lock,
+  Send, CheckCheck, Check, Crown, MessageCircle, ArrowLeft,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -77,6 +77,7 @@ function ConversationItem({
         border: "none", borderLeft: selected ? "3px solid #6B1A2A" : "3px solid transparent",
         cursor: "pointer", textAlign: "left", fontFamily: "var(--font-sans)",
         borderBottom: "1px solid #F2E8D6", transition: "background 0.12s",
+        minHeight: "72px",
       }}
     >
       <Avatar src={photo} name={name} size={44} />
@@ -90,7 +91,7 @@ function ConversationItem({
           )}
         </div>
         <div style={{ fontSize: "0.75rem", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {conv.lastMessage}
+          {conv.lastMessage || "No messages yet"}
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px", flexShrink: 0 }}>
@@ -113,14 +114,15 @@ function ConversationItem({
 function MessageBubble({ msg, isMe }: { msg: MessageRow; isMe: boolean }) {
   return (
     <div style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start", marginBottom: "0.5rem" }}>
-      <div style={{ maxWidth: "65%" }}>
+      <div style={{ maxWidth: "75%" }}>
         <div style={{
           background: isMe ? "#6B1A2A" : "#f5f5f5",
           color: isMe ? "#fff" : "#1a1a1a",
-          borderRadius: isMe ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
+          borderRadius: isMe ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
           padding: "0.625rem 0.875rem",
           fontSize: "0.875rem", lineHeight: 1.5,
           boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+          wordBreak: "break-word",
         }}>
           {msg.content}
         </div>
@@ -155,15 +157,12 @@ function MessagesContent() {
   const selectedConv = conversations.find((c) => c.partnerId === selectedId);
   const selectedProfile = selectedConv?.partnerProfile;
 
-  // Members can now view their inbox regardless of premium status
-
   // Load conversations
   const loadConversations = useCallback(async () => {
     if (!user) return;
     setLoadingConvs(true);
     const convs = await getConversations(user.id);
-    
-    // Inject the new partner if started from profile page
+
     if (initPartnerId && initPartnerId !== user.id) {
       const exists = convs.find(c => c.partnerId === initPartnerId);
       if (!exists) {
@@ -180,7 +179,6 @@ function MessagesContent() {
         }
       }
       setSelectedId(initPartnerId);
-      // Optional: Clean up the URL parameter visually so reloading doesn't get sticky
       router.replace("/messages");
     }
 
@@ -201,7 +199,7 @@ function MessagesContent() {
       .finally(() => setLoadingMsgs(false));
   }, [user?.id, selectedId]);
 
-  // Real-time subscription for new messages
+  // Real-time subscription
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -225,11 +223,9 @@ function MessagesContent() {
             readAt: row.read_at ?? undefined,
             sentAt: row.sent_at,
           };
-          // If this message is from the selected partner, add to messages
           if (row.sender_id === selectedId) {
             setMessages((prev) => [...prev, newMsg]);
           }
-          // Refresh conversations list
           loadConversations();
         }
       )
@@ -238,7 +234,7 @@ function MessagesContent() {
     return () => { supabase.removeChannel(channel); };
   }, [user?.id, selectedId, loadConversations]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -254,7 +250,6 @@ function MessagesContent() {
     if (result.error === "upgrade") {
       toast.error("Upgrade to Premium to send messages first. If they messaged you, you can reply.", {
         duration: 5000,
-        icon: undefined,
       });
       return;
     }
@@ -264,7 +259,6 @@ function MessagesContent() {
     }
 
     setInputText("");
-    // Refresh messages
     const updated = await getMessages(user.id, selectedId);
     setMessages(updated);
     loadConversations();
@@ -278,9 +272,10 @@ function MessagesContent() {
     return (
       <>
         <Navbar />
-        <main style={{ background: "#FFF8F0", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <main style={{ background: "#FFF8F0", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1rem" }}>
           <div style={{ textAlign: "center" }}>
-            <p style={{ color: "#6B1A2A", fontWeight: 600 }}>Please log in to view messages.</p>
+            <MessageCircle size={48} style={{ color: "#E8D5B7", margin: "0 auto 1rem" }} />
+            <p style={{ color: "#6B1A2A", fontWeight: 600, marginBottom: "0.5rem" }}>Please log in to view messages.</p>
             <Link href="/login" style={{ color: "#C8973A", fontWeight: 700 }}>Login →</Link>
           </div>
         </main>
@@ -288,14 +283,24 @@ function MessagesContent() {
     );
   }
 
+  // Mobile: show chat view OR list, not both
+  const showChatOnMobile = !!selectedId;
+
   return (
     <>
       <Navbar />
-      <main style={{ background: "#FFF8F0", minHeight: "100vh", padding: "1.25rem 0" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 1rem" }}>
+      <main style={{ background: "#FFF8F0", minHeight: "100vh", paddingTop: "1rem", paddingBottom: "1rem" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 0.75rem" }}>
 
-          {/* Search bar */}
-          <div style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          {/* Search bar — visible only in list view on mobile */}
+          <div style={{
+            marginBottom: "0.75rem",
+            display: showChatOnMobile ? "none" : "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+          }}
+            className="messages-search"
+          >
             <div style={{ position: "relative", flex: 1 }}>
               <Search size={15} style={{ position: "absolute", left: "0.875rem", top: "50%", transform: "translateY(-50%)", color: "#aaa" }} />
               <input
@@ -305,20 +310,49 @@ function MessagesContent() {
                 onChange={(e) => setSearch(e.target.value)}
                 style={{
                   width: "100%", background: "#fff", border: "1px solid #E8D5B7", borderRadius: "20px",
-                  padding: "0.5rem 0.875rem 0.5rem 2.75rem", fontSize: "0.875rem",
+                  padding: "0.625rem 0.875rem 0.625rem 2.75rem", fontSize: "1rem",
                   fontFamily: "var(--font-sans)", outline: "none", boxSizing: "border-box",
+                  minHeight: "44px",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Always-visible search on desktop */}
+          <div className="messages-search-desktop" style={{ marginBottom: "0.75rem" }}>
+            <div style={{ position: "relative", flex: 1, maxWidth: "320px" }}>
+              <Search size={15} style={{ position: "absolute", left: "0.875rem", top: "50%", transform: "translateY(-50%)", color: "#aaa" }} />
+              <input
+                type="text"
+                placeholder="Search conversations…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{
+                  width: "100%", background: "#fff", border: "1px solid #E8D5B7", borderRadius: "20px",
+                  padding: "0.625rem 0.875rem 0.625rem 2.75rem", fontSize: "1rem",
+                  fontFamily: "var(--font-sans)", outline: "none", boxSizing: "border-box",
+                  minHeight: "44px",
                 }}
               />
             </div>
           </div>
 
           <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-            {/* ── LEFT SIDEBAR ── */}
-            <aside style={{
-              width: "320px", flexShrink: 0, background: "#fff",
-              border: "1px solid #E8D5B7", borderRadius: "12px",
-              overflow: "hidden", boxShadow: "0 1px 3px rgba(107,26,42,0.08)",
-            }}>
+            {/* ── LEFT SIDEBAR: conversation list ── */}
+            <aside
+              style={{
+                width: "100%",
+                flexShrink: 0,
+                background: "#fff",
+                border: "1px solid #E8D5B7",
+                borderRadius: "12px",
+                overflow: "hidden",
+                boxShadow: "0 1px 3px rgba(107,26,42,0.08)",
+                // Mobile: hide if chat open
+                display: showChatOnMobile ? "none" : "block",
+              }}
+              className="messages-conv-list"
+            >
               {/* Header */}
               <div style={{ padding: "0.875rem 1rem", borderBottom: "1px solid #F2E8D6", background: "#6B1A2A" }}>
                 <span style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#fff" }}>Messages</span>
@@ -340,7 +374,7 @@ function MessagesContent() {
                     <Link href="/matches" style={{
                       display: "inline-flex", marginTop: "1rem",
                       background: "#6B1A2A", color: "#fff", borderRadius: "20px",
-                      padding: "0.4rem 1.25rem", fontSize: "0.75rem",
+                      padding: "0.5rem 1.25rem", fontSize: "0.75rem",
                       fontWeight: 700, textDecoration: "none",
                     }}>
                       Browse Matches
@@ -360,18 +394,29 @@ function MessagesContent() {
             </aside>
 
             {/* ── RIGHT: CHAT WINDOW ── */}
-            <div style={{
-              flex: 1, minWidth: 0, display: "flex", flexDirection: "column",
-              background: "#fff", border: "1px solid #E8D5B7", borderRadius: "12px",
-              overflow: "hidden", boxShadow: "0 1px 3px rgba(107,26,42,0.08)",
-              minHeight: "calc(100vh - 160px)",
-            }}>
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+                display: "flex",
+                flexDirection: "column",
+                background: "#fff",
+                border: "1px solid #E8D5B7",
+                borderRadius: "12px",
+                overflow: "hidden",
+                boxShadow: "0 1px 3px rgba(107,26,42,0.08)",
+                minHeight: "calc(100vh - 160px)",
+                // Mobile: take full width, hide if no chat selected
+                width: "100%",
+              }}
+              className="messages-chat-panel"
+            >
               {!selectedId ? (
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem" }}>
-                  <MessageCircle size={56} style={{ color: "#E8D5B7", marginBottom: "1rem" }} />
-                  <h2 style={{ color: "#6B1A2A", fontWeight: 700, fontSize: "1.125rem", marginBottom: "0.5rem" }}>Your Messages</h2>
-                  <p style={{ color: "#888", fontSize: "0.875rem", textAlign: "center", maxWidth: "300px", lineHeight: 1.6 }}>
-                    Select a conversation from the left to start chatting. Premium members can initiate conversations.
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem 1rem" }}>
+                  <MessageCircle size={48} style={{ color: "#E8D5B7", marginBottom: "1rem" }} />
+                  <h2 style={{ color: "#6B1A2A", fontWeight: 700, fontSize: "1.125rem", marginBottom: "0.5rem", textAlign: "center" }}>Your Messages</h2>
+                  <p style={{ color: "#888", fontSize: "0.875rem", textAlign: "center", maxWidth: "280px", lineHeight: 1.6 }}>
+                    Select a conversation to start chatting. Premium members can initiate conversations.
                   </p>
                   {!user.isPremium && (
                     <Link href="/membership" style={{
@@ -388,28 +433,44 @@ function MessagesContent() {
                 <>
                   {/* Chat Header */}
                   <div style={{
-                    padding: "0.875rem 1.25rem", borderBottom: "1px solid #F2E8D6",
-                    display: "flex", alignItems: "center", gap: "0.875rem",
+                    padding: "0.75rem 1rem", borderBottom: "1px solid #F2E8D6",
+                    display: "flex", alignItems: "center", gap: "0.75rem",
                     background: "#fff", flexShrink: 0,
                   }}>
-                    <Avatar src={selectedProfile?.photoUrl} name={selectedProfile?.name || "Member"} size={42} />
-                    <div style={{ flex: 1 }}>
+                    {/* Back button — mobile only */}
+                    <button
+                      onClick={() => setSelectedId(null)}
+                      className="messages-back-btn"
+                      style={{
+                        background: "none", border: "none", cursor: "pointer",
+                        color: "#6B1A2A", padding: "4px", display: "flex",
+                        alignItems: "center", minHeight: "44px", minWidth: "44px",
+                        justifyContent: "center",
+                      }}
+                      aria-label="Back to conversations"
+                    >
+                      <ArrowLeft size={20} />
+                    </button>
+                    <Link href={`/profile/${selectedId}`} style={{ display: "flex", flexShrink: 0 }}>
+                      <Avatar src={selectedProfile?.photoUrl} name={selectedProfile?.name || "Member"} size={38} />
+                    </Link>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <span style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#1a1a1a" }}>
+                        <span style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {selectedProfile?.name || "Member"}
                         </span>
                         {selectedProfile?.isPremium && (
-                          <Crown size={13} style={{ color: "#C8973A" }} fill="#C8973A" />
+                          <Crown size={13} style={{ color: "#C8973A", flexShrink: 0 }} fill="#C8973A" />
                         )}
                       </div>
-                      <div style={{ fontSize: "0.75rem", color: "#888", fontWeight: 500 }}>
+                      <div style={{ fontSize: "0.6875rem", color: "#888", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {[
                           selectedProfile?.occupation,
                           [selectedProfile?.city, selectedProfile?.state].filter(Boolean).join(", "),
                         ].filter(Boolean).join(" · ")}
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <div style={{ display: "flex", gap: "0.25rem", flexShrink: 0 }}>
                       <button
                         onClick={() => toast("Voice calls available for premium members")}
                         style={{
@@ -417,6 +478,7 @@ function MessagesContent() {
                           width: "36px", height: "36px", display: "flex", alignItems: "center",
                           justifyContent: "center", cursor: "pointer", color: "#6B1A2A",
                         }}
+                        aria-label="Voice call"
                       >
                         <Phone size={15} />
                       </button>
@@ -427,6 +489,7 @@ function MessagesContent() {
                           width: "36px", height: "36px", display: "flex", alignItems: "center",
                           justifyContent: "center", cursor: "pointer", color: "#6B1A2A",
                         }}
+                        aria-label="Video call"
                       >
                         <Video size={15} />
                       </button>
@@ -438,19 +501,25 @@ function MessagesContent() {
                           justifyContent: "center", cursor: "pointer", color: "#6B1A2A",
                           textDecoration: "none",
                         }}
+                        aria-label="View profile"
                       >
                         <MoreVertical size={15} />
                       </Link>
                     </div>
                   </div>
 
-                  {/* Messages */}
-                  <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem", background: "#FAFAF8", display: "flex", flexDirection: "column" }}>
+                  {/* Messages area */}
+                  <div style={{
+                    flex: 1, overflowY: "auto", padding: "1rem",
+                    background: "#FAFAF8", display: "flex", flexDirection: "column",
+                    WebkitOverflowScrolling: "touch" as const,
+                  }}>
                     {loadingMsgs ? (
                       <div style={{ textAlign: "center", color: "#aaa", fontSize: "0.875rem", padding: "2rem" }}>Loading messages…</div>
                     ) : messages.length === 0 ? (
-                      <div style={{ textAlign: "center", color: "#aaa", fontSize: "0.875rem", padding: "2rem" }}>
-                        No messages yet. Say hello!
+                      <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+                        <div style={{ color: "#aaa", fontSize: "0.875rem", marginBottom: "0.5rem" }}>No messages yet</div>
+                        <div style={{ color: "#bbb", fontSize: "0.75rem" }}>Say hello! 👋</div>
                       </div>
                     ) : (
                       messages.map((msg) => (
@@ -465,10 +534,10 @@ function MessagesContent() {
                   </div>
 
                   {/* Input bar */}
-                  <div style={{ padding: "0.875rem 1.25rem", borderTop: "1px solid #F2E8D6", background: "#fff", flexShrink: 0 }}>
+                  <div style={{ padding: "0.75rem 1rem", borderTop: "1px solid #F2E8D6", background: "#fff", flexShrink: 0 }}>
                     {!user.isPremium ? (
                       <div style={{ textAlign: "center", padding: "0.5rem" }}>
-                        <p style={{ fontSize: "0.875rem", color: "#1a1a1a", fontWeight: 600, marginBottom: "0.75rem" }}>
+                        <p style={{ fontSize: "0.8125rem", color: "#1a1a1a", fontWeight: 600, marginBottom: "0.75rem" }}>
                           Upgrade to Gold to unlock messaging
                         </p>
                         <Link
@@ -477,15 +546,15 @@ function MessagesContent() {
                             display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px",
                             background: "linear-gradient(135deg, #C8973A 0%, #E8C060 100%)",
                             color: "#fff", fontWeight: 700, fontSize: "0.9375rem",
-                            borderRadius: "30px", padding: "0.75rem 2rem",
+                            borderRadius: "30px", padding: "0.75rem 1.75rem",
                             textDecoration: "none", boxShadow: "0 4px 16px rgba(200,151,58,0.35)",
                           }}
                         >
-                          <Crown size={16} /> Upgrade to Gold — ₹999/mo
+                          <Crown size={16} /> Upgrade to Gold
                         </Link>
                       </div>
                     ) : (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <div style={{ flex: 1, position: "relative" }}>
                           <input
                             type="text"
@@ -495,8 +564,9 @@ function MessagesContent() {
                             placeholder="Type a message…"
                             style={{
                               width: "100%", background: "#f5f5f5", border: "1.5px solid #E8D5B7",
-                              borderRadius: "20px", padding: "0.625rem 1rem", fontSize: "0.875rem",
+                              borderRadius: "20px", padding: "0.625rem 1rem", fontSize: "1rem",
                               fontFamily: "var(--font-sans)", outline: "none", boxSizing: "border-box",
+                              minHeight: "44px",
                             }}
                             onFocus={(e) => (e.target.style.borderColor = "#6B1A2A")}
                             onBlur={(e) => (e.target.style.borderColor = "#E8D5B7")}
@@ -507,13 +577,14 @@ function MessagesContent() {
                           disabled={!inputText.trim() || sending}
                           style={{
                             background: inputText.trim() && !sending ? "#6B1A2A" : "#e0e0e0",
-                            border: "none", borderRadius: "50%", width: "40px", height: "40px",
+                            border: "none", borderRadius: "50%", width: "44px", height: "44px",
                             display: "flex", alignItems: "center", justifyContent: "center",
                             cursor: inputText.trim() && !sending ? "pointer" : "default",
                             color: "#fff", flexShrink: 0, transition: "background 0.15s",
                           }}
+                          aria-label="Send message"
                         >
-                          <Send size={16} />
+                          <Send size={18} />
                         </button>
                       </div>
                     )}
@@ -524,13 +595,40 @@ function MessagesContent() {
           </div>
         </div>
       </main>
+
+      {/* Mobile-specific styles */}
+      <style>{`
+        /* Desktop: show both panels */
+        @media (min-width: 768px) {
+          .messages-conv-list {
+            display: block !important;
+            width: 300px !important;
+            flex-shrink: 0;
+          }
+          .messages-chat-panel {
+            display: flex !important;
+          }
+          .messages-search { display: flex !important; }
+          .messages-search-desktop { display: none; }
+          .messages-back-btn { display: none !important; }
+        }
+        @media (min-width: 1024px) {
+          .messages-conv-list { width: 320px !important; }
+        }
+        /* Mobile: toggle between list and chat */
+        @media (max-width: 767px) {
+          .messages-search-desktop { display: none !important; }
+          .messages-conv-list { border-radius: 12px !important; }
+          .messages-chat-panel { min-height: calc(100vh - 130px) !important; }
+        }
+      `}</style>
     </>
   );
 }
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<div>Loading messages...</div>}>
+    <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>Loading messages...</div>}>
       <MessagesContent />
     </Suspense>
   );

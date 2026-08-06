@@ -144,7 +144,7 @@ function RegisterForm() {
   };
 
   return (
-    <div style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", overflow: "hidden", boxShadow: "var(--shadow-lg)", width: "100%", maxWidth: "340px" }}>
+    <div style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", overflow: "hidden", boxShadow: "var(--shadow-lg)", width: "100%", maxWidth: "380px" }}>
       {/* Green header */}
       <div style={{ background: "var(--gradient-hero)", padding: "0.875rem 1.25rem", textAlign: "center" }}>
         <h2 style={{ color: "#fff", fontWeight: 700, fontSize: "1rem", margin: 0 }}>
@@ -348,7 +348,20 @@ function AuthenticatedDashboard() {
       <Navbar />
       <PlanTabs activeTab="regular" />
 
+      <style>{`
+        @media (max-width: 899px) {
+          .dashboard-sidebar { display: none !important; }
+          .dashboard-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .dash-main-wrap { padding: 0.875rem 0.75rem !important; }
+        }
+        @media (min-width: 900px) {
+          .dashboard-sidebar { display: block !important; }
+          .dashboard-stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+        }
+      `}</style>
+
       <div
+        className="dash-main-wrap"
         style={{
           maxWidth: "1060px",
           margin: "0 auto",
@@ -358,8 +371,9 @@ function AuthenticatedDashboard() {
           alignItems: "flex-start",
         }}
       >
-        {/* ── LEFT SIDEBAR ─────────────────────────────────────────────────────── */}
+        {/* ── LEFT SIDEBAR — hidden on mobile, bottom nav handles navigation ── */}
         <aside
+          className="dashboard-sidebar"
           style={{
             width: "230px",
             flexShrink: 0,
@@ -499,10 +513,11 @@ function AuthenticatedDashboard() {
 
           {/* ── Match Stat Tiles ── */}
           <div
+            className="dashboard-stats-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "0.625rem",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: "0.5rem",
               marginBottom: "1rem",
             }}
           >
@@ -862,62 +877,86 @@ export default function HomePage() {
       <main style={{ background: "var(--bg-page)" }}>
 
         {/* =================== HERO =================== */}
-        <section style={{ background: "var(--bg-page)", padding: "2.5rem 0" }}>
+        <section style={{ background: "var(--bg-page)", padding: "1.5rem 0" }}>
           <div className="container">
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "2rem", flexWrap: "wrap" }}>
-              {/* Left — headline */}
-              <div style={{ flex: 1, minWidth: "280px" }}>
-                <h1 style={{ fontSize: "clamp(1.5rem, 3vw, 2.25rem)", fontWeight: 900, color: "var(--text-dark)", lineHeight: 1.25, marginBottom: "0.5rem" }}>
+            {/* Mobile: stack vertically — form first, then image */}
+            <div style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: "1.5rem",
+              flexWrap: "wrap",
+              flexDirection: "column",
+            }}>
+              {/* Register form — full width on mobile, beside image on desktop */}
+              <div style={{ width: "100%" }}>
+                <h1 style={{
+                  fontSize: "clamp(1.25rem, 4vw, 2rem)",
+                  fontWeight: 900,
+                  color: "var(--text-dark)",
+                  lineHeight: 1.25,
+                  marginBottom: "1rem",
+                  textAlign: "center",
+                }}>
                   The{" "}
                   <span style={{ color: "var(--primary)" }}>biggest and most trusted</span>
-                  <br />
-                  matrimony service for Tamils!
+                  {" "}matrimony service for Tamils!
                 </h1>
-
-                {/* Premium Tamil couple illustration */}
-                <div
-                  className="animate-fade-in"
-                  style={{ margin: "1.5rem 0" }}
-                >
-                  <img
-                    src="/wedding-couple.png"
-                    alt="Tamil wedding couple illustration"
-                    style={{
-                      maxWidth: "340px",
-                      width: "100%",
-                      borderRadius: "16px",
-                      filter: "drop-shadow(0 8px 32px rgba(107,26,42,0.15))",
-                    }}
-                  />
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <RegisterForm />
                 </div>
               </div>
 
-              {/* Right — Register form */}
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <RegisterForm />
+              {/* Illustration — hidden on mobile to save space */}
+              <div className="hide-mobile" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                <img
+                  src="/wedding-couple.png"
+                  alt="Tamil wedding couple illustration"
+                  className="animate-fade-in"
+                  style={{
+                    maxWidth: "320px",
+                    width: "100%",
+                    borderRadius: "16px",
+                    filter: "drop-shadow(0 8px 32px rgba(107,26,42,0.15))",
+                  }}
+                />
               </div>
             </div>
+
+            {/* Desktop: side-by-side layout */}
+            <style>{`
+              @media (min-width: 768px) {
+                .hero-inner {
+                  flex-direction: row !important;
+                  align-items: center !important;
+                }
+                .hero-text { text-align: left !important; }
+                .hero-form-wrap { justify-content: flex-end !important; }
+              }
+            `}</style>
           </div>
         </section>
 
         {/* =================== STATS BAR =================== */}
-        <section style={{ background: "#fff", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)", padding: "1.5rem 0" }}>
+        <section style={{ background: "#fff", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)", padding: "1.25rem 0" }}>
           <div className="container">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "3rem", flexWrap: "wrap" }}>
-              {STATS.map((stat, i) => (
-                <div key={stat.label} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                  <div className="stat-icon-wrap">{stat.icon}</div>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+              gap: "1rem",
+              alignItems: "center",
+            }}>
+              {STATS.map((stat) => (
+                <div key={stat.label} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <div className="stat-icon-wrap" style={{ flexShrink: 0 }}>{stat.icon}</div>
                   <div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--text-dark)", lineHeight: 1.1 }}>
+                    <div style={{ fontSize: "1.125rem", fontWeight: 900, color: "var(--text-dark)", lineHeight: 1.1 }}>
                       {stat.value}
                     </div>
-                    <div style={{ fontSize: "0.8125rem", color: "var(--text-light)", marginTop: "2px" }}>
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-light)", marginTop: "2px" }}>
                       {stat.label}
                     </div>
                   </div>
-                  {i < STATS.length - 1 && (
-                    <div style={{ width: "1px", height: "40px", background: "var(--border-color)", marginLeft: "1.5rem" }} />
-                  )}
                 </div>
               ))}
             </div>

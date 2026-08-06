@@ -517,6 +517,7 @@ export default function InterestsPage() {
   const [section, setSection] = useState<ActiveSection>("received");
   const [receivedFilter, setReceivedFilter] = useState<ReceivedFilter>("pending");
   const [sentFilter, setSentFilter] = useState<SentFilter>("all");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [received, setReceived] = useState<InterestRow[]>([]);
   const [sent, setSent] = useState<InterestRow[]>([]);
@@ -637,18 +638,66 @@ export default function InterestsPage() {
       <Navbar />
       <PlanTabs activeTab="regular" />
 
-      <main style={{ background: "#f2f2f2", minHeight: "100vh", padding: "1rem 0" }}>
-        <div style={{ maxWidth: "1060px", margin: "0 auto", padding: "0 1rem", display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+      {/* Responsive styles */}
+      <style>{`
+        @media (max-width: 479px) {
+          .interest-card { flex-direction: column !important; }
+          .interest-card-photo-wrap { width: 100% !important; }
+          .interest-card-photo { height: 200px !important; }
+        }
+        @media (min-width: 480px) {
+          .interest-card { flex-direction: row !important; }
+          .interest-card-photo-wrap { width: 130px !important; flex-shrink: 0 !important; }
+          .interest-card-photo { width: 130px !important; height: 100% !important; min-height: 180px !important; }
+        }
+        @media (min-width: 768px) {
+          .interest-card-photo-wrap { width: 148px !important; }
+          .interest-card-photo { width: 148px !important; min-height: 200px !important; }
+        }
+        @media (min-width: 900px) {
+          .interests-sidebar { display: block !important; position: sticky !important; transform: none !important; }
+          .interests-sidebar-btn { display: none !important; }
+        }
+        @media (max-width: 899px) {
+          .interests-sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            width: 85vw !important;
+            max-width: 300px !important;
+            z-index: 160 !important;
+            max-height: 100vh !important;
+            border-radius: 0 12px 12px 0 !important;
+            overflow-y: auto !important;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15) !important;
+            transform: ${sidebarOpen ? 'translateX(0)' : 'translateX(-100%)'} !important;
+            transition: transform 0.25s ease !important;
+          }
+        }
+      `}</style>
 
-          {/* ── SIDEBAR ─────────────────────────────────────────────── */}
+      <main style={{ background: "#f2f2f2", minHeight: "100vh", padding: "1rem 0" }}>
+        <div style={{ maxWidth: "1060px", margin: "0 auto", padding: "0 0.875rem", display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+
+          {/* ── Mobile overlay ── */}
+          {sidebarOpen && (
+            <div
+              onClick={() => setSidebarOpen(false)}
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 150 }}
+            />
+          )}
+
+          {/* ── SIDEBAR ── */}
           <aside
+            className="interests-sidebar"
             style={{
               width: "220px", flexShrink: 0,
               background: "#fff",
               border: "1px solid #e0e0e0",
               borderRadius: "6px",
               overflow: "hidden",
-              position: "sticky", top: "72px",
+              top: "72px",
             }}
           >
             {/* Interests Received */}
@@ -661,7 +710,7 @@ export default function InterestsPage() {
                 label={f === "accepted" ? "Accepted/Replied" : f.charAt(0).toUpperCase() + f.slice(1)}
                 count={f === "pending" ? receivedCounts.pending : undefined}
                 active={section === "received" && receivedFilter === f}
-                onClick={() => { setSection("received"); setReceivedFilter(f); }}
+                onClick={() => { setSection("received"); setReceivedFilter(f); setSidebarOpen(false); }}
                 color={f === "declined" ? "#E8401A" : undefined}
               />
             ))}
@@ -679,7 +728,7 @@ export default function InterestsPage() {
                 label={f === "accepted" ? "Accepted/Replied" : f.charAt(0).toUpperCase() + f.slice(1)}
                 count={f === "pending" ? sentCounts.pending : undefined}
                 active={section === "sent" && sentFilter === f}
-                onClick={() => { setSection("sent"); setSentFilter(f); }}
+                onClick={() => { setSection("sent"); setSentFilter(f); setSidebarOpen(false); }}
                 color={f === "declined" ? "#E8401A" : undefined}
               />
             ))}
@@ -687,10 +736,26 @@ export default function InterestsPage() {
             <div style={{ height: "0.5rem" }} />
           </aside>
 
-          {/* ── MAIN ────────────────────────────────────────────────── */}
+          {/* ── MAIN ── */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Heading row */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "0.875rem", gap: "1rem" }}>
+            {/* Mobile category button */}
+            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="interests-sidebar-btn"
+                style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  padding: "0.5rem 0.875rem", border: "1.5px solid #E8401A",
+                  borderRadius: "20px", background: "#fff", color: "#E8401A",
+                  fontWeight: 700, fontSize: "0.8125rem", cursor: "pointer",
+                  fontFamily: "var(--font-sans)", minHeight: "40px",
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
+                </svg>
+                {headingMap[currentFilter]}
+              </button>
               <div>
                 <h1 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#111", margin: "0 0 3px" }}>
                   {headingMap[currentFilter]}{" "}

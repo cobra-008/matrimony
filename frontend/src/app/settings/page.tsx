@@ -113,13 +113,24 @@ function SelectRow({ label, value, options, onChange }: { label: string; value: 
 // ── MODAL ─────────────────────────────────────────────────────────────
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
-      <div style={{ background: "#fff", borderRadius: "var(--radius-xl)", width: "100%", maxWidth: "440px", boxShadow: "var(--shadow-lg)", overflow: "hidden" }}>
-        <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border-light)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-dark)" }}>{title}</div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", display: "flex" }}><X size={18} /></button>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "flex-end", padding: "0" }}>
+      <div style={{ background: "#fff", borderRadius: "16px 16px 0 0", width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "var(--shadow-lg)", animation: "slideUp 0.3s ease" }}>
+        <style>{`
+          @media (min-width: 480px) {
+            .settings-modal-panel {
+              border-radius: 16px !important;
+              max-width: 440px !important;
+              margin: 0 auto !important;
+            }
+          }
+        `}</style>
+        <div className="settings-modal-panel" style={{ padding: 0 }}>
+          <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--border-light)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-dark)" }}>{title}</div>
+            <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#aaa", display: "flex", minWidth: "44px", minHeight: "44px", alignItems: "center", justifyContent: "center" }}><X size={18} /></button>
+          </div>
+          <div style={{ padding: "1.25rem" }}>{children}</div>
         </div>
-        <div style={{ padding: "1.5rem" }}>{children}</div>
       </div>
     </div>
   );
@@ -529,19 +540,49 @@ export default function SettingsPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "1.5rem 1rem 4rem" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "1rem 0.875rem 5rem" }}>
 
           {/* Page Title */}
-          <div style={{ marginBottom: "1.5rem" }}>
-            <h1 style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Settings</h1>
-            <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginTop: "3px" }}>
+          <div style={{ marginBottom: "1.25rem" }}>
+            <h1 style={{ fontSize: "clamp(1.125rem, 4vw, 1.375rem)", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Settings</h1>
+            <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "3px" }}>
               Manage your account, privacy, notifications and preferences
             </p>
           </div>
 
+          {/* Mobile: horizontal tab bar */}
+          <div className="settings-mobile-tabs" style={{ display: "none" }}>
+            <div style={{
+              display: "flex", overflowX: "auto", scrollbarWidth: "none",
+              WebkitOverflowScrolling: "touch", gap: "0",
+              borderBottom: "1px solid var(--border-color)",
+              marginBottom: "1rem",
+            }}>
+              {NAV_SECTIONS.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveSection(item.id)}
+                  style={{
+                    flexShrink: 0, display: "flex", alignItems: "center", gap: "5px",
+                    padding: "0.625rem 0.875rem",
+                    border: "none", borderBottom: activeSection === item.id ? "2px solid var(--primary)" : "2px solid transparent",
+                    background: "transparent",
+                    color: activeSection === item.id ? "var(--primary)" : "#666",
+                    fontWeight: activeSection === item.id ? 700 : 500,
+                    fontSize: "0.8125rem", cursor: "pointer", fontFamily: "var(--font-sans)",
+                    whiteSpace: "nowrap", minHeight: "44px",
+                  }}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
-            {/* ── Sidebar ── */}
-            <aside style={{ width: "220px", flexShrink: 0, background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
+            {/* ── Sidebar — desktop only ── */}
+            <aside className="settings-sidebar-desktop" style={{ width: "220px", flexShrink: 0, background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", overflow: "hidden", boxShadow: "var(--shadow-sm)" }}>
               {/* Profile mini */}
               <div style={{ padding: "1.25rem 1rem", borderBottom: "1px solid var(--border-light)", textAlign: "center" }}>
                 <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "var(--primary-light)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 0.625rem", fontSize: "1.25rem", fontWeight: 700, color: "var(--primary)" }}>
@@ -560,7 +601,7 @@ export default function SettingsPage() {
                       width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
                       padding: "0.75rem 1rem", border: "none", background: activeSection === item.id ? "var(--primary-light)" : "transparent",
                       borderLeft: activeSection === item.id ? "3px solid var(--primary)" : "3px solid transparent",
-                      cursor: "pointer", fontFamily: "var(--font-sans)", textAlign: "left",
+                      cursor: "pointer", fontFamily: "var(--font-sans)", textAlign: "left", minHeight: "44px",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
@@ -588,6 +629,14 @@ export default function SettingsPage() {
           </div>
         </div>
       </main>
+
+      {/* Responsive styles */}
+      <style>{`
+        @media (max-width: 767px) {
+          .settings-mobile-tabs { display: block !important; }
+          .settings-sidebar-desktop { display: none !important; }
+        }
+      `}</style>
 
       {/* ── MODALS ── */}
       {modal === "password" && (

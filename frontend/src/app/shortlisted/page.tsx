@@ -83,26 +83,40 @@ export default function ShortlistedPage() {
     <>
       <Navbar />
       <main style={{ background: "var(--cream-bg)", minHeight: "100vh" }}>
-        <div className="container py-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="container" style={{ paddingTop: "1.25rem", paddingBottom: "2rem" }}>
+          {/* Header */}
+          <div style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "0.75rem",
+            marginBottom: "1.25rem",
+            flexWrap: "wrap",
+          }}>
             <div>
-              <div className="flex items-center gap-2 mb-1">
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
                 <BookmarkPlus size={18} style={{ color: "var(--gold-accent)" }} />
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--gold-dark)" }}>
+                <span style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--gold-dark)" }}>
                   Saved Profiles
                 </span>
               </div>
-              <h1 className="text-2xl font-bold text-[var(--text-primary)]" style={{ fontFamily: "var(--font-serif)" }}>
+              <h1 style={{ fontSize: "clamp(1.125rem, 4vw, 1.5rem)", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
                 Shortlisted
               </h1>
-              <p className="text-sm text-[var(--text-secondary)] mt-0.5">
+              <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "2px" }}>
                 {shortlisted.length} profile{shortlisted.length !== 1 ? "s" : ""} saved
               </p>
             </div>
             {shortlisted.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-red-500 transition-colors"
+                style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  background: "none", border: "1px solid #e0e0e0", borderRadius: "20px",
+                  padding: "0.4375rem 0.875rem", cursor: "pointer",
+                  fontSize: "0.8125rem", color: "var(--text-muted)", fontFamily: "var(--font-sans)",
+                  minHeight: "40px", touchAction: "manipulation",
+                }}
               >
                 <Trash2 size={14} />
                 Clear all
@@ -111,28 +125,51 @@ export default function ShortlistedPage() {
           </div>
 
           {shortlisted.length === 0 ? (
-            <div className="card p-16 text-center">
-              <BookmarkPlus size={48} className="mx-auto mb-4" style={{ color: "var(--border)" }} />
-              <h3 className="font-semibold text-[var(--text-primary)] mb-2">No shortlisted profiles</h3>
-              <p className="text-sm text-[var(--text-secondary)] mb-6">
+            <div style={{
+              background: "var(--bg-white)", borderRadius: "var(--radius-xl)",
+              padding: "3rem 1rem", textAlign: "center",
+              border: "1px solid var(--border-light)",
+            }}>
+              <BookmarkPlus size={44} style={{ color: "var(--border)", margin: "0 auto 1rem" }} />
+              <h3 style={{ fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem", fontSize: "1rem" }}>
+                No shortlisted profiles
+              </h3>
+              <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: "1.25rem", lineHeight: 1.6 }}>
                 Save profiles you like and come back to review them.
               </p>
-              <Link href="/matches" className="btn btn-primary">
-                <Heart size={16} className="fill-current" />
+              <Link href="/matches" className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                <Heart size={16} />
                 Browse Matches
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: "0.75rem",
+              }}
+            >
+              <style>{`
+                @media (max-width: 359px) { .shortlisted-grid { grid-template-columns: 1fr !important; } }
+                @media (min-width: 640px) { .shortlisted-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 1rem !important; } }
+                @media (min-width: 1024px) { .shortlisted-grid { grid-template-columns: repeat(4, 1fr) !important; } }
+              `}</style>
               {shortlisted.map((profile) => (
-                <div key={profile.id} className="relative">
-                  {/* @ts-ignore - allow slightly different types for profile if there's any mismatch between Mock and Real types */}
+                <div key={profile.id} style={{ position: "relative" }}>
+                  {/* @ts-ignore */}
                   <ProfileCard profile={profile} variant="full" />
                   <button
                     onClick={() => remove(profile.id)}
-                    className="absolute top-2 left-2 w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-md hover:bg-red-50 hover:text-red-500 transition-colors"
-                    title="Remove from shortlist"
-                    style={{ zIndex: 10 }}
+                    style={{
+                      position: "absolute", top: "8px", left: "8px",
+                      width: "36px", height: "36px", borderRadius: "50%",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: "rgba(255,255,255,0.95)", boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+                      border: "none", cursor: "pointer", color: "#888",
+                      touchAction: "manipulation",
+                    }}
+                    aria-label="Remove from shortlist"
                   >
                     <Trash2 size={14} />
                   </button>

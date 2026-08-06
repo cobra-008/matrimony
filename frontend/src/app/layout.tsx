@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
@@ -11,6 +11,15 @@ const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#6B1A2A",
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -30,6 +39,15 @@ export const metadata: Metadata = {
     "Tamil Nadu matrimony",
     "NRI Tamil matrimony",
   ],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Elite Tamil Matrimony",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     type: "website",
     locale: "en_IN",
@@ -48,6 +66,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={poppins.variable}>
+      <head>
+        {/* PWA + Apple touch icons */}
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#6B1A2A" />
+      </head>
       <body
         className="min-h-screen flex flex-col"
         style={{ fontFamily: "var(--font-poppins, 'Poppins', sans-serif)" }}
@@ -63,6 +89,7 @@ export default function RootLayout({
                 borderRadius: "4px",
                 border: "1px solid #DDDDDD",
                 fontSize: "14px",
+                maxWidth: "calc(100vw - 2rem)",
               },
             }}
           />

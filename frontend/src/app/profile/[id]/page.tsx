@@ -419,8 +419,27 @@ export default function ProfileDetailPage({
   return (
     <>
       <Navbar />
+      <style>{`
+        @media (max-width: 899px) {
+          .profile-sidebar { display: none !important; }
+          .profile-info-body { flex-direction: column !important; }
+          .profile-photo-col { width: 100% !important; }
+          .profile-photo-img { width: 100% !important; height: 220px !important; border-radius: var(--radius-lg) !important; }
+          .profile-actions-col { flex-direction: row !important; flex-wrap: wrap !important; align-items: center !important; width: 100% !important; margin-top: 0.75rem !important; }
+          .profile-attr-grid { grid-template-columns: 1fr !important; }
+          .profile-edu-grid { grid-template-columns: 1fr !important; }
+          .profile-main-wrap { padding: 0.75rem 0.75rem 5rem !important; }
+        }
+        @media (min-width: 480px) and (max-width: 899px) {
+          .profile-info-body { flex-direction: row !important; }
+          .profile-photo-col { width: 130px !important; flex-shrink: 0 !important; }
+          .profile-photo-img { width: 130px !important; height: 170px !important; }
+          .profile-actions-col { width: 130px !important; margin-top: 0 !important; }
+        }
+      `}</style>
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
         <div
+          className="profile-main-wrap"
           style={{
             maxWidth: "1100px",
             margin: "0 auto",
@@ -457,8 +476,9 @@ export default function ProfileDetailPage({
           </div>
 
           <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
-            {/* ── LEFT SIDEBAR ── */}
+            {/* ── LEFT SIDEBAR — desktop only ── */}
             <aside
+              className="profile-sidebar"
               style={{
                 width: "200px",
                 flexShrink: 0,
@@ -593,12 +613,13 @@ export default function ProfileDetailPage({
                 </div>
 
                 {/* Personal info body */}
-                <div style={{ padding: "1.25rem", display: "flex", gap: "1.25rem" }}>
+                <div className="profile-info-body" style={{ padding: "1.25rem", display: "flex", gap: "1rem" }}>
                   {/* Photo */}
-                  <div style={{ flexShrink: 0, position: "relative" }}>
+                  <div className="profile-photo-col" style={{ flexShrink: 0, position: "relative" }}>
                     <img
                       src={photo}
                       alt={profile.name}
+                      className="profile-photo-img"
                       style={{
                         width: "130px",
                         height: "160px",
@@ -754,6 +775,7 @@ export default function ProfileDetailPage({
 
                   {/* Right — action column */}
                   <div
+                    className="profile-actions-col"
                     style={{
                       flexShrink: 0,
                       display: "flex",
@@ -1017,7 +1039,7 @@ export default function ProfileDetailPage({
                 </div>
 
                 {/* Two-column attribute table */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1.5rem" }}>
+                <div className="profile-attr-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1.5rem" }}>
                   {/* Left column */}
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <tbody>
@@ -1047,7 +1069,7 @@ export default function ProfileDetailPage({
                   <h3 style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-dark)", marginBottom: "0.625rem" }}>
                     Education & Career
                   </h3>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.25rem 1.5rem", fontSize: "0.8125rem" }}>
+                  <div className="profile-edu-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.25rem 1.5rem", fontSize: "0.8125rem" }}>
                     {[
                       ["Qualification", profile.education || "B.E Computer Science"],
                       ["Occupation", profile.occupation || "Software Engineer"],

@@ -97,7 +97,7 @@ const SIDEBAR = [
 
 // ── WhatsApp + Phone SVG icons ────────────────────────────────────────────────
 const PhoneIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
     <circle cx="12" cy="12" r="11" fill="#E8401A" opacity="0.12" />
     <path d="M16.5 13.9c-.3-.15-1.75-.87-2.02-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.48-.5-.67-.51-.17-.01-.37-.01-.57-.01-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.87 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z" fill="#E8401A" />
   </svg>
@@ -186,19 +186,22 @@ function ProfileCard({
         borderRadius: "6px",
         overflow: "visible",
         display: "flex",
+        flexDirection: "column",
         marginBottom: "10px",
         position: "relative",
       }}
+      className="match-card-horizontal"
     >
       {/* LEFT — Photo column */}
-      <div style={{ width: "160px", flexShrink: 0, position: "relative" }}>
+      <div style={{ width: "100%", flexShrink: 0, position: "relative" }} className="match-card-photo-wrap">
         <Link href={`/profile/${profile.id}`} style={{ display: "block" }}>
           <img
             src={photo}
             alt={profile.name}
+            className="match-card-photo"
             style={{
               width: "100%",
-              height: "192px",
+              height: "220px",
               objectFit: "cover",
               objectPosition: "top",
               display: "block",
@@ -398,10 +401,12 @@ function ProfileCard({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "0.5rem",
+            gap: "0.375rem",
             marginTop: "auto",
             flexWrap: "wrap",
+            paddingTop: "0.5rem",
           }}
+          className="match-card-actions"
         >
           {/* Don't Show */}
           <button
@@ -637,6 +642,7 @@ function MatchesContent() {
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab");
   const [activeSection, setActiveSection] = useState(tab || "your_matches");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (tab && tab !== activeSection) {
@@ -782,15 +788,27 @@ function MatchesContent() {
           style={{
             maxWidth: "1100px",
             margin: "0 auto",
-            padding: "1rem",
+            padding: "0.75rem",
             display: "flex",
             gap: "1rem",
             alignItems: "flex-start",
           }}
         >
 
+          {/* ── MOBILE SIDEBAR OVERLAY ── */}
+          {sidebarOpen && (
+            <div
+              onClick={() => setSidebarOpen(false)}
+              style={{
+                position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+                zIndex: 150, animation: "fadeIn 0.2s ease",
+              }}
+            />
+          )}
+
           {/* ── SIDEBAR ─────────────────────────────────────────────────── */}
           <aside
+            className="matches-sidebar-panel"
             style={{
               width: "252px",
               flexShrink: 0,
@@ -905,40 +923,49 @@ function MatchesContent() {
 
           {/* ── MAIN ────────────────────────────────────────────────────── */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Heading */}
-            <h1
-              style={{
-                fontSize: "1rem",
-                fontWeight: 700,
-                color: "#111",
-                margin: "0 0 0.75rem",
-              }}
-            >
-              {loading
-                ? "Loading..."
-                : `${displayed.length} Matches based on your `}
-              {!loading && (
-                <Link
-                  href="/settings"
-                  style={{
-                    color: "#6B1A2A",
-                    textDecoration: "underline",
-                    fontWeight: 700,
-                  }}
-                >
-                  preferences
-                </Link>
-              )}
-            </h1>
+            {/* Mobile: Section select button */}
+            <div className="matches-mobile-header" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="matches-section-btn"
+                style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  padding: "0.5rem 0.875rem", border: "1.5px solid #6B1A2A",
+                  borderRadius: "20px", background: "#fff", color: "#6B1A2A",
+                  fontWeight: 700, fontSize: "0.8125rem", cursor: "pointer",
+                  fontFamily: "var(--font-sans)", minHeight: "40px",
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
+                </svg>
+                {SIDEBAR.flatMap(s => s.items).find(i => i.id === activeSection)?.label || "Category"}
+              </button>
+              <h1
+                style={{
+                  fontSize: "0.9375rem",
+                  fontWeight: 700,
+                  color: "#111",
+                  margin: 0,
+                  flex: 1,
+                }}
+              >
+                {loading ? "Loading…" : `${displayed.length} matches`}
+              </h1>
+            </div>
 
             {/* Filter / Sort / Chips row */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "0.5rem",
-                flexWrap: "wrap",
-                marginBottom: "0.875rem",
+                gap: "0.375rem",
+                flexWrap: "nowrap",
+                marginBottom: "0.75rem",
+                overflowX: "auto",
+                WebkitOverflowScrolling: "touch",
+                scrollbarWidth: "none",
+                paddingBottom: "4px",
               }}
             >
               {/* Filter button */}
@@ -1216,6 +1243,50 @@ function MatchesContent() {
         </div>
       </main>
       <Footer />
+
+      {/* Mobile-specific styles */}
+      <style>{`
+        /* Desktop: sidebar always visible */
+        @media (min-width: 900px) {
+          .matches-sidebar-panel {
+            display: block !important;
+            position: sticky !important;
+          }
+          .matches-section-btn { display: none !important; }
+          .matches-mobile-header h1 { font-size: 1rem !important; }
+        }
+        /* Mobile: sidebar as drawer */
+        @media (max-width: 899px) {
+          .matches-sidebar-panel {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            width: 85vw !important;
+            max-width: 320px !important;
+            z-index: 160 !important;
+            max-height: 100vh !important;
+            border-radius: 0 12px 12px 0 !important;
+            overflow-y: auto !important;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15) !important;
+            transform: ${sidebarOpen ? 'translateX(0)' : 'translateX(-100%)'} !important;
+            transition: transform 0.25s ease !important;
+          }
+          .match-card-horizontal { flex-direction: column !important; }
+          .match-card-photo { height: 200px !important; width: 100% !important; }
+          .match-card-photo-wrap { width: 100% !important; }
+        }
+        @media (min-width: 480px) {
+          .match-card-horizontal { flex-direction: row !important; }
+          .match-card-photo-wrap { width: 140px !important; }
+          .match-card-photo { height: 100% !important; min-height: 180px !important; }
+        }
+        @media (min-width: 768px) {
+          .match-card-photo-wrap { width: 160px !important; }
+          .match-card-photo { min-height: 192px !important; }
+        }
+        .match-card-actions::-webkit-scrollbar { display: none; }
+      `}</style>
     </>
   );
 }
