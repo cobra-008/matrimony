@@ -631,7 +631,7 @@ export default function ProfileDetailPage({
                       }}
                     />
                     {/* Online dot */}
-                    {(profile as any).isOnline && (
+                    {profile.isOnline && (
                       <span
                         style={{
                           position: "absolute",

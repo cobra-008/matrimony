@@ -70,6 +70,7 @@ export interface RegisteredUser {
   sisters?: number;
   createdAt: string;
   lastActive?: string;
+  isOnline?: boolean;
   membershipPlan?: 'Gold' | 'Diamond' | 'Platinum' | null;  // active plan name
   membershipExpiry?: string;  // ISO datetime
 }
