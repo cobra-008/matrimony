@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { verifyOtp } from "@/lib/email/otp-store";
 
 export async function POST(req: NextRequest) {
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "OTP must be 6 digits." }, { status: 400 });
     }
 
-    const result = verifyOtp(email, otp);
+    const result = await verifyOtp(email, otp);
 
     if (!result.ok) {
       const messages: Record<string, string> = {

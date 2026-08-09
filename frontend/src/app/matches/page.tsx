@@ -968,7 +968,7 @@ function MatchesContent() {
                 paddingBottom: "4px",
               }}
             >
-              {/* Filter button */}
+                {/* Filter button */}
               <button
                 onClick={() => setFilterOpen((v) => !v)}
                 style={{
@@ -984,6 +984,8 @@ function MatchesContent() {
                   cursor: "pointer",
                   fontFamily: "var(--font-sans)",
                   color: "#333",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
                 }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -993,7 +995,7 @@ function MatchesContent() {
               </button>
 
               {/* Sort by */}
-              <div style={{ position: "relative" }}>
+              <div style={{ position: "relative", flexShrink: 0 }}>
                 <button
                   onClick={() => setSortOpen((v) => !v)}
                   style={{
@@ -1009,6 +1011,7 @@ function MatchesContent() {
                     cursor: "pointer",
                     fontFamily: "var(--font-sans)",
                     color: "#333",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   Sort by
@@ -1046,6 +1049,7 @@ function MatchesContent() {
                           color: sort === opt ? "#6B1A2A" : "#333",
                           cursor: "pointer",
                           fontFamily: "var(--font-sans)",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {opt}
@@ -1072,6 +1076,8 @@ function MatchesContent() {
                     cursor: "pointer",
                     fontFamily: "var(--font-sans)",
                     color: activeChips.includes(chip) ? "#6B1A2A" : "#333",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
                   }}
                 >
                   {chip}

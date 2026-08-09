@@ -10,15 +10,23 @@ import { loginWithPassword, getProfilesByMobile, loginToProfile, type Registered
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 
-// ── Profile Picker (shown when multiple accounts exist for a number) ──────
+// Detect if input is an email or phone number
+function detectInputType(value: string): "email" | "phone" | "unknown" {
+  if (value.includes("@")) return "email";
+  const digits = value.replace(/\D/g, "");
+  if (digits.length >= 10) return "phone";
+  return "unknown";
+}
+
+// ── Profile Picker ────────────────────────────────────────────────────────────
 function ProfilePicker({
   profiles,
-  mobile,
+  identifier,
   onSelect,
   loading,
 }: {
   profiles: RegisteredUser[];
-  mobile: string;
+  identifier: string;
   onSelect: (profileId: string) => void;
   loading: boolean;
 }) {
@@ -42,7 +50,7 @@ function ProfilePicker({
           Multiple Profiles Found
         </h2>
         <p style={{ fontSize: "0.8125rem", color: "var(--text-medium)" }}>
-          {profiles.length} profiles registered with <strong>+91 {mobile}</strong>
+          {profiles.length} profiles registered with <strong>{identifier}</strong>
         </p>
         <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
           Select the profile you want to log in with
@@ -80,15 +88,7 @@ function ProfilePicker({
                 e.currentTarget.style.boxShadow = "none";
               }}
             >
-              {/* Avatar */}
-              <div
-                style={{
-                  width: "44px", height: "44px", borderRadius: "50%",
-                  overflow: "hidden", flexShrink: 0,
-                  background: "var(--primary-light)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}
-              >
+              <div style={{ width: "44px", height: "44px", borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "var(--primary-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {p.photoUrl ? (
                   <img src={p.photoUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
@@ -97,24 +97,15 @@ function ProfilePicker({
                   </svg>
                 )}
               </div>
-
-              {/* Info */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)" }}>{p.name}</div>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-medium)", marginTop: "1px" }}>
-                  {[
-                    age > 0 ? `${age} yrs` : null,
-                    p.gender === "male" ? "Male" : p.gender === "female" ? "Female" : null,
-                    p.caste,
-                    p.city,
-                  ].filter(Boolean).join(" \u2022 ")}
+                  {[age > 0 ? `${age} yrs` : null, p.gender === "male" ? "Male" : p.gender === "female" ? "Female" : null, p.caste, p.city].filter(Boolean).join(" • ")}
                 </div>
                 <div style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: "1px" }}>
-                  Profile for {p.profileFor || "Self"} \u2022 ID: {p.id.slice(0, 8).toUpperCase()}
+                  Profile for {p.profileFor || "Self"} • ID: {p.id.slice(0, 8).toUpperCase()}
                 </div>
               </div>
-
-              {/* Arrow */}
               <ChevronRight size={16} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
             </button>
           );
@@ -124,7 +115,7 @@ function ProfilePicker({
   );
 }
 
-// ── Main Login Content ────────────────────────────────────────────────────
+// ── Main Login Content ────────────────────────────────────────────────────────
 function LoginContent() {
   const { user } = useAuth();
   const router = useRouter();
@@ -132,113 +123,176 @@ function LoginContent() {
   const prefillMobile = searchParams.get("mobile") || "";
 
   useEffect(() => {
-    if (user) {
-      router.replace("/");
-    }
+    if (user) router.replace("/");
   }, [user, router]);
 
   const [mode, setMode] = useState<"otp" | "password">("otp");
-  const [mobile, setMobile] = useState(prefillMobile);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
+  // OTP mode state
+  const [otpIdentifier, setOtpIdentifier] = useState(prefillMobile); // email or phone
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [otpType, setOtpType] = useState<"email" | "phone">("phone");
+
+  // Password mode state
+  const [pwIdentifier, setPwIdentifier] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
-
-  // Multi-profile picker state
-  const [multiProfiles, setMultiProfiles] = useState<RegisteredUser[] | null>(null);
-
-  // Real-time field errors
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [multiProfiles, setMultiProfiles] = useState<RegisteredUser[] | null>(null);
 
   function FieldError({ msg }: { msg?: string }) {
     if (!msg) return null;
     return (
-      <p style={{
-        fontSize: "0.75rem",
-        color: "#D32F2F",
-        marginTop: "0.25rem",
-        display: "flex",
-        alignItems: "center",
-        gap: "4px",
-      }} role="alert">
+      <p style={{ fontSize: "0.75rem", color: "#D32F2F", marginTop: "0.25rem", display: "flex", alignItems: "center", gap: "4px" }} role="alert">
         <AlertCircle size={12} aria-hidden="true" />
         {msg}
       </p>
     );
   }
 
+  // ── Send OTP ──────────────────────────────────────────────────────────────
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const mobileErr = !mobile ? "Mobile Number is required."
-      : mobile.length !== 10 ? "Mobile Number must be exactly 10 digits."
-      : "";
-    if (mobileErr) {
-      setFieldErrors((prev) => ({ ...prev, mobile: mobileErr }));
+    const val = otpIdentifier.trim();
+    if (!val) {
+      setFieldErrors((p) => ({ ...p, otpId: "Please enter your email or mobile number." }));
       return;
     }
+
+    const type = detectInputType(val);
+    if (type === "unknown") {
+      setFieldErrors((p) => ({ ...p, otpId: "Enter a valid email address or 10-digit mobile number." }));
+      return;
+    }
+
+    if (type === "phone") {
+      const digits = val.replace(/\D/g, "");
+      if (digits.length !== 10) {
+        setFieldErrors((p) => ({ ...p, otpId: "Mobile number must be exactly 10 digits." }));
+        return;
+      }
+    }
+
+    setFieldErrors({});
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
+    setOtpType(type);
+
+    if (type === "email") {
+      // Send real OTP via Resend
+      try {
+        const res = await fetch("/api/send-email-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: val }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error(data.error || "Failed to send OTP. Please try again.");
+          setLoading(false);
+          return;
+        }
+        toast.success(`OTP sent to ${val}`);
+      } catch {
+        toast.error("Network error. Please try again.");
+        setLoading(false);
+        return;
+      }
+    } else {
+      // Phone: MSG91 not yet set up — use test OTP 123456
+      await new Promise((r) => setTimeout(r, 800));
+      toast.success(`OTP sent to +91 ${val.replace(/\D/g, "")}`);
+    }
+
     setLoading(false);
     setOtpSent(true);
-    toast.success(`OTP sent to +91 ${mobile}`);
   };
 
+  // ── Verify OTP ────────────────────────────────────────────────────────────
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length !== 6) { toast.error("Please enter the 6-digit OTP"); return; }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
 
-    // For dev: OTP 123456 always works
-    if (otp !== "123456") {
-      setLoading(false);
-      toast.error("Incorrect OTP. Use 123456 for demo.");
-      return;
-    }
-
-    // Fetch all profiles for this mobile
-    const profiles = await getProfilesByMobile(mobile);
-    console.log('[Login] profiles found for mobile:', mobile, profiles.length, profiles.map(p => ({ id: p.id.slice(0,8), name: p.name })));
-
-    if (profiles.length === 0) {
-      setLoading(false);
-      toast.error("No account found with this mobile number. Please register first.");
-      return;
-    }
-
-    if (profiles.length === 1) {
-      // Single account — log in directly
-      // loginToProfile signs into Supabase, which triggers onAuthStateChange in AuthContext
-      console.log('[Login] attempting loginToProfile for:', profiles[0].id);
-      const result = await loginToProfile(profiles[0].id);
-      console.log('[Login] loginToProfile result:', result ? 'SUCCESS' : 'FAILED (null)');
-      setLoading(false);
-      if (!result) {
-        toast.error("Login failed. Your account may need to be re-registered. Please check browser console (F12) for details.");
+    if (otpType === "phone") {
+      // Test OTP for phone (MSG91 not yet configured)
+      if (otp !== "123456") {
+        setLoading(false);
+        toast.error("Incorrect OTP. Please try again.");
         return;
       }
+      // Look up profiles by mobile
+      const digits = otpIdentifier.replace(/\D/g, "");
+      const profiles = await getProfilesByMobile(digits);
+      if (profiles.length === 0) {
+        setLoading(false);
+        toast.error("No account found with this mobile number. Please register first.");
+        return;
+      }
+      if (profiles.length === 1) {
+        const result = await loginToProfile(profiles[0].id);
+        setLoading(false);
+        if (!result) { toast.error("Login failed. Please try again or re-register."); return; }
+        toast.success("Login successful!");
+        router.push("/matches");
+        return;
+      }
+      setLoading(false);
+      setMultiProfiles(profiles);
+      return;
+    }
+
+    // Email OTP — verify via API
+    try {
+      const res = await fetch("/api/verify-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: otpIdentifier.trim(), otp }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLoading(false);
+        toast.error(data.error || "OTP verification failed.");
+        return;
+      }
+    } catch {
+      setLoading(false);
+      toast.error("Network error. Please try again.");
+      return;
+    }
+
+    // OTP correct — look up profile by email
+    const { data: profileRows, error } = await import("@/lib/supabase").then(m =>
+      m.supabase.from("profiles").select("id").eq("email", otpIdentifier.trim().toLowerCase())
+    );
+    if (error || !profileRows || profileRows.length === 0) {
+      setLoading(false);
+      toast.error("No account found with this email. Please register first.");
+      return;
+    }
+    if (profileRows.length === 1) {
+      const result = await loginToProfile(profileRows[0].id);
+      setLoading(false);
+      if (!result) { toast.error("Login failed. Please try again."); return; }
       toast.success("Login successful!");
       router.push("/matches");
       return;
     }
-
-    // Multiple accounts — show profile picker
+    // Multiple profiles — fetch full data
+    const { getProfilesByEmail } = await import("@/lib/auth-store");
+    const profiles = await getProfilesByEmail(otpIdentifier.trim());
     setLoading(false);
     setMultiProfiles(profiles);
   };
 
+  // ── Select profile (multi-profile picker) ────────────────────────────────
   const handleSelectProfile = async (profileId: string) => {
     setLoading(true);
     try {
-      // loginToProfile signs into Supabase — AuthContext picks up the SIGNED_IN event automatically
       const result = await loginToProfile(profileId);
-      if (!result) {
-        toast.error("Login failed. Could not find auth credentials for this profile. Please try again or re-register.");
-        setLoading(false);
-        return;
-      }
+      if (!result) { toast.error("Login failed. Please try again or re-register."); setLoading(false); return; }
       toast.success("Login successful!");
       router.push("/matches");
     } catch {
@@ -247,28 +301,24 @@ function LoginContent() {
     setLoading(false);
   };
 
+  // ── Password login ────────────────────────────────────────────────────────
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
-    if (!email) newErrors.email = "Email or mobile number is required.";
-    else if (email.includes("@") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = "Email address is invalid.";
+    if (!pwIdentifier) newErrors.email = "Email or mobile number is required.";
+    else if (pwIdentifier.includes("@") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pwIdentifier)) newErrors.email = "Email address is invalid.";
     if (!password) newErrors.password = "Password is required.";
     else if (password.length < 6) newErrors.password = "Password must be at least 6 characters.";
-    if (Object.keys(newErrors).length > 0) {
-      setFieldErrors((prev) => ({ ...prev, ...newErrors }));
-      return;
-    }
+    if (Object.keys(newErrors).length > 0) { setFieldErrors((p) => ({ ...p, ...newErrors })); return; }
     setLoading(true);
-    const loggedIn = await loginWithPassword(email, password);
+    const loggedIn = await loginWithPassword(pwIdentifier, password);
     setLoading(false);
-    if (!loggedIn) {
-      toast.error("Invalid credentials. Check your mobile number / email and password.");
-      return;
-    }
+    if (!loggedIn) { toast.error("Invalid credentials. Check your email / mobile number and password."); return; }
     toast.success("Login successful!");
     router.push("/matches");
   };
 
+  const inputType = detectInputType(otpIdentifier);
 
   return (
     <>
@@ -280,14 +330,13 @@ function LoginContent() {
               <div style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
                 {/* Header */}
                 <div style={{ background: "var(--bm-green)", padding: "1rem 1.5rem", textAlign: "center" }}>
-                  <h1 style={{ color: "#fff", fontWeight: 700, fontSize: "1.0625rem", margin: 0 }}>Login to Tamil Matrimony</h1>
+                  <h1 style={{ color: "#fff", fontWeight: 700, fontSize: "1.0625rem", margin: 0 }}>Login to Elite Tamil Matrimony</h1>
                 </div>
 
-                {/* If showing profile picker */}
                 {multiProfiles ? (
                   <ProfilePicker
                     profiles={multiProfiles}
-                    mobile={mobile}
+                    identifier={otpIdentifier || pwIdentifier}
                     onSelect={handleSelectProfile}
                     loading={loading}
                   />
@@ -296,43 +345,37 @@ function LoginContent() {
                     {/* Tabs */}
                     <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)" }}>
                       {(["otp", "password"] as const).map((m) => (
-                        <button key={m} onClick={() => { setMode(m); setOtpSent(false); }} style={{ flex: 1, padding: "0.75rem", background: "none", border: "none", cursor: "pointer", fontSize: "0.875rem", fontWeight: 700, fontFamily: "var(--font-sans)", color: mode === m ? "var(--bm-orange)" : "var(--text-medium)", borderBottom: mode === m ? "2px solid var(--bm-orange)" : "2px solid transparent" }}>
+                        <button key={m} onClick={() => { setMode(m); setOtpSent(false); setFieldErrors({}); }} style={{ flex: 1, padding: "0.75rem", background: "none", border: "none", cursor: "pointer", fontSize: "0.875rem", fontWeight: 700, fontFamily: "var(--font-sans)", color: mode === m ? "var(--bm-orange)" : "var(--text-medium)", borderBottom: mode === m ? "2px solid var(--bm-orange)" : "2px solid transparent" }}>
                           {m === "otp" ? "Login with OTP" : "Login with Password"}
                         </button>
                       ))}
                     </div>
 
                     <div style={{ padding: "1.5rem" }}>
+
+                      {/* ── OTP: Step 1 — enter email or phone ── */}
                       {mode === "otp" && !otpSent && (
                         <form onSubmit={handleSendOtp}>
-                            <div style={{ marginBottom: "1.125rem" }}>
-                            <label className="form-label">Mobile Number</label>
-                            <div style={{ display: "flex" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "4px", border: "1.5px solid var(--border-color)", borderRight: "none", borderRadius: "var(--radius-md) 0 0 var(--radius-md)", padding: "0.625rem 0.625rem", background: "#F7F7F7", fontSize: "0.875rem", color: "var(--text-dark)", fontWeight: 600, whiteSpace: "nowrap", flexShrink: 0 }}>
-                                +91 <ChevronDown size={12} />
-                              </div>
-                              <input
-                                type="tel"
-                                className="form-input"
-                                placeholder="Enter Mobile Number"
-                                maxLength={10}
-                                value={mobile}
-                                onChange={(e) => {
-                                  const v = e.target.value.replace(/\D/g, "");
-                                  setMobile(v);
-                                  if (!v) setFieldErrors((p) => ({ ...p, mobile: "Mobile Number is required." }));
-                                  else if (v.length !== 10) setFieldErrors((p) => ({ ...p, mobile: "Mobile Number must be exactly 10 digits." }));
-                                  else setFieldErrors((p) => { const n = { ...p }; delete n.mobile; return n; });
-                                }}
-                                style={{
-                                  borderRadius: "0 var(--radius-md) var(--radius-md) 0",
-                                  borderColor: fieldErrors.mobile ? "#D32F2F" : undefined,
-                                }}
-                              />
-                            </div>
-                            <FieldError msg={fieldErrors.mobile} />
-                            {!fieldErrors.mobile && (
-                              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>OTP will be sent to this number. Use 123456 to demo.</p>
+                          <div style={{ marginBottom: "1.125rem" }}>
+                            <label className="form-label">Email Address or Mobile Number</label>
+                            <input
+                              type="text"
+                              className="form-input"
+                              placeholder="Enter email or 10-digit mobile"
+                              value={otpIdentifier}
+                              onChange={(e) => {
+                                setOtpIdentifier(e.target.value);
+                                setFieldErrors((p) => { const n = { ...p }; delete n.otpId; return n; });
+                              }}
+                              style={{ borderColor: fieldErrors.otpId ? "#D32F2F" : undefined }}
+                            />
+                            <FieldError msg={fieldErrors.otpId} />
+                            {!fieldErrors.otpId && otpIdentifier && (
+                              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
+                                {inputType === "email" ? "✉️ OTP will be sent to this email via Resend" :
+                                 inputType === "phone" ? "📱 Use OTP: 123456 (SMS service coming soon)" :
+                                 "Enter a valid email or 10-digit mobile number"}
+                              </p>
                             )}
                           </div>
                           <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
@@ -341,18 +384,24 @@ function LoginContent() {
                         </form>
                       )}
 
+                      {/* ── OTP: Step 2 — enter OTP ── */}
                       {mode === "otp" && otpSent && (
                         <form onSubmit={handleVerifyOtp}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
-                            <p style={{ fontSize: "0.875rem", color: "var(--text-medium)" }}>OTP sent to <strong>+91 {mobile}</strong></p>
-                            <button type="button" onClick={() => setOtpSent(false)} style={{ fontSize: "0.8125rem", color: "var(--bm-orange)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 600 }}>Change</button>
+                            <p style={{ fontSize: "0.875rem", color: "var(--text-medium)" }}>
+                              OTP sent to <strong>{otpType === "phone" ? `+91 ${otpIdentifier.replace(/\D/g, "")}` : otpIdentifier}</strong>
+                            </p>
+                            <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} style={{ fontSize: "0.8125rem", color: "var(--bm-orange)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 600 }}>Change</button>
                           </div>
                           <div style={{ marginBottom: "1rem" }}>
                             <label className="form-label">Enter 6-digit OTP</label>
                             <input type="text" className="form-input" placeholder="- - - - - -" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} style={{ textAlign: "center", fontSize: "1.125rem", letterSpacing: "0.25em" }} autoFocus />
+                            {otpType === "phone" && (
+                              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>📱 Use test OTP: <strong>123456</strong></p>
+                            )}
                           </div>
                           <div style={{ textAlign: "right", marginBottom: "1.125rem" }}>
-                            <button type="button" onClick={() => toast.success("OTP resent")} style={{ fontSize: "0.8125rem", color: "var(--bm-orange)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 600 }}>Resend OTP</button>
+                            <button type="button" onClick={handleSendOtp} style={{ fontSize: "0.8125rem", color: "var(--bm-orange)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 600 }}>Resend OTP</button>
                           </div>
                           <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
                             {loading ? "Verifying..." : "Verify & Login"}
@@ -360,6 +409,7 @@ function LoginContent() {
                         </form>
                       )}
 
+                      {/* ── Password login ── */}
                       {mode === "password" && (
                         <form onSubmit={handlePasswordLogin}>
                           <div style={{ marginBottom: "1rem" }}>
@@ -368,12 +418,11 @@ function LoginContent() {
                               type="text"
                               className="form-input"
                               placeholder="Enter Email ID or Mobile Number"
-                              value={email}
+                              value={pwIdentifier}
                               onChange={(e) => {
-                                setEmail(e.target.value);
-                                const v = e.target.value;
-                                if (!v) setFieldErrors((p) => ({ ...p, email: "Email or mobile is required." }));
-                                else if (v.includes("@") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) setFieldErrors((p) => ({ ...p, email: "Email is invalid." }));
+                                setPwIdentifier(e.target.value);
+                                if (!e.target.value) setFieldErrors((p) => ({ ...p, email: "Email or mobile is required." }));
+                                else if (e.target.value.includes("@") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.target.value)) setFieldErrors((p) => ({ ...p, email: "Email is invalid." }));
                                 else setFieldErrors((p) => { const n = { ...p }; delete n.email; return n; });
                               }}
                               style={{ borderColor: fieldErrors.email ? "#D32F2F" : undefined }}
@@ -390,9 +439,8 @@ function LoginContent() {
                                 value={password}
                                 onChange={(e) => {
                                   setPassword(e.target.value);
-                                  const v = e.target.value;
-                                  if (!v) setFieldErrors((p) => ({ ...p, password: "Password is required." }));
-                                  else if (v.length < 6) setFieldErrors((p) => ({ ...p, password: "Password must be at least 6 characters." }));
+                                  if (!e.target.value) setFieldErrors((p) => ({ ...p, password: "Password is required." }));
+                                  else if (e.target.value.length < 6) setFieldErrors((p) => ({ ...p, password: "Password must be at least 6 characters." }));
                                   else setFieldErrors((p) => { const n = { ...p }; delete n.password; return n; });
                                 }}
                                 style={{ paddingRight: "2.5rem", borderColor: fieldErrors.password ? "#D32F2F" : undefined }}
@@ -427,7 +475,7 @@ function LoginContent() {
                 )}
               </div>
               <div style={{ marginTop: "1.25rem", textAlign: "center" }}>
-                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Trusted by 25 Lakh+ Tamil families &nbsp;&bull;&nbsp; 100% Verified Profiles &nbsp;&bull;&nbsp; Secure &amp; Private</p>
+                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Trusted by 25 Lakh+ Tamil families &nbsp;•&nbsp; 100% Verified Profiles &nbsp;•&nbsp; Secure &amp; Private</p>
               </div>
             </div>
           </div>

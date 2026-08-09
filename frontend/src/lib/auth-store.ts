@@ -422,6 +422,17 @@ export async function getProfilesByMobile(mobile: string): Promise<RegisteredUse
   return (data || []).map(dbToUser);
 }
 
+export async function getProfilesByEmail(email: string): Promise<RegisteredUser[]> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('email', email.toLowerCase())
+    .order('created_at', { ascending: false });
+
+  return (data || []).map(dbToUser);
+}
+
+
 /**
  * Sign in with mobile number only (OTP-less, for demo / easy login).
  * Returns the first matching profile (for backward compat).

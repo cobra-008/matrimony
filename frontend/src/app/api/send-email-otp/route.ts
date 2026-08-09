@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { generateOtp, storeOtp } from "@/lib/email/otp-store";
 import { otpEmailHtml, otpEmailText } from "@/lib/email/templates";
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     }
 
     const otp = generateOtp();
-    storeOtp(email, otp);
+    await storeOtp(email, otp);
 
     const displayName = name || "there";
 
