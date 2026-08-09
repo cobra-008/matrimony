@@ -28,6 +28,7 @@ export interface ProfileData {
   maritalStatus?: string;
   motherTongue?: string;
   mobile?: string;
+  photos?: any[];
 }
 
 interface ProfileCardProps {
