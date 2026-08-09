@@ -906,7 +906,6 @@ export default function ProfileDetailPage({
                               cursor: "pointer",
                               fontFamily: "var(--font-sans)",
                               textDecoration: "none",
-                              gap: "5px",
                             }}
                           >
                             <Crown size={12} />

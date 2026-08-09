@@ -27,6 +27,7 @@ export interface ProfileData {
   subCaste?: string;
   maritalStatus?: string;
   motherTongue?: string;
+  mobile?: string;
 }
 
 interface ProfileCardProps {
