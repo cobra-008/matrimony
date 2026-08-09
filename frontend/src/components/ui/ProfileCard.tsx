@@ -79,8 +79,8 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
             style={{
               width: "64px",
               height: "72px",
-              objectFit: "cover",
-              objectPosition: "top",
+              objectFit: "contain",
+              background: "#F8F0F0",
               borderRadius: "var(--radius-md)",
               display: "block",
             }}
@@ -147,7 +147,7 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
       }}
     >
       {/* Photo area */}
-      <div style={{ position: "relative", height: "210px", overflow: "hidden", background: "#F0F0F0" }}>
+      <div style={{ position: "relative", height: "210px", overflow: "hidden", background: "#F8F0F0" }}>
         <Link href={`/profile/${profile.id}`}>
           <img
             src={photo}
@@ -155,8 +155,7 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "cover",
-              objectPosition: "top center",
+              objectFit: "contain",
               display: "block",
             }}
           />

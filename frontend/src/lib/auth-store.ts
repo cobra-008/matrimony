@@ -8,6 +8,15 @@ import type { User, Session } from '@supabase/supabase-js';
 
 // ── TYPE DEFINITIONS ──────────────────────────────────────────────────
 
+export interface ProfilePhoto {
+  id: string;
+  profileId: string;
+  url: string;
+  isPrimary: boolean;
+  sortOrder: number;
+  createdAt: string;
+}
+
 export interface RegisteredUser {
   id: string;
   profileFor: string;
@@ -79,6 +88,8 @@ export interface RegisteredUser {
   matchReasons?: string[];
   membershipPlan?: 'Gold' | 'Diamond' | 'Platinum' | null;  // active plan name
   membershipExpiry?: string;  // ISO datetime
+  membershipActivated?: string;
+  photos?: ProfilePhoto[];
 }
 
 export type RegisterPayload = Omit<RegisteredUser, 'id' | 'createdAt' | 'isVerified' | 'isPremium'> & {
@@ -152,8 +163,17 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     sisters: row.sisters ?? 0,
     createdAt: row.created_at ?? new Date().toISOString(),
     lastActive: row.last_active ?? undefined,
-    membershipPlan: row.membership_plan ?? null,
+    membershipPlan: (row.membership_expiry && new Date(row.membership_expiry) < new Date()) ? null : (row.membership_plan ?? null),
     membershipExpiry: row.membership_expiry ?? undefined,
+    membershipActivated: row.membership_activated ?? undefined,
+    photos: row.photos ? row.photos.map((p: any) => ({
+      id: p.id,
+      profileId: p.profile_id,
+      url: p.url,
+      isPrimary: p.is_primary,
+      sortOrder: p.sort_order,
+      createdAt: p.created_at,
+    })) : [],
   };
 }
 
@@ -423,10 +443,13 @@ export async function getProfilesByMobile(mobile: string): Promise<RegisteredUse
 }
 
 export async function getProfilesByEmail(email: string): Promise<RegisteredUser[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
-    .select('*')
-    .eq('email', email.toLowerCase())
+    .select(`
+      *,
+      photos:profile_photos(*)
+    `)
+    .eq('auth_email', email.trim().toLowerCase())
     .order('created_at', { ascending: false });
 
   return (data || []).map(dbToUser);
@@ -553,7 +576,10 @@ export async function getSession(): Promise<{ user: User; session: Session } | n
 export async function fetchProfile(userId: string): Promise<RegisteredUser | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select(`
+      *,
+      photos:profile_photos(*)
+    `)
     .eq('id', userId)
     .single();
 
@@ -589,42 +615,100 @@ export async function upgradeMembership(
   const expiry = new Date();
   expiry.setMonth(expiry.getMonth() + months);
 
-  // Phase 1: full update including new columns
-  const { error: fullErr } = await supabase
+  const { error } = await supabase
     .from('profiles')
     .update({
       is_premium: true,
       membership_plan: plan,
       membership_expiry: expiry.toISOString(),
+      membership_activated: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq('id', userId);
 
-  if (!fullErr) {
-    return fetchProfile(userId);
-  }
-
-  // Phase 2: fallback — just set is_premium (column definitely exists)
-  console.warn('[upgradeMembership] Full update failed (columns may be missing), falling back:', fullErr.message);
-  const { error: fallbackErr } = await supabase
-    .from('profiles')
-    .update({
-      is_premium: true,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-
-  if (fallbackErr) {
-    console.error('[upgradeMembership] Fallback also failed:', fallbackErr.message);
+  if (error) {
+    console.error('[upgradeMembership] Error updating membership:', error.message);
     return null;
   }
 
-  // Return profile with plan injected manually since DB column doesn't have it yet
-  const profile = await fetchProfile(userId);
-  if (profile) {
-    return { ...profile, isPremium: true, membershipPlan: plan };
+  return fetchProfile(userId);
+}
+
+// ── PHOTO GALLERY FUNCTIONS ───────────────────────────────────────────
+
+export async function addProfilePhoto(
+  profileId: string,
+  url: string,
+  isPrimary: boolean = false,
+  sortOrder: number = 0
+): Promise<ProfilePhoto | null> {
+  const { data, error } = await supabase
+    .from('profile_photos')
+    .insert({
+      profile_id: profileId,
+      url,
+      is_primary: isPrimary,
+      sort_order: sortOrder,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding profile photo:', error);
+    return null;
   }
-  return null;
+
+  // Update profile.photo_url if this is primary
+  if (isPrimary) {
+    await updateProfile(profileId, { photoUrl: url });
+  }
+
+  return {
+    id: data.id,
+    profileId: data.profile_id,
+    url: data.url,
+    isPrimary: data.is_primary,
+    sortOrder: data.sort_order,
+    createdAt: data.created_at,
+  };
+}
+
+export async function deleteProfilePhoto(photoId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('profile_photos')
+    .delete()
+    .eq('id', photoId);
+
+  if (error) {
+    console.error('Error deleting profile photo:', error);
+    return false;
+  }
+  return true;
+}
+
+export async function setProfilePhotoPrimary(photoId: string, profileId: string, url: string): Promise<boolean> {
+  // 1. Unset existing primary
+  await supabase
+    .from('profile_photos')
+    .update({ is_primary: false, sort_order: 1 })
+    .eq('profile_id', profileId)
+    .eq('is_primary', true);
+
+  // 2. Set new primary
+  const { error } = await supabase
+    .from('profile_photos')
+    .update({ is_primary: true, sort_order: 0 })
+    .eq('id', photoId);
+
+  if (error) {
+    console.error('Error setting primary photo:', error);
+    return false;
+  }
+
+  // 3. Update main profile
+  await updateProfile(profileId, { photoUrl: url });
+  
+  return true;
 }
 
 /**
@@ -666,7 +750,10 @@ export async function fetchMatchProfiles(
 
   let query = supabase
     .from('profiles')
-    .select('*')
+    .select(`
+      *,
+      photos:profile_photos(*)
+    `)
     .order('last_active', { ascending: false })
     .limit(50);
 

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
-import { updateProfile } from "@/lib/auth-store";
+import { updateProfile, addProfilePhoto, deleteProfilePhoto, setProfilePhotoPrimary, type ProfilePhoto } from "@/lib/auth-store";
 import { uploadProfilePhoto } from "@/lib/supabase";
 import Link from "next/link";
 import {
@@ -24,7 +24,7 @@ import {
 
 // ── SECTION META ─────────────────────────────────────────────────────
 const SECTIONS = [
-  { id: "photo",       label: "Profile Photo",        icon: <Camera size={16} /> },
+  { id: "photo",       label: "Photos & Gallery",      icon: <Camera size={16} /> },
   { id: "basic",       label: "Basic Information",     icon: <User size={16} /> },
   { id: "religion",    label: "Religious Information", icon: <span style={{ fontSize: 14 }}>🕉️</span> },
   { id: "professional",label: "Professional Details",  icon: <Briefcase size={16} /> },
@@ -217,8 +217,8 @@ function EditProfileContent() {
   }, [searchParams]);
 
   const [saving, setSaving] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState<string>(user?.photoUrl || "");
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [gallery, setGallery] = useState<ProfilePhoto[]>(user?.photos || []);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
 
   // § Basic
   const [firstName, setFirstName] = useState(user?.name?.split(" ")[0] || "");
@@ -289,7 +289,7 @@ function EditProfileContent() {
   const [pCountry, setPCountry] = useState("India");
 
   // Compute profile completion
-  const fields = [firstName, gender, dob, religion, caste, education, occupation, city, about, photoPreview];
+  const fields = [firstName, gender, dob, religion, caste, education, occupation, city, about, gallery.some(p => p.isPrimary)];
   const filled = fields.filter(Boolean).length;
   const pct = Math.round((filled / fields.length) * 100);
 
@@ -308,15 +308,67 @@ function EditProfileContent() {
   const INTERESTS_LIST = ["Carnatic Music", "Classical Dance", "Temple Visits", "Spirituality", "Volunteering", "Gardening", "Coding", "Fashion", "Food Blog", "Fitness"];
   const LANG_LIST = ["Tamil", "English", "Hindi", "Telugu", "Malayalam", "Kannada", "Sanskrit"];
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
     if (file.size > 5 * 1024 * 1024) { toast.error("Photo must be under 5 MB"); return; }
-    setPhotoFile(file);
-    const reader = new FileReader();
-    reader.onload = ev => setPhotoPreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
-    toast.success("Photo selected — will upload on save");
+    
+    // Check limit
+    if (gallery.length >= 8) { toast.error("Maximum 8 photos allowed (1 primary + 7 gallery)"); return; }
+    
+    setUploadingGallery(true);
+    const toastId = toast.loading("Uploading photo...");
+    try {
+      const url = await uploadProfilePhoto(user.id, file);
+      const isPrimary = gallery.length === 0;
+      const newPhoto = await addProfilePhoto(user.id, url, isPrimary, gallery.length);
+      if (newPhoto) {
+        setGallery([...gallery, newPhoto]);
+        if (isPrimary) await refresh();
+        toast.success("Photo uploaded!", { id: toastId });
+      } else {
+        throw new Error("Failed to save to DB");
+      }
+    } catch (err) {
+      toast.error("Upload failed", { id: toastId });
+    } finally {
+      setUploadingGallery(false);
+      if (e.target) e.target.value = ''; // reset input
+    }
+  };
+
+  const handleSetPrimary = async (photoId: string, url: string) => {
+    if (!user) return;
+    const toastId = toast.loading("Setting as primary...");
+    try {
+      const success = await setProfilePhotoPrimary(photoId, user.id, url);
+      if (success) {
+        setGallery(gallery.map(p => ({ ...p, isPrimary: p.id === photoId, sortOrder: p.id === photoId ? 0 : 1 })));
+        await refresh();
+        toast.success("Primary photo updated", { id: toastId });
+      }
+    } catch (err) {
+      toast.error("Failed to set primary", { id: toastId });
+    }
+  };
+
+  const handleDeletePhoto = async (photoId: string) => {
+    if (!user) return;
+    const toastId = toast.loading("Deleting photo...");
+    try {
+      const success = await deleteProfilePhoto(photoId);
+      if (success) {
+        const photo = gallery.find(p => p.id === photoId);
+        setGallery(gallery.filter(p => p.id !== photoId));
+        if (photo?.isPrimary) {
+           await updateProfile(user.id, { photoUrl: "" });
+           await refresh();
+        }
+        toast.success("Photo deleted", { id: toastId });
+      }
+    } catch (err) {
+      toast.error("Failed to delete", { id: toastId });
+    }
   };
 
   const handleSave = useCallback(async () => {
@@ -327,17 +379,6 @@ function EditProfileContent() {
 
     try {
       if (!user) throw new Error("Not logged in");
-
-      // Upload new photo to Supabase Storage if a new file was selected
-      let finalPhotoUrl = photoPreview;
-      if (photoFile) {
-        try {
-          finalPhotoUrl = await uploadProfilePhoto(user.id, photoFile);
-          setPhotoFile(null);
-        } catch {
-          toast.error("Photo upload failed — other changes saved");
-        }
-      }
 
       await updateProfile(user.id, {
         name: `${firstName} ${lastName}`.trim(),
@@ -371,7 +412,6 @@ function EditProfileContent() {
         city,
         nativePlace,
         about,
-        photoUrl: finalPhotoUrl || undefined,
         partnerAgeMin: parseInt(pAgeMin),
         partnerAgeMax: parseInt(pAgeMax),
         partnerReligion: pReligion || undefined,
@@ -406,10 +446,9 @@ function EditProfileContent() {
     religion, caste, subCaste, gothram, star, rasi, dhosham, education, college,
     occupation, company, employmentType, income, diet, smoking, drinking, disabilities,
     languages, hobbies, interests, country, state, city, nativePlace, about,
-    photoPreview, photoFile, pAgeMin, pAgeMax, pReligion, pCaste, pEducation, pOccupation,
+    gallery, pAgeMin, pAgeMax, pReligion, pCaste, pEducation, pOccupation,
     pIncome, pHeightMin, pHeightMax, pCountry, pMaritalStatus, pMotherTongue,
     fatherOcc, motherOcc, familyStatus, familyType, brothers, sisters, refresh, router,
-    uploadProfilePhoto,
   ]);
 
   return (
@@ -467,37 +506,39 @@ function EditProfileContent() {
               {/* ─────────────────────────────────────────────────────
                   § 1  PROFILE PHOTO
               ───────────────────────────────────────────────────── */}
-              <SectionCard id="photo" title="Profile Photo" icon={<Camera size={16} />}>
-                <div style={{ display: "flex", alignItems: "center", gap: "2rem", flexWrap: "wrap" }}>
-                  {/* Photo */}
-                  <div style={{ position: "relative", flexShrink: 0 }}>
-                    <div style={{ width: "140px", height: "160px", borderRadius: "var(--radius-xl)", overflow: "hidden", background: "#f0f0f0", border: "2px solid var(--border-color)" }}>
-                      {photoPreview
-                        ? <img src={photoPreview} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        : <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "0.5rem", color: "#ccc" }}>
-                            <Camera size={32} />
-                            <span style={{ fontSize: "0.75rem" }}>No photo</span>
-                          </div>
-                      }
-                    </div>
-                    <input ref={fileRef} type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: "none" }} />
-                  </div>
-
-                  {/* Actions */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                    <button onClick={() => fileRef.current?.click()} className="btn btn-primary" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Upload size={14} /> {photoPreview ? "Change Photo" : "Upload Photo"}
-                    </button>
-                    {photoPreview && (
-                      <button onClick={() => { setPhotoPreview(""); toast("Photo removed"); }} className="btn btn-ghost" style={{ display: "flex", alignItems: "center", gap: "6px", border: "1.5px solid #ffcdd2", color: "#e53935" }}>
-                        <Trash2 size={14} /> Remove Photo
-                      </button>
+              <SectionCard id="photo" title="Photos & Gallery" icon={<Camera size={16} />}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "1rem" }}>
+                    {gallery.sort((a, b) => a.sortOrder - b.sortOrder).map(photo => (
+                      <div key={photo.id} style={{ position: "relative", borderRadius: "var(--radius-xl)", overflow: "hidden", border: photo.isPrimary ? "2px solid var(--primary)" : "1px solid var(--border-color)", aspectRatio: "3/4" }}>
+                        <img src={photo.url} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        {photo.isPrimary && (
+                          <div style={{ position: "absolute", top: "8px", left: "8px", background: "var(--primary)", color: "white", padding: "2px 8px", borderRadius: "12px", fontSize: "0.7rem", fontWeight: 600 }}>Primary</div>
+                        )}
+                        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.6)", padding: "8px", display: "flex", justifyContent: "space-around", backdropFilter: "blur(4px)" }}>
+                          {!photo.isPrimary && (
+                            <button onClick={(e) => { e.preventDefault(); handleSetPrimary(photo.id, photo.url); }} style={{ color: "white", background: "none", border: "none", cursor: "pointer", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                              <Check size={14} /> Set Primary
+                            </button>
+                          )}
+                          <button onClick={(e) => { e.preventDefault(); handleDeletePhoto(photo.id); }} style={{ color: "#ffcdd2", background: "none", border: "none", cursor: "pointer", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {gallery.length < 8 && (
+                      <div onClick={() => !uploadingGallery && document.getElementById('gallery-upload')?.click()} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: "var(--radius-xl)", border: "2px dashed var(--border-color)", aspectRatio: "3/4", cursor: uploadingGallery ? "not-allowed" : "pointer", background: "#f9f9f9", gap: "0.5rem", color: "var(--text-medium)" }}>
+                        {uploadingGallery ? <span style={{ animation: "spin 0.8s linear infinite", display: "inline-block" }}>⟳</span> : <Plus size={24} />}
+                        <span style={{ fontSize: "0.8rem", fontWeight: 500 }}>{uploadingGallery ? "Uploading..." : "Add Photo"}</span>
+                        <span style={{ fontSize: "0.7rem" }}>{8 - gallery.length} remaining</span>
+                      </div>
                     )}
-                    <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                      JPG, PNG or WEBP · Max 5 MB<br />
-                      Minimum 300×300 pixels<br />
-                      <strong>Profiles with photos get 8x more views</strong>
-                    </div>
+                  </div>
+                  <input id="gallery-upload" type="file" accept="image/*" onChange={handleGalleryUpload} style={{ display: "none" }} />
+                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5, background: "#f5f5f5", padding: "0.75rem", borderRadius: "var(--radius-md)" }}>
+                    <strong>Guidelines:</strong> JPG, PNG or WEBP · Max 5 MB per photo · Minimum 300×300 pixels.<br />
+                    You can add up to 8 photos. <strong>Profiles with more photos get 8x more views.</strong>
                   </div>
                 </div>
               </SectionCard>

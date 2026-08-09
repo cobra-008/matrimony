@@ -811,7 +811,7 @@ function GuestLatestProfiles() {
                         <img
                           src={profile.photoUrl}
                           alt={profile.name}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", filter: "blur(6px)", transform: "scale(1.1)" }}
+                          style={{ width: "100%", height: "100%", objectFit: "contain", background: "#F8F0F0", filter: "blur(6px)", transform: "scale(1.1)" }}
                         />
                       ) : (
                         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary-light)" }}>
@@ -880,59 +880,77 @@ export default function HomePage() {
         {/* =================== HERO =================== */}
         <section style={{ background: "var(--bg-page)", padding: "1.5rem 0" }}>
           <div className="container">
-            {/* Mobile: stack vertically — form first, then image */}
-            <div style={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              gap: "1.5rem",
-              flexWrap: "wrap",
-              flexDirection: "column",
-            }}>
-              {/* Register form — full width on mobile, beside image on desktop */}
-              <div style={{ width: "100%" }}>
-                <h1 style={{
+            <div className="hero-inner">
+              {/* Left Column: Text + Image (Desktop only for image) */}
+              <div className="hero-left">
+                <h1 className="hero-text" style={{
                   fontSize: "clamp(1.25rem, 4vw, 2rem)",
                   fontWeight: 900,
                   color: "var(--text-dark)",
                   lineHeight: 1.25,
-                  marginBottom: "1rem",
-                  textAlign: "center",
+                  marginBottom: "1.5rem",
                 }}>
                   The{" "}
                   <span style={{ color: "var(--primary)" }}>biggest and most trusted</span>
                   {" "}matrimony service for Tamils!
                 </h1>
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  <RegisterForm />
+                
+                {/* Illustration — hidden on mobile */}
+                <div className="hide-mobile" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                  <img
+                    src="/wedding-couple.png"
+                    alt="Tamil wedding couple illustration"
+                    className="animate-fade-in hero-image"
+                    style={{
+                      maxWidth: "320px",
+                      width: "100%",
+                      borderRadius: "16px",
+                      filter: "drop-shadow(0 8px 32px rgba(107,26,42,0.15))",
+                    }}
+                  />
                 </div>
               </div>
 
-              {/* Illustration — hidden on mobile to save space */}
-              <div className="hide-mobile" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-                <img
-                  src="/wedding-couple.png"
-                  alt="Tamil wedding couple illustration"
-                  className="animate-fade-in"
-                  style={{
-                    maxWidth: "320px",
-                    width: "100%",
-                    borderRadius: "16px",
-                    filter: "drop-shadow(0 8px 32px rgba(107,26,42,0.15))",
-                  }}
-                />
+              {/* Right Column: Register form */}
+              <div className="hero-right">
+                <div className="hero-form-wrap" style={{ display: "flex", justifyContent: "center" }}>
+                  <RegisterForm />
+                </div>
               </div>
             </div>
 
-            {/* Desktop: side-by-side layout */}
             <style>{`
-              @media (min-width: 768px) {
+              .hero-inner {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+              }
+              .hero-text {
+                text-align: center;
+              }
+              @media (min-width: 992px) {
                 .hero-inner {
-                  flex-direction: row !important;
-                  align-items: center !important;
+                  flex-direction: row;
+                  align-items: center;
+                  justify-content: space-between;
                 }
-                .hero-text { text-align: left !important; }
-                .hero-form-wrap { justify-content: flex-end !important; }
+                .hero-left {
+                  flex: 1;
+                  padding-right: 2rem;
+                }
+                .hero-right {
+                  flex: 1;
+                }
+                .hero-text {
+                  text-align: left;
+                }
+                .hero-form-wrap {
+                  justify-content: flex-end;
+                }
+                .hero-image {
+                  margin-left: 0;
+                  margin-right: auto;
+                }
               }
             `}</style>
           </div>

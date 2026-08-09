@@ -504,7 +504,8 @@ export default function ProfileDetailPage({
                     width: "72px",
                     height: "72px",
                     borderRadius: "50%",
-                    objectFit: "cover",
+                    objectFit: "contain",
+                    background: "#F8F0F0",
                     objectPosition: "top",
                     border: "2px solid var(--primary-light)",
                     display: "block",
@@ -623,7 +624,8 @@ export default function ProfileDetailPage({
                       style={{
                         width: "130px",
                         height: "160px",
-                        objectFit: "cover",
+                        objectFit: "contain",
+                        background: "#F8F0F0",
                         objectPosition: "top",
                         borderRadius: "var(--radius-lg)",
                         display: "block",
@@ -1018,6 +1020,20 @@ export default function ProfileDetailPage({
                 </div>
               )}
 
+              {/* ══════════════════════════════════════════════════
+                  PHOTO GALLERY
+                  ══════════════════════════════════════════════════ */}
+              {profile.photos && profile.photos.length > 0 && (
+                <SectionCard id="section-Photo-Gallery" title={`Photo Gallery (${profile.photos.length})`} onEdit={isOwnProfile ? () => router.push("/profile/edit?section=photo") : undefined}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "1rem" }}>
+                    {profile.photos.sort((a, b) => a.sortOrder - b.sortOrder).map(p => (
+                      <div key={p.id} style={{ position: "relative", borderRadius: "var(--radius-lg)", overflow: "hidden", aspectRatio: "3/4", border: "1px solid var(--border-color)" }}>
+                        <img src={p.url} alt="Gallery photo" style={{ width: "100%", height: "100%", objectFit: "contain", background: "#F8F0F0" }} />
+                      </div>
+                    ))}
+                  </div>
+                </SectionCard>
+              )}
               {/* ══════════════════════════════════════════════════
                   3. BASIC INFORMATION
                   ══════════════════════════════════════════════════ */}
