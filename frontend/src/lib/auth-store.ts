@@ -71,6 +71,12 @@ export interface RegisteredUser {
   createdAt: string;
   lastActive?: string;
   isOnline?: boolean;
+  // Computed / display fields (used in profile page, also present in ProfileData)
+  age?: number;
+  location?: string;
+  community?: string;
+  compatibilityScore?: number;
+  matchReasons?: string[];
   membershipPlan?: 'Gold' | 'Diamond' | 'Platinum' | null;  // active plan name
   membershipExpiry?: string;  // ISO datetime
 }
