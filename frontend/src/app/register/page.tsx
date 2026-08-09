@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ChevronDown, ChevronLeft, Phone, Upload, X, Check, AlertCircle } from "lucide-react";
+import { ChevronDown, ChevronLeft, Phone, Upload, X, Check, AlertCircle, Mail } from "lucide-react";
 import toast from "react-hot-toast";
 import { registerUser } from "@/lib/auth-store";
 import { uploadProfilePhoto } from "@/lib/supabase";
@@ -262,6 +262,14 @@ function RegisterWizard() {
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [otpResendSeconds, setOtpResendSeconds] = useState(0);
 
+  // Email OTP state
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailOtpVerified, setEmailOtpVerified] = useState(false);
+  const [emailOtpSending, setEmailOtpSending] = useState(false);
+  const [emailOtpVerifying, setEmailOtpVerifying] = useState(false);
+  const [emailResendSecs, setEmailResendSecs] = useState(0);
+
   // Real-time field errors
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -305,6 +313,63 @@ function RegisterWizard() {
     setOtp("");
     startResendTimer();
     toast.success(`OTP resent to +91 ${form.mobile}`);
+  };
+
+  // ── Email OTP handlers ──────────────────────────────────────────────────
+  const startEmailResendTimer = () => {
+    setEmailResendSecs(60);
+    const interval = setInterval(() => {
+      setEmailResendSecs(s => { if (s <= 1) { clearInterval(interval); return 0; } return s - 1; });
+    }, 1000);
+  };
+
+  const handleSendEmailOtp = async () => {
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email.trim() || !emailRe.test(form.email)) {
+      setFieldError("email", "Please enter a valid email address."); return;
+    }
+    setEmailOtpSending(true);
+    try {
+      const res = await fetch("/api/send-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email.trim(), name: form.name || "there" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to send OTP.");
+      setEmailOtpSent(true);
+      setEmailOtp("");
+      startEmailResendTimer();
+      toast.success(`OTP sent to ${form.email}`);
+    } catch (e: unknown) {
+      toast.error((e as Error).message);
+    } finally { setEmailOtpSending(false); }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (emailOtp.length !== 6) { toast.error("Enter the 6-digit OTP."); return; }
+    setEmailOtpVerifying(true);
+    try {
+      const res = await fetch("/api/verify-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email.trim(), otp: emailOtp }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Verification failed.");
+      setEmailOtpVerified(true);
+      clearFieldError("email");
+      toast.success("Email verified successfully!");
+    } catch (e: unknown) {
+      toast.error((e as Error).message);
+      setEmailOtp("");
+    } finally { setEmailOtpVerifying(false); }
+  };
+
+  const handleResendEmailOtp = () => {
+    if (emailResendSecs > 0) return;
+    setEmailOtp("");
+    handleSendEmailOtp();
   };
 
 
@@ -748,6 +813,117 @@ function RegisterWizard() {
                   style={{ borderColor: fieldErrors.password ? "#D32F2F" : undefined }}
                 />
                 <FieldError msg={fieldErrors.password} />
+              </div>
+
+              {/* ── Email with OTP Verification ── */}
+              <div style={{ marginBottom: "1.5rem", background: "var(--bg-page)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", padding: "1rem 1.125rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "0.625rem" }}>
+                  <Mail size={15} style={{ color: "var(--primary)" }} />
+                  <label className="form-label" style={{ margin: 0, fontSize: "0.9375rem" }}>
+                    Email Address <span style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--text-muted)" }}>(optional — get payment receipts)</span>
+                  </label>
+                </div>
+
+                {!emailOtpVerified ? (
+                  <>
+                    <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                      <input
+                        type="email"
+                        className="form-input"
+                        placeholder="your@email.com"
+                        value={form.email}
+                        disabled={emailOtpSent}
+                        onChange={(e) => {
+                          set("email", e.target.value);
+                          clearFieldError("email");
+                          setEmailOtpSent(false);
+                          setEmailOtpVerified(false);
+                        }}
+                        style={{ flex: 1, borderColor: fieldErrors.email ? "#D32F2F" : undefined, opacity: emailOtpSent ? 0.7 : 1 }}
+                      />
+                      {!emailOtpSent ? (
+                        <button
+                          type="button"
+                          onClick={handleSendEmailOtp}
+                          disabled={emailOtpSending || !form.email.trim()}
+                          style={{ background: "var(--primary)", color: "#fff", border: "none", borderRadius: "var(--radius-md)", padding: "0 0.875rem", fontWeight: 700, fontSize: "0.8125rem", cursor: emailOtpSending || !form.email.trim() ? "not-allowed" : "pointer", fontFamily: "var(--font-sans)", flexShrink: 0, whiteSpace: "nowrap", opacity: emailOtpSending || !form.email.trim() ? 0.6 : 1 }}
+                        >
+                          {emailOtpSending ? "Sending…" : "Send OTP"}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => { setEmailOtpSent(false); setEmailOtp(""); }}
+                          style={{ background: "none", border: "1.5px solid var(--border-color)", borderRadius: "var(--radius-md)", padding: "0 0.75rem", fontWeight: 700, fontSize: "0.8125rem", cursor: "pointer", fontFamily: "var(--font-sans)", flexShrink: 0, color: "var(--text-medium)", whiteSpace: "nowrap" }}
+                        >
+                          Change
+                        </button>
+                      )}
+                    </div>
+                    <FieldError msg={fieldErrors.email} />
+
+                    {emailOtpSent && (
+                      <div style={{ marginTop: "0.75rem" }}>
+                        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+                          OTP sent to <strong>{form.email}</strong>
+                        </p>
+                        <div style={{ display: "flex", gap: "6px", marginBottom: "0.5rem" }}>
+                          {[0,1,2,3,4,5].map(i => (
+                            <input
+                              key={i}
+                              id={`email-otp-reg-${i}`}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={1}
+                              value={emailOtp[i] || ""}
+                              autoFocus={i === 0 && emailOtpSent}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, "");
+                                const arr = emailOtp.split("");
+                                arr[i] = val;
+                                const next = arr.join("").slice(0, 6);
+                                setEmailOtp(next);
+                                if (val && i < 5) (document.getElementById(`email-otp-reg-${i+1}`) as HTMLInputElement)?.focus();
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Backspace" && !emailOtp[i] && i > 0)
+                                  (document.getElementById(`email-otp-reg-${i-1}`) as HTMLInputElement)?.focus();
+                              }}
+                              style={{ width: "38px", height: "42px", textAlign: "center", fontSize: "1.125rem", fontWeight: 800, border: `2px solid ${emailOtp[i] ? "var(--primary)" : "var(--border-color)"}`, borderRadius: "var(--radius-md)", background: emailOtp[i] ? "var(--primary-light)" : "#fff", color: "var(--primary)", outline: "none", fontFamily: "var(--font-sans)" }}
+                            />
+                          ))}
+                          <button
+                            type="button"
+                            onClick={handleVerifyEmailOtp}
+                            disabled={emailOtpVerifying || emailOtp.length !== 6}
+                            style={{ background: "var(--primary)", color: "#fff", border: "none", borderRadius: "var(--radius-md)", padding: "0 0.875rem", fontWeight: 700, fontSize: "0.8125rem", cursor: emailOtpVerifying || emailOtp.length !== 6 ? "not-allowed" : "pointer", fontFamily: "var(--font-sans)", flexShrink: 0, opacity: emailOtpVerifying || emailOtp.length !== 6 ? 0.6 : 1 }}
+                          >
+                            {emailOtpVerifying ? "…" : "Verify"}
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleResendEmailOtp}
+                          disabled={emailResendSecs > 0}
+                          style={{ background: "none", border: "none", cursor: emailResendSecs > 0 ? "not-allowed" : "pointer", fontSize: "0.75rem", fontWeight: 700, color: emailResendSecs > 0 ? "var(--text-muted)" : "var(--primary)", fontFamily: "var(--font-sans)" }}
+                        >
+                          {emailResendSecs > 0 ? `Resend in ${emailResendSecs}s` : "Resend OTP"}
+                        </button>
+                      </div>
+                    )}
+
+                    {!emailOtpSent && (
+                      <p style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: "0.375rem" }}>
+                        We&apos;ll send a 6-digit OTP to verify your email.
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--success)", fontSize: "0.875rem", fontWeight: 600 }}>
+                    <Check size={15} />
+                    <span>Email verified: <strong>{form.email}</strong></span>
+                  </div>
+                )}
               </div>
 
               <button

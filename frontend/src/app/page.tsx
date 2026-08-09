@@ -321,6 +321,7 @@ function AuthenticatedDashboard() {
   // Profile completeness — which fields are missing
   const missing: { label: string; href: string; icon: React.ReactNode }[] = [];
   if (!user.photoUrl) missing.push({ label: "Add Photo", href: "/profile/edit?section=photo", icon: <Camera size={16} color="#6B1A2A" /> });
+  if (!user.email || user.email.endsWith("@etm.app")) missing.push({ label: "Add Email", href: "/profile/edit?section=contact", icon: <Mail size={16} color="#6B1A2A" /> });
   if (!user.education && !user.occupation) missing.push({ label: "Professional Details", href: "/profile/edit?section=professional", icon: <Briefcase size={16} color="#6B1A2A" /> });
   if (!user.star && !user.rasi) missing.push({ label: "Horoscope Details", href: "/profile/edit?section=religion", icon: <Star size={16} color="#C8973A" /> });
   if (!user.about) missing.push({ label: "About Me", href: "/profile/edit?section=about", icon: <FileText size={16} color="#6B1A2A" /> });
