@@ -178,7 +178,7 @@ function EmailGate({ onVerified }: { onVerified: (email: string) => void }) {
           <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-dark)", marginBottom: "0.375rem" }}>
             Your Email Address <span style={{ color: "var(--primary)" }}>*</span>
           </label>
-          <div style={{ display: "flex", gap: "0.5rem" }}>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
             <input
               type="email"
               placeholder="you@example.com"
@@ -186,7 +186,7 @@ function EmailGate({ onVerified }: { onVerified: (email: string) => void }) {
               onChange={e => { setEmail(e.target.value); setError(null); }}
               onKeyDown={e => { if (e.key === "Enter") handleSendOtp(); }}
               style={{
-                flex: 1,
+                flex: "1 1 200px",
                 padding: "0.6875rem 1rem",
                 border: "1.5px solid var(--border-color)",
                 borderRadius: "var(--radius-md)",
@@ -199,7 +199,7 @@ function EmailGate({ onVerified }: { onVerified: (email: string) => void }) {
               onClick={handleSendOtp}
               disabled={sending}
               className="btn btn-primary"
-              style={{ whiteSpace: "nowrap", opacity: sending ? 0.7 : 1, cursor: sending ? "not-allowed" : "pointer" }}
+              style={{ whiteSpace: "nowrap", opacity: sending ? 0.7 : 1, cursor: sending ? "not-allowed" : "pointer", flex: "0 0 auto", minWidth: "120px" }}
             >
               {sending ? "Sending…" : "Send OTP"}
             </button>
@@ -288,7 +288,7 @@ function EmailGate({ onVerified }: { onVerified: (email: string) => void }) {
 function PaymentForm({ planKey }: { planKey: PlanKey }) {
   const plan = PLAN_CONFIG[planKey];
   const router = useRouter();
-  const { user, setUser } = useAuth();
+  const { user, setUser, refresh } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -400,6 +400,8 @@ function PaymentForm({ planKey }: { planKey: PlanKey }) {
           if (!verifyRes.ok) throw new Error(verifyData.error ?? "Signature verification failed.");
           if (user) setUser({ ...user, isPremium: true, membershipPlan: planKey, email: verifiedEmail ?? user.email });
           setSuccess(true);
+          // Re-fetch the full profile from DB so all fields (membershipExpiry, plan, etc.) are current sitewide
+          refresh().catch(() => {});
         } catch (verifyErr: unknown) {
           const e = verifyErr as Error;
           setError(`Payment received but verification failed: ${e.message}. Contact support@elitetamilmatrimony.com with ID: ${response.razorpay_payment_id}`);

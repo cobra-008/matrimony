@@ -194,17 +194,18 @@ function ProfileCard({
     >
       {/* LEFT — Photo column */}
       <div style={{ width: "100%", flexShrink: 0, position: "relative" }} className="match-card-photo-wrap">
-        <Link href={`/profile/${profile.id}`} style={{ display: "block" }}>
+        <Link href={`/profile/${profile.id}`} style={{ display: "block", lineHeight: 0 }}>
           <img
             src={photo}
             alt={profile.name}
             className="match-card-photo"
             style={{
               width: "100%",
-              height: "220px",
+              height: "100%",
               objectFit: "cover",
               objectPosition: "top",
               display: "block",
+              maxHeight: "340px",
             }}
           />
         </Link>
@@ -310,6 +311,29 @@ function ProfileCard({
               <span style={{ fontSize: "0.75rem", color: "#1565C0", fontWeight: 600 }}>
                 Verified
               </span>
+              {/* Match score badge */}
+              {profile.compatibilityScore !== undefined && (
+                <span
+                  style={{
+                    marginLeft: "6px",
+                    padding: "1px 7px",
+                    borderRadius: "10px",
+                    fontSize: "0.6875rem",
+                    fontWeight: 800,
+                    background:
+                      profile.compatibilityScore >= 70 ? "#E8F5E9" :
+                      profile.compatibilityScore >= 50 ? "#FBF6EC" : "#F5F5F5",
+                    color:
+                      profile.compatibilityScore >= 70 ? "#2E7D32" :
+                      profile.compatibilityScore >= 50 ? "#C8973A" : "#888",
+                    border:
+                      profile.compatibilityScore >= 70 ? "1px solid #A5D6A7" :
+                      profile.compatibilityScore >= 50 ? "1px solid #E0C070" : "1px solid #ddd",
+                  }}
+                >
+                  {profile.compatibilityScore}% Match
+                </span>
+              )}
             </div>
 
             {/* Name */}
@@ -670,7 +694,7 @@ function MatchesContent() {
     let result: RegisteredUser[] = [];
     try {
       switch (sectionId) {
-        case "your_matches":         result = await fetchMatchProfiles(currentUser.id, currentUser.gender as "male" | "female" | undefined); break;
+        case "your_matches":         result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined); break;
         case "shortlisted_by_you":   result = await getShortlistedProfiles(currentUser.id); break;
         case "viewed_you":           result = await getViewedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "shortlisted_you":      result = await getShortlistedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
@@ -1278,18 +1302,41 @@ function MatchesContent() {
             transform: ${sidebarOpen ? 'translateX(0)' : 'translateX(-100%)'} !important;
             transition: transform 0.25s ease !important;
           }
-          .match-card-horizontal { flex-direction: column !important; }
-          .match-card-photo { height: 200px !important; width: 100% !important; }
-          .match-card-photo-wrap { width: 100% !important; }
         }
+        /* Smallest screens: full-width stacked card */
+        @media (max-width: 479px) {
+          .match-card-horizontal { flex-direction: column !important; }
+          .match-card-photo-wrap {
+            width: 100% !important;
+            aspect-ratio: 4/5 !important;
+            max-height: 320px !important;
+            overflow: hidden !important;
+          }
+          .match-card-photo {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            object-position: top center !important;
+            max-height: 320px !important;
+          }
+        }
+        /* Medium phones: side-by-side */
         @media (min-width: 480px) {
           .match-card-horizontal { flex-direction: row !important; }
-          .match-card-photo-wrap { width: 140px !important; }
-          .match-card-photo { height: 100% !important; min-height: 180px !important; }
+          .match-card-photo-wrap {
+            width: 140px !important;
+            aspect-ratio: unset !important;
+            min-height: 190px !important;
+          }
+          .match-card-photo {
+            height: 100% !important;
+            min-height: 190px !important;
+            max-height: 280px !important;
+          }
         }
         @media (min-width: 768px) {
-          .match-card-photo-wrap { width: 160px !important; }
-          .match-card-photo { min-height: 192px !important; }
+          .match-card-photo-wrap { width: 160px !important; min-height: 200px !important; }
+          .match-card-photo { min-height: 200px !important; max-height: 300px !important; }
         }
         .match-card-actions::-webkit-scrollbar { display: none; }
       `}</style>

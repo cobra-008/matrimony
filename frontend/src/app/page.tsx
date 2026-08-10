@@ -48,7 +48,7 @@ function toProfileData(u: RegisteredUser) {
 }
 
 
-// Stats — BharatMatrimony-style
+// Stats — honest, credible
 const STATS = [
   {
     icon: (
@@ -64,23 +64,22 @@ const STATS = [
   {
     icon: (
       <svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="#3D7A28" strokeWidth="1.8">
-        <path d="M16 8 L8 20 L16 32 L40 32 L40 8 Z" />
-        <circle cx="20" cy="20" r="4" />
-        <path d="M28 16 L36 20 L28 24" />
+        <rect x="8" y="14" width="32" height="24" rx="3" />
+        <path d="M16 14V10a8 8 0 0116 0v4" />
+        <circle cx="24" cy="26" r="3" />
       </svg>
     ),
-    value: "4 Crore+",
-    label: "Customers served",
+    value: "Free",
+    label: "Register & browse profiles",
   },
   {
     icon: (
       <svg width="40" height="40" viewBox="0 0 48 48" fill="none" stroke="#3D7A28" strokeWidth="1.8">
         <path d="M24 6 L28 18 L42 18 L30 26 L35 40 L24 32 L13 40 L18 26 L6 18 L20 18 Z" />
-        <circle cx="24" cy="24" r="14" />
       </svg>
     ),
-    value: "26 Years",
-    label: "of successful matchmaking",
+    value: "Tamil",
+    label: "Community focused matrimony",
   },
 ];
 
@@ -326,7 +325,7 @@ function AuthenticatedDashboard() {
   if (!user.star && !user.rasi) missing.push({ label: "Horoscope Details", href: "/profile/edit?section=religion", icon: <Star size={16} color="#C8973A" /> });
   if (!user.about) missing.push({ label: "About Me", href: "/profile/edit?section=about", icon: <FileText size={16} color="#6B1A2A" /> });
   if (!user.city) missing.push({ label: "Location", href: "/profile/edit?section=location", icon: <MapPin size={16} color="#6B1A2A" /> });
-  if (!user.partnerAgeMin || user.partnerAgeMin === 22) missing.push({ label: "Set Partner Preferences", href: "/settings?tab=preferences", icon: <Heart size={16} color="#C8973A" /> });
+  if (!user.partnerAgeMin || user.partnerAgeMin === 22) missing.push({ label: "Set Partner Preferences", href: "/settings?section=preferences", icon: <Heart size={16} color="#C8973A" /> });
 
   const totalFields = 10;
   const pct = Math.round(((totalFields - missing.length) / totalFields) * 100);
@@ -811,7 +810,7 @@ function GuestLatestProfiles() {
                         <img
                           src={profile.photoUrl}
                           alt={profile.name}
-                          style={{ width: "100%", height: "100%", objectFit: "contain", background: "#F8F0F0", filter: "blur(6px)", transform: "scale(1.1)" }}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", background: "#F8F0F0", filter: "blur(6px)", transform: "scale(1.1)" }}
                         />
                       ) : (
                         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary-light)" }}>
@@ -844,6 +843,14 @@ function GuestLatestProfiles() {
             })}
           </div>
         )}
+        {/* 2-per-row on mobile */}
+        <style>{`
+          @media (max-width: 479px) {
+            .profile-grid {
+              grid-template-columns: repeat(2, 1fr) !important;
+            }
+          }
+        `}</style>
       </div>
     </section>
   );
@@ -1135,7 +1142,7 @@ export default function HomePage() {
                 {
                   step: "2",
                   title: "Search & Match",
-                  desc: "Browse 25 Lakh+ verified Tamil profiles. Use smart filters to find your ideal match.",
+                  desc: "Browse verified Tamil profiles. Use smart filters to find your ideal match.",
                   icon: (
                     <svg width="36" height="36" viewBox="0 0 48 48" fill="none" stroke="var(--bm-green)" strokeWidth="1.8">
                       <circle cx="20" cy="20" r="12" />
@@ -1219,7 +1226,17 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.25rem" }}>
+            <div
+              className="success-stories-scroll"
+              style={{
+                display: "flex",
+                gap: "1.25rem",
+                overflowX: "auto",
+                paddingBottom: "0.5rem",
+                scrollSnapType: "x mandatory",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
               {SUCCESS_STORIES.map((story) => (
                 <div
                   key={story.id}
@@ -1228,6 +1245,10 @@ export default function HomePage() {
                     border: "1px solid var(--border-color)",
                     borderRadius: "var(--radius-xl)",
                     overflow: "hidden",
+                    minWidth: "280px",
+                    maxWidth: "340px",
+                    flex: "0 0 auto",
+                    scrollSnapAlign: "start",
                   }}
                 >
                   {/* Photos */}
@@ -1261,6 +1282,7 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+            <style>{`.success-stories-scroll::-webkit-scrollbar{display:none}`}</style>
           </div>
         </section>
 
@@ -1278,7 +1300,7 @@ export default function HomePage() {
                   Ready to find your perfect Tamil match?
                 </div>
                 <div style={{ fontSize: "0.9375rem", opacity: 0.85 }}>
-                  Join 25 Lakh+ Tamil singles. Register free today.
+                  Register free today and start your journey.
                 </div>
               </div>
               <Link

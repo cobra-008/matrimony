@@ -817,13 +817,21 @@ export const BODY_TYPES = [
 ];
 
 // ── HEIGHTS ─────────────────────────────────────────────────────────
-export const HEIGHTS = Array.from({ length: 61 }, (_, i) => {
-  const cm = 137 + i; // 4'6" to 6'6"
-  const totalInches = Math.floor(cm / 2.54);
-  const feet = Math.floor(totalInches / 12);
-  const inches = totalInches % 12;
-  return { value: cm, label: `${feet}'${inches}"` };
-});
+// Generate from feet/inches directly to guarantee unique labels.
+// Range: 4'6" (137cm) to 6'6" (198cm)
+export const HEIGHTS = (() => {
+  const result: { value: number; label: string }[] = [];
+  // 4'6" → 6'6": feet 4–6, inches 0–11
+  for (let feet = 4; feet <= 6; feet++) {
+    const startInches = feet === 4 ? 6 : 0;
+    const endInches   = feet === 6 ? 6 : 11;
+    for (let inches = startInches; inches <= endInches; inches++) {
+      const cm = Math.round((feet * 12 + inches) * 2.54);
+      result.push({ value: cm, label: `${feet}'${inches}"` });
+    }
+  }
+  return result;
+})();
 
 // ── EDUCATION ───────────────────────────────────────────────────────
 export const EDUCATION_LEVELS = [

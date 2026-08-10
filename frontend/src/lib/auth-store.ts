@@ -739,10 +739,96 @@ export async function updateProfile(
  * Fetch all profiles for the matches page (excludes current user).
  * Returns top 50 by last_active descending.
  */
+/**
+ * Compute a 0–100 preference match score between the current user's
+ * partner preferences and a candidate's profile.
+ * Used to rank results in "Your Matches".
+ */
+export function computeMatchScore(
+  currentUser: RegisteredUser,
+  candidate: RegisteredUser
+): number {
+  let score = 0;
+  let maxScore = 0;
+
+  // ── Age (25 pts) ──────────────────────────────────────────────────
+  if (candidate.dob) {
+    maxScore += 25;
+    const age = Math.floor(
+      (Date.now() - new Date(candidate.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)
+    );
+    const min = currentUser.partnerAgeMin ?? 18;
+    const max = currentUser.partnerAgeMax ?? 60;
+    if (age >= min && age <= max) score += 25;
+    else {
+      // Partial credit if within 2 years of range
+      const proximity = Math.min(Math.abs(age - min), Math.abs(age - max));
+      if (proximity <= 2) score += 12;
+    }
+  }
+
+  // ── Religion (20 pts) ────────────────────────────────────────────
+  if (currentUser.partnerReligion && currentUser.partnerReligion !== 'Any') {
+    maxScore += 20;
+    if (candidate.religion === currentUser.partnerReligion) score += 20;
+  } else if (candidate.religion && currentUser.religion) {
+    maxScore += 20;
+    if (candidate.religion === currentUser.religion) score += 20;
+    else score += 10; // bonus for any religion filled
+  }
+
+  // ── Marital Status (20 pts) ──────────────────────────────────────
+  if (currentUser.partnerMaritalStatus && currentUser.partnerMaritalStatus.length > 0) {
+    maxScore += 20;
+    if (candidate.maritalStatus && currentUser.partnerMaritalStatus.includes(candidate.maritalStatus)) {
+      score += 20;
+    }
+  } else {
+    // If no preference set, any marital status is OK — give neutral score
+    maxScore += 20;
+    score += 20;
+  }
+
+  // ── Education level (15 pts) ─────────────────────────────────────
+  if (currentUser.partnerEducation) {
+    maxScore += 15;
+    if (candidate.education?.toLowerCase().includes(currentUser.partnerEducation.toLowerCase())) {
+      score += 15;
+    }
+  } else {
+    maxScore += 15;
+    score += candidate.education ? 15 : 5;
+  }
+
+  // ── Location state (20 pts) ──────────────────────────────────────
+  maxScore += 20;
+  if (candidate.state && currentUser.state && candidate.state === currentUser.state) {
+    score += 20;
+  } else if (candidate.city && currentUser.city && candidate.city === currentUser.city) {
+    score += 20;
+  } else if (candidate.country === currentUser.country) {
+    score += 10;
+  }
+
+  return maxScore > 0 ? Math.round((score / maxScore) * 100) : 50;
+}
+
 export async function fetchMatchProfiles(
-  currentUserId?: string,
+  currentUserIdOrUser?: string | RegisteredUser,
   currentUserGender?: 'male' | 'female'
 ): Promise<RegisteredUser[]> {
+  // Support both (id, gender) and (user object) calling conventions
+  let currentUserId: string | undefined;
+  let currentUser: RegisteredUser | undefined;
+
+  if (typeof currentUserIdOrUser === 'object' && currentUserIdOrUser !== null) {
+    currentUser = currentUserIdOrUser;
+    currentUserId = currentUser.id;
+    currentUserGender = currentUser.gender;
+  } else {
+    currentUserId = currentUserIdOrUser as string | undefined;
+  }
+
   // Determine the opposite gender to show
   const oppositeGender = currentUserGender === 'male' ? 'female'
     : currentUserGender === 'female' ? 'male'
@@ -755,7 +841,7 @@ export async function fetchMatchProfiles(
       photos:profile_photos(*)
     `)
     .order('last_active', { ascending: false })
-    .limit(50);
+    .limit(100);
 
   if (currentUserId) {
     query = query.neq('id', currentUserId);
@@ -768,7 +854,18 @@ export async function fetchMatchProfiles(
 
   const { data, error } = await query;
   if (error) return [];
-  return (data || []).map(dbToUser);
+
+  const profiles = (data || []).map(dbToUser);
+
+  // If we have a full user object with preferences, score and sort
+  if (currentUser) {
+    return profiles
+      .map(p => ({ ...p, compatibilityScore: computeMatchScore(currentUser!, p) }))
+      .sort((a, b) => (b.compatibilityScore ?? 0) - (a.compatibilityScore ?? 0))
+      .slice(0, 50);
+  }
+
+  return profiles.slice(0, 50);
 }
 
 /**

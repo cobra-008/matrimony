@@ -244,7 +244,13 @@ function RegisterWizard() {
     diet: "",
     star: "",
     rasi: "",
-    // Step 3
+    // Step 3 — Partner Preferences
+    partnerAgeMin: 22,
+    partnerAgeMax: 35,
+    partnerReligion: "",
+    partnerMaritalStatus: [] as string[],
+    partnerState: "",
+    // Step 4 — Photo
     photoUrl: "",
     about: "",
   });
@@ -461,6 +467,12 @@ function RegisterWizard() {
         rasi: form.rasi,
         about: form.about,
         photoUrl: form.photoUrl || undefined,
+        // Partner preferences
+        partnerAgeMin: form.partnerAgeMin || 22,
+        partnerAgeMax: form.partnerAgeMax || 35,
+        partnerReligion: form.partnerReligion && form.partnerReligion !== "Any" ? form.partnerReligion : undefined,
+        partnerMaritalStatus: form.partnerMaritalStatus.length > 0 ? form.partnerMaritalStatus : undefined,
+        partnerCountry: form.partnerState && form.partnerState !== "Any" ? "India" : undefined,
       });
 
       // Upload photo to Supabase Storage if file was selected
@@ -663,8 +675,8 @@ function RegisterWizard() {
         {/* ===== STEP 0: Basic Info ===== */}
         {step === 0 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={1} total={4} />
-            <StepHeader step={1} total={4} title="Create your profile" />
+            <StepProgressBar step={1} total={5} />
+            <StepHeader step={1} total={5} title="Create your profile" />
             <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.5rem" }}>
               {/* Profile for */}
               <div style={{ marginBottom: "1.25rem" }}>
@@ -948,8 +960,8 @@ function RegisterWizard() {
         {/* ===== STEP 1: Personal & Religious Details ===== */}
         {step === 1 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={2} total={4} />
-            <StepHeader step={2} total={4} title="Personal and Religious Details" onBack={() => setStep(step - 1)} />
+            <StepProgressBar step={2} total={5} />
+            <StepHeader step={2} total={5} title="Personal and Religious Details" onBack={() => setStep(step - 1)} />
             <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.5rem" }}>
               <h3 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: "1px solid var(--border-light)" }}>
                 Personal Details
@@ -1063,8 +1075,8 @@ function RegisterWizard() {
         {/* ===== STEP 2: Education & Career / Location ===== */}
         {step === 2 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={3} total={4} />
-            <StepHeader step={3} total={4} title="Education and Career" onBack={() => setStep(1)} />
+            <StepProgressBar step={3} total={5} />
+            <StepHeader step={3} total={5} title="Education and Career" onBack={() => setStep(1)} />
             <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.5rem" }}>
               <FloatSelect
                 label="Highest Education"
@@ -1120,14 +1132,130 @@ function RegisterWizard() {
           </div>
         )}
 
-        {/* ===== STEP 3: Add Photo ===== */}
+        {/* ===== STEP 3: Partner Preferences ===== */}
         {step === 3 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={4} total={4} />
+            <StepProgressBar step={4} total={5} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <button onClick={() => setStep(2)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
+                  <ChevronLeft size={20} />
+                </button>
+                <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>Partner Preferences</h2>
+              </div>
+              <button
+                onClick={() => setStep(4)}
+                style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "none", cursor: "pointer", color: "var(--primary)", fontWeight: 700, fontSize: "0.875rem", fontFamily: "var(--font-sans)" }}
+              >
+                Skip
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+            <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.5rem" }}>
+              <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "1.25rem", lineHeight: 1.6 }}>
+                Tell us what you&apos;re looking for in a partner. Matches will be scored based on your preferences.
+              </p>
+
+              {/* Partner Age Range */}
+              <div style={{ marginBottom: "1.25rem" }}>
+                <label style={{ display: "block", fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "0.625rem" }}>
+                  Partner Age Range
+                </label>
+                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                  <select
+                    className="form-select"
+                    value={form.partnerAgeMin}
+                    onChange={e => setForm(f => ({ ...f, partnerAgeMin: Number(e.target.value) }))}
+                    style={{ flex: 1 }}
+                  >
+                    {Array.from({ length: 35 }, (_, i) => 18 + i).map(age => (
+                      <option key={age} value={age}>{age} yrs</option>
+                    ))}
+                  </select>
+                  <span style={{ color: "var(--text-muted)", fontWeight: 600, flexShrink: 0 }}>to</span>
+                  <select
+                    className="form-select"
+                    value={form.partnerAgeMax}
+                    onChange={e => setForm(f => ({ ...f, partnerAgeMax: Number(e.target.value) }))}
+                    style={{ flex: 1 }}
+                  >
+                    {Array.from({ length: 35 }, (_, i) => 18 + i).map(age => (
+                      <option key={age} value={age}>{age} yrs</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Partner Religion */}
+              <FloatSelect
+                label="Partner Religion"
+                value={form.partnerReligion}
+                onChange={v => setForm(f => ({ ...f, partnerReligion: v }))}
+                options={["Any", ...RELIGIONS]}
+                placeholder="Any religion"
+              />
+
+              {/* Partner Marital Status */}
+              <div style={{ marginBottom: "1.25rem" }}>
+                <label style={{ display: "block", fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "0.625rem" }}>
+                  Acceptable Marital Status
+                </label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                  {MARITAL_STATUS.map(m => {
+                    const selected = form.partnerMaritalStatus.includes(m.label);
+                    return (
+                      <button
+                        key={m.label}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, partnerMaritalStatus: selected ? f.partnerMaritalStatus.filter(x => x !== m.label) : [...f.partnerMaritalStatus, m.label] }))}
+                        style={{
+                          padding: "0.4375rem 1rem",
+                          borderRadius: "var(--radius-full)",
+                          border: `1.5px solid ${selected ? "var(--primary)" : "var(--border-color)"}`,
+                          background: selected ? "var(--primary)" : "#fff",
+                          color: selected ? "#fff" : "var(--text-dark)",
+                          fontWeight: selected ? 700 : 400,
+                          fontSize: "0.875rem",
+                          cursor: "pointer",
+                          fontFamily: "var(--font-sans)",
+                        }}
+                      >
+                        {m.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Preferred State */}
+              <FloatSelect
+                label="Preferred State"
+                value={form.partnerState}
+                onChange={v => setForm(f => ({ ...f, partnerState: v }))}
+                options={["Any", ...INDIAN_STATES]}
+                placeholder="Any state"
+              />
+
+              <button
+                type="button"
+                onClick={() => setStep(4)}
+                className="btn btn-primary"
+                style={{ width: "100%", justifyContent: "center", marginTop: "0.5rem" }}
+              >
+                Save & Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ===== STEP 4: Add Photo ===== */}
+        {step === 4 && (
+          <div className="animate-fade-in-up">
+            <StepProgressBar step={5} total={5} />
             {/* Header row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <button onClick={() => setStep(2)} aria-label="Go back" style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
+                <button onClick={() => setStep(3)} aria-label="Go back" style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
                   <ChevronLeft size={20} />
                 </button>
                 <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>Add photo</h2>

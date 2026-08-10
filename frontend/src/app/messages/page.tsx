@@ -199,11 +199,41 @@ function MessagesContent() {
       .finally(() => setLoadingMsgs(false));
   }, [user?.id, selectedId]);
 
-  // Real-time subscription
+  // Real-time subscription — listens for both incoming and sent messages
   useEffect(() => {
     if (!user) return;
+
+    const handleNewMessage = (payload: { new: Record<string, unknown> }) => {
+      const row = payload.new as Record<string, string>;
+      const newMsg: MessageRow = {
+        id: row.id,
+        senderId: row.sender_id,
+        receiverId: row.receiver_id,
+        content: row.content,
+        readAt: row.read_at ?? undefined,
+        sentAt: row.sent_at,
+      };
+      // Only update messages if this conversation is open and deduplicate optimistic
+      const isCurrentConv =
+        (row.sender_id === selectedId && row.receiver_id === user.id) ||
+        (row.sender_id === user.id && row.receiver_id === selectedId);
+
+      if (isCurrentConv) {
+        setMessages((prev) => {
+          // Remove any optimistic placeholder with same content & sender
+          const withoutOptimistic = prev.filter(
+            (m) => !(m.id.startsWith("optimistic-") && m.content === newMsg.content && m.senderId === newMsg.senderId)
+          );
+          // Avoid true duplicates
+          if (withoutOptimistic.some((m) => m.id === newMsg.id)) return withoutOptimistic;
+          return [...withoutOptimistic, newMsg];
+        });
+      }
+      loadConversations();
+    };
+
     const channel = supabase
-      .channel(`messages:${user.id}`)
+      .channel(`messages:user:${user.id}`)
       .on(
         "postgres_changes",
         {
@@ -212,22 +242,17 @@ function MessagesContent() {
           table: "messages",
           filter: `receiver_id=eq.${user.id}`,
         },
-        (payload) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const row = payload.new as Record<string, any>;
-          const newMsg: MessageRow = {
-            id: row.id,
-            senderId: row.sender_id,
-            receiverId: row.receiver_id,
-            content: row.content,
-            readAt: row.read_at ?? undefined,
-            sentAt: row.sent_at,
-          };
-          if (row.sender_id === selectedId) {
-            setMessages((prev) => [...prev, newMsg]);
-          }
-          loadConversations();
-        }
+        handleNewMessage
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `sender_id=eq.${user.id}`,
+        },
+        handleNewMessage
       )
       .subscribe();
 
@@ -241,26 +266,43 @@ function MessagesContent() {
 
   const handleSend = async () => {
     const text = inputText.trim();
-    if (!text || !user || !selectedId) return;
+    if (!text || !user || !selectedId || sending) return;
+
+    // Optimistic update — show message immediately
+    const optimisticMsg: MessageRow = {
+      id: `optimistic-${Date.now()}`,
+      senderId: user.id,
+      receiverId: selectedId,
+      content: text,
+      sentAt: new Date().toISOString(),
+      readAt: undefined,
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setInputText("");
 
     setSending(true);
     const result = await sendMessage(user.id, selectedId, text);
     setSending(false);
 
     if (result.error === "upgrade") {
+      // Remove optimistic message on failure
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+      setInputText(text); // restore text
       toast.error("Upgrade to Premium to send messages first. If they messaged you, you can reply.", {
         duration: 5000,
       });
       return;
     }
     if (result.error) {
+      // Remove optimistic message on failure
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+      setInputText(text); // restore text
       toast.error("Failed to send message. Please try again.");
       return;
     }
 
-    setInputText("");
-    const updated = await getMessages(user.id, selectedId);
-    setMessages(updated);
+    // Refresh from server to get real ID and timestamp
+    getMessages(user.id, selectedId).then(setMessages);
     loadConversations();
   };
 

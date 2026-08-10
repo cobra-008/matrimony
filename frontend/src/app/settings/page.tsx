@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import {
@@ -137,11 +138,21 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 }
 
 // ── MAIN ──────────────────────────────────────────────────────────────
-export default function SettingsPage() {
+function SettingsContent() {
   const { user, setUser } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<Section>("account");
   const [modal, setModal] = useState<string | null>(null);
+
+  // Jump to section from URL param (e.g. /settings?section=preferences)
+  useEffect(() => {
+    const urlSection = searchParams?.get("section") as Section | null;
+    if (urlSection && NAV_SECTIONS.some(n => n.id === urlSection)) {
+      setActiveSection(urlSection);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Account state
   const [newPassword, setNewPassword] = useState("");
@@ -714,5 +725,13 @@ export default function SettingsPage() {
 
       <Footer />
     </>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh" }} />}>
+      <SettingsContent />
+    </Suspense>
   );
 }
