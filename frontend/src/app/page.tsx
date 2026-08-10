@@ -795,62 +795,77 @@ function GuestLatestProfiles() {
             </Link>
           </div>
         ) : (
-          <div className="profile-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: "1rem" }}>
-            {profiles.map((profile) => {
-              const age = profile.dob ? Math.floor((Date.now() - new Date(profile.dob).getTime()) / (365.25*24*60*60*1000)) : 0;
-              return (
-                <Link key={profile.id} href="/register" style={{ textDecoration: "none" }}>
-                  <div
-                    className="profile-card-hover"
-                    style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}
+          <>
+            <div
+              className="guest-profiles-scroll"
+              style={{
+                display: "flex",
+                gap: "1rem",
+                overflowX: "auto",
+                paddingBottom: "0.75rem",
+                scrollSnapType: "x mandatory",
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
+              {profiles.map((profile) => {
+                const age = profile.dob ? Math.floor((Date.now() - new Date(profile.dob).getTime()) / (365.25*24*60*60*1000)) : 0;
+                return (
+                  <Link
+                    key={profile.id}
+                    href="/register"
+                    style={{
+                      textDecoration: "none",
+                      minWidth: "170px",
+                      maxWidth: "200px",
+                      flex: "0 0 auto",
+                      scrollSnapAlign: "start",
+                    }}
                   >
-                    {/* Photo — blurred for guest view */}
-                    <div style={{ height: "180px", overflow: "hidden", background: "#f0f0f0", position: "relative" }}>
-                      {profile.photoUrl ? (
-                        <img
-                          src={profile.photoUrl}
-                          alt={profile.name}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", background: "#F8F0F0", filter: "blur(6px)", transform: "scale(1.1)" }}
-                        />
-                      ) : (
-                        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary-light)" }}>
-                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.2" opacity="0.4">
-                            <circle cx="12" cy="7" r="4" /><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
-                          </svg>
+                    <div
+                      className="profile-card-hover"
+                      style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}
+                    >
+                      {/* Photo — blurred for guest view */}
+                      <div style={{ height: "180px", overflow: "hidden", background: "#f0f0f0", position: "relative" }}>
+                        {profile.photoUrl ? (
+                          <img
+                            src={profile.photoUrl}
+                            alt={profile.name}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", background: "#F8F0F0", filter: "blur(6px)", transform: "scale(1.1)" }}
+                          />
+                        ) : (
+                          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary-light)" }}>
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.2" opacity="0.4">
+                              <circle cx="12" cy="7" r="4" /><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+                            </svg>
+                          </div>
+                        )}
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.25)" }}>
+                          <span style={{ color: "#fff", fontSize: "0.6875rem", fontWeight: 700, background: "rgba(0,0,0,0.4)", padding: "2px 8px", borderRadius: "20px" }}>
+                            Register to View
+                          </span>
                         </div>
-                      )}
-                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.25)" }}>
-                        <span style={{ color: "#fff", fontSize: "0.6875rem", fontWeight: 700, background: "rgba(0,0,0,0.4)", padding: "2px 8px", borderRadius: "20px" }}>
-                          Register to View
-                        </span>
+                      </div>
+                      {/* Info */}
+                      <div style={{ padding: "0.625rem 0.75rem" }}>
+                        <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--text-dark)", marginBottom: "2px" }}>
+                          {profile.name.split(" ")[0]} {profile.name.split(" ")[1]?.[0]}.
+                        </div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-medium)" }}>
+                          {age > 0 ? `${age} yrs` : ""}{age > 0 && profile.caste ? " • " : ""}{profile.caste || profile.motherTongue || "Tamil"}
+                        </div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-light)", marginTop: "1px" }}>
+                          {[profile.city, profile.state].filter(Boolean).join(", ") || "India"}
+                        </div>
                       </div>
                     </div>
-                    {/* Info */}
-                    <div style={{ padding: "0.625rem 0.75rem" }}>
-                      <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--text-dark)", marginBottom: "2px" }}>
-                        {profile.name.split(" ")[0]} {profile.name.split(" ")[1]?.[0]}.
-                      </div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--text-medium)" }}>
-                        {age > 0 ? `${age} yrs` : ""}{age > 0 && profile.caste ? " • " : ""}{profile.caste || profile.motherTongue || "Tamil"}
-                      </div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--text-light)", marginTop: "1px" }}>
-                        {[profile.city, profile.state].filter(Boolean).join(", ") || "India"}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+                  </Link>
+                );
+              })}
+            </div>
+            <style>{`.guest-profiles-scroll::-webkit-scrollbar{display:none}`}</style>
+          </>
         )}
-        {/* 2-per-row on mobile */}
-        <style>{`
-          @media (max-width: 479px) {
-            .profile-grid {
-              grid-template-columns: repeat(2, 1fr) !important;
-            }
-          }
-        `}</style>
       </div>
     </section>
   );
