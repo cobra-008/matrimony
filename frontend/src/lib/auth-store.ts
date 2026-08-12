@@ -571,6 +571,20 @@ export async function getSession(): Promise<{ user: User; session: Session } | n
 }
 
 /**
+ * Set a Supabase session from raw access + refresh tokens.
+ * Called after the server-side /api/otp-login route returns tokens.
+ * Returns the profile for the now-authenticated user, or null on failure.
+ */
+export async function loginWithOtpSession(
+  accessToken: string,
+  refreshToken: string
+): Promise<RegisteredUser | null> {
+  const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+  if (error || !data.user) return null;
+  return fetchProfile(data.user.id);
+}
+
+/**
  * Fetch a profile row by auth user id.
  */
 export async function fetchProfile(userId: string): Promise<RegisteredUser | null> {

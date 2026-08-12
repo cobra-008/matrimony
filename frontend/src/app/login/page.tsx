@@ -6,7 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Eye, EyeOff, ChevronDown, AlertCircle, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
-import { loginWithPassword, getProfilesByMobile, loginToProfile, type RegisteredUser } from "@/lib/auth-store";
+import { loginWithPassword, getProfilesByMobile, loginToProfile, loginWithOtpSession, type RegisteredUser } from "@/lib/auth-store";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -232,7 +232,19 @@ function LoginContent() {
         return;
       }
       if (profiles.length === 1) {
-        const result = await loginToProfile(profiles[0].id);
+        // Use server-side OTP login (service role) — no password required
+        const res = await fetch("/api/otp-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profileId: profiles[0].id }),
+        });
+        const tokenData = await res.json();
+        if (!res.ok) {
+          setLoading(false);
+          toast.error(tokenData.error || "Login failed. Please try again.");
+          return;
+        }
+        const result = await loginWithOtpSession(tokenData.access_token, tokenData.refresh_token);
         setLoading(false);
         if (!result) { toast.error("Login failed. Please try again or re-register."); return; }
         toast.success("Login successful!");
@@ -291,7 +303,18 @@ function LoginContent() {
   const handleSelectProfile = async (profileId: string) => {
     setLoading(true);
     try {
-      const result = await loginToProfile(profileId);
+      const res = await fetch("/api/otp-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId }),
+      });
+      const tokenData = await res.json();
+      if (!res.ok) {
+        toast.error(tokenData.error || "Login failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+      const result = await loginWithOtpSession(tokenData.access_token, tokenData.refresh_token);
       if (!result) { toast.error("Login failed. Please try again or re-register."); setLoading(false); return; }
       toast.success("Login successful!");
       router.push("/matches");
