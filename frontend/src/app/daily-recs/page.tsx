@@ -108,8 +108,20 @@ export default function DailyRecsPage() {
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--bg-page)" }}>
       <Navbar />
       <PlanTabs activeTab="regular" />
+      <style>{`
+        @media (max-width: 599px) {
+          .daily-rec-card { flex-direction: column !important; min-height: unset !important; }
+          .daily-rec-photo-col { width: 100% !important; height: 260px !important; }
+          .daily-rec-detail-col { padding: 1.25rem !important; }
+          .daily-rec-action-row { flex-wrap: wrap !important; gap: 0.5rem !important; }
+          .daily-rec-info-grid { grid-template-columns: 120px 1fr !important; }
+        }
+        @media (min-width: 600px) {
+          .daily-rec-photo-col { height: 100% !important; }
+        }
+      `}</style>
 
-      <main style={{ flex: 1, padding: "2rem 0" }}>
+      <main style={{ flex: 1, padding: "1.25rem 0" }}>
         <div className="container" style={{ maxWidth: "1060px" }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", marginBottom: "1.5rem" }}>
@@ -174,18 +186,21 @@ export default function DailyRecsPage() {
 
               {/* Main Profile Card */}
               {activeProfile && (
-                <div style={{ 
-                  display: "flex", 
-                  background: "#fff", 
-                  borderRadius: "12px", 
-                  overflow: "hidden",
-                  border: "1px solid var(--border-color)",
-                  marginBottom: "2rem",
-                  flexDirection: "row",
-                  minHeight: "450px"
-                }}>
+                <div
+                  className="daily-rec-card"
+                  style={{
+                    display: "flex",
+                    background: "#fff",
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    border: "1px solid var(--border-color)",
+                    marginBottom: "1.5rem",
+                    flexDirection: "row",
+                    minHeight: "450px",
+                  }}
+                >
                   {/* Left Side: Large Photo */}
-                  <div style={{ width: "380px", flexShrink: 0, position: "relative" }}>
+                  <div className="daily-rec-photo-col" style={{ width: "380px", flexShrink: 0, position: "relative" }}>
                     <img 
                       src={getPhoto(activeProfile, selectedIndex)} 
                       alt={activeProfile.name} 
@@ -214,7 +229,7 @@ export default function DailyRecsPage() {
                   </div>
 
                   {/* Right Side: Details & Actions */}
-                  <div style={{ flex: 1, padding: "2.5rem", display: "flex", flexDirection: "column" }}>
+                  <div className="daily-rec-detail-col" style={{ flex: 1, padding: "2rem", display: "flex", flexDirection: "column" }}>
                     {/* Header: Verification & Actions */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
                       {activeProfile.isVerified ? (
@@ -286,23 +301,26 @@ export default function DailyRecsPage() {
                     </div>
 
                     {/* Bottom Action Bar */}
-                    <div style={{ 
-                      marginTop: "2.5rem", 
-                      paddingTop: "1.5rem", 
-                      borderTop: "1px solid var(--border-light)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "1rem"
-                    }}>
-                      <button 
+                    <div
+                      className="daily-rec-action-row"
+                      style={{
+                        marginTop: "2rem",
+                        paddingTop: "1.25rem",
+                        borderTop: "1px solid var(--border-light)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "0.75rem",
+                      }}
+                    >
+                      <button
                         onClick={handleDontShow}
                         style={{
                           display: "flex", alignItems: "center", gap: "0.5rem",
-                          padding: "0.75rem 1.5rem", borderRadius: "30px",
+                          padding: "0.625rem 1.25rem", borderRadius: "30px",
                           border: "1px solid var(--border-color)", background: "#fff",
                           color: "var(--text-medium)", fontWeight: 600, cursor: "pointer",
-                          fontSize: "0.875rem"
+                          fontSize: "0.875rem", minHeight: "44px",
                         }}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -311,33 +329,32 @@ export default function DailyRecsPage() {
                         Don't Show
                       </button>
 
-                      <div style={{ display: "flex", gap: "1rem" }}>
-                        <button 
-                          onClick={handleSkip}
-                          style={{
-                            display: "flex", alignItems: "center", gap: "0.5rem",
-                            padding: "0.75rem 2rem", borderRadius: "30px",
-                            border: "1px solid var(--primary)", background: "#fff",
-                            color: "var(--primary)", fontWeight: 700, cursor: "pointer",
-                            fontSize: "0.9375rem"
-                          }}
-                        >
+                        <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
+                          <button
+                            onClick={handleSkip}
+                            style={{
+                              display: "flex", alignItems: "center", gap: "0.5rem",
+                              padding: "0.625rem 1.5rem", borderRadius: "30px",
+                              border: "1px solid var(--primary)", background: "#fff",
+                              color: "var(--primary)", fontWeight: 700, cursor: "pointer",
+                              fontSize: "0.875rem", minHeight: "44px",
+                            }}
+                          >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M13 5l7 7-7 7M5 5l7 7-7 7" />
                           </svg>
                           Skip
                         </button>
-                        
-                        <button 
-                          onClick={() => handleSendInterest(activeProfile)}
-                          style={{
-                            display: "flex", alignItems: "center", gap: "0.5rem",
-                            padding: "0.75rem 2.5rem", borderRadius: "30px",
-                            border: "none", background: "var(--primary)",
-                            color: "#fff", fontWeight: 700, cursor: "pointer",
-                            fontSize: "0.9375rem"
-                          }}
-                        >
+                                                <button
+                            onClick={() => handleSendInterest(activeProfile)}
+                            style={{
+                              display: "flex", alignItems: "center", gap: "0.5rem",
+                              padding: "0.625rem 1.75rem", borderRadius: "30px",
+                              border: "none", background: "var(--primary)",
+                              color: "#fff", fontWeight: 700, cursor: "pointer",
+                              fontSize: "0.875rem", minHeight: "44px",
+                            }}
+                          >
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="white"/>
                           </svg>
@@ -375,7 +392,7 @@ export default function DailyRecsPage() {
                   </div>
                   
                   <div style={{ padding: "2rem" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "1.25rem", fontSize: "0.875rem" }}>
+                    <div className="daily-rec-info-grid" style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "1rem", fontSize: "0.875rem" }}>
                       <div style={{ color: "var(--text-medium)" }}>Age</div>
                       <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>: {getAge(activeProfile.dob)} Years</div>
 

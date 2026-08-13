@@ -7,10 +7,21 @@ import {
   ChevronDown, HelpCircle, Menu, X,
   Home, Heart, Send, MessageSquare, Search, Bell,
   LogOut, Sparkles, Crown, Lock, RefreshCw, User,
+  ShieldCheck, Settings, Star, Bookmark, Eye,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useMembership } from "@/hooks/useMembership";
 import BottomNav from "./BottomNav";
+
+// ── Guest Center Navigation ────────────────────────────────────────────────────
+const GUEST_NAV = [
+  { label: "Home", href: "/" },
+  { label: "Search Profiles", href: "/search" },
+  { label: "Matches", href: "/matches" },
+  { label: "Membership", href: "/membership" },
+  { label: "Success Stories", href: "/success-stories" },
+  { label: "Help", href: "/faq" },
+];
 
 // ── SVG Icon Components ───────────────────────────────────────────────────────
 
@@ -115,7 +126,15 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [storedProfiles, setStoredProfiles] = useState<StoredProfile[]>([]);
+  const [scrolled, setScrolled] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Sticky scroll shrink
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Load stored profiles for switch-account
   useEffect(() => {
@@ -187,14 +206,16 @@ export default function Navbar() {
       <>
         <header
           style={{
-            background: "#fff",
+            background: scrolled ? "rgba(255,255,255,0.97)" : "#fff",
             borderBottom: "1px solid #e0e0e0",
             position: "sticky",
             top: 0,
             zIndex: 100,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+            boxShadow: scrolled ? "0 2px 12px rgba(107,26,42,0.10)" : "0 1px 3px rgba(0,0,0,0.06)",
+            backdropFilter: scrolled ? "blur(8px)" : "none",
             paddingLeft: "env(safe-area-inset-left, 0px)",
             paddingRight: "env(safe-area-inset-right, 0px)",
+            transition: "box-shadow 0.2s ease, background 0.2s ease",
           }}
         >
           <div
@@ -205,8 +226,9 @@ export default function Navbar() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              height: "56px",
+              height: scrolled ? "50px" : "56px",
               gap: "0.5rem",
+              transition: "height 0.2s ease",
             }}
           >
             {/* Logo */}
@@ -488,11 +510,16 @@ export default function Navbar() {
                     </div>
 
                     {[
-                      { label: "My Profile", href: `/profile/${user.id}` },
-                      { label: "Edit Profile", href: "/profile/edit" },
-                      { label: "My Matches", href: "/matches" },
-                      { label: "Interests", href: "/interests" },
-                      { label: "Settings", href: "/settings" },
+                      { label: "My Profile", href: `/profile/${user.id}`, icon: <User size={14} /> },
+                      { label: "Edit Profile", href: "/profile/edit", icon: <Settings size={14} /> },
+                      { label: "My Matches", href: "/matches", icon: <Heart size={14} /> },
+                      { label: "Shortlisted Profiles", href: "/shortlisted", icon: <Bookmark size={14} /> },
+                      { label: "Profile Visitors", href: "/notifications", icon: <Eye size={14} /> },
+                      { label: "Interests", href: "/interests", icon: <Send size={14} /> },
+                      { label: "Membership", href: "/membership", icon: <Crown size={14} /> },
+                      { label: "Account Settings", href: "/settings", icon: <Settings size={14} /> },
+                      { label: "Privacy Settings", href: "/settings#privacy", icon: <ShieldCheck size={14} /> },
+                      { label: "Help & Support", href: "/faq", icon: <HelpCircle size={14} /> },
                     ].map((item) => (
                       <Link
                         key={item.href + item.label}
@@ -502,16 +529,18 @@ export default function Navbar() {
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          padding: "0.625rem 1rem",
-                          fontSize: "0.875rem",
+                          gap: "0.625rem",
+                          padding: "0.5625rem 1rem",
+                          fontSize: "0.8125rem",
                           color: "#333",
                           textDecoration: "none",
                           borderBottom: "1px solid #f5f5f5",
-                          minHeight: "44px",
+                          minHeight: "40px",
                         }}
                         onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}
                         onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                       >
+                        <span style={{ color: "var(--primary)", opacity: 0.7, flexShrink: 0 }}>{item.icon}</span>
                         {item.label}
                       </Link>
                     ))}
@@ -638,14 +667,17 @@ export default function Navbar() {
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "#fff",
+        background: scrolled ? "rgba(255,255,255,0.97)" : "#fff",
         borderBottom: "1px solid #e0e0e0",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+        boxShadow: scrolled ? "0 2px 12px rgba(107,26,42,0.10)" : "0 1px 3px rgba(0,0,0,0.06)",
+        backdropFilter: scrolled ? "blur(8px)" : "none",
         paddingLeft: "env(safe-area-inset-left, 0px)",
         paddingRight: "env(safe-area-inset-right, 0px)",
+        transition: "box-shadow 0.2s ease, background 0.2s ease",
       }}
     >
-      <div style={{ background: "#fff", padding: "0.5rem 0" }}>
+      <div style={{ background: "transparent" }}>
+        {/* Top row: Logo + Auth buttons */}
         <div
           style={{
             maxWidth: "1140px",
@@ -655,7 +687,8 @@ export default function Navbar() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: "1rem",
-            minHeight: "52px",
+            minHeight: scrolled ? "44px" : "52px",
+            transition: "min-height 0.2s ease",
           }}
         >
           {/* Logo */}
@@ -752,6 +785,46 @@ export default function Navbar() {
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
+
+        {/* Center navigation — desktop only */}
+        <nav
+          className="desktop-nav"
+          aria-label="Main navigation"
+          style={{
+            borderTop: "1px solid #f5f5f5",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0,
+            maxWidth: "1140px",
+            margin: "0 auto",
+            padding: "0 1rem",
+          }}
+        >
+          {GUEST_NAV.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                style={{
+                  padding: "0.5rem 0.875rem",
+                  fontSize: "0.8125rem",
+                  fontWeight: active ? 700 : 500,
+                  color: active ? "var(--primary)" : "#555",
+                  textDecoration: "none",
+                  borderBottom: active ? "2px solid var(--primary)" : "2px solid transparent",
+                  whiteSpace: "nowrap",
+                  transition: "color 0.15s, border-color 0.15s",
+                }}
+                onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = "var(--primary)"; }}
+                onMouseLeave={(e) => { if (!active) e.currentTarget.style.color = "#555"; }}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
       {/* Mobile menu overlay */}
@@ -873,6 +946,13 @@ export default function Navbar() {
         @keyframes slideInRight {
           from { transform: translateX(100%); }
           to   { transform: translateX(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .guest-nav-link:hover {
+          color: var(--primary) !important;
         }
       `}</style>
     </header>

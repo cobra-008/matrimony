@@ -1062,7 +1062,7 @@ export const INDIAN_STATES = [
   'West Bengal',
 ];
 
-// Cities by state
+// Cities by state — all-India comprehensive (36 states/UTs)
 export const CITIES_BY_STATE: Record<string, string[]> = {
   'Tamil Nadu': [
     'Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli (Trichy)',
@@ -1105,20 +1105,78 @@ export const CITIES_BY_STATE: Record<string, string[]> = {
   ],
   'Uttar Pradesh': [
     'Lucknow', 'Kanpur', 'Agra', 'Varanasi', 'Allahabad (Prayagraj)',
-    'Ghaziabad', 'Noida', 'Meerut', 'Bareilly', 'Aligarh', 'Moradabad', 'Other',
+    'Ghaziabad', 'Noida', 'Meerut', 'Bareilly', 'Aligarh', 'Moradabad',
+    'Gorakhpur', 'Jhansi', 'Saharanpur', 'Firozabad', 'Muzaffarnagar', 'Other',
   ],
   'West Bengal': [
-    'Kolkata', 'Asansol', 'Siliguri', 'Durgapur', 'Bardhaman', 'Malda', 'Other',
+    'Kolkata', 'Asansol', 'Siliguri', 'Durgapur', 'Bardhaman',
+    'Malda', 'Howrah', 'Kharagpur', 'Haldia', 'Cooch Behar', 'Other',
   ],
   'Punjab': [
-    'Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda', 'Mohali', 'Other',
+    'Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda',
+    'Mohali', 'Hoshiarpur', 'Pathankot', 'Moga', 'Barnala', 'Other',
   ],
   'Haryana': [
-    'Faridabad', 'Gurugram', 'Panipat', 'Ambala', 'Yamunanagar', 'Rohtak', 'Other',
+    'Faridabad', 'Gurugram', 'Panipat', 'Ambala', 'Yamunanagar',
+    'Rohtak', 'Hisar', 'Karnal', 'Sonipat', 'Bhiwani', 'Other',
   ],
   'Madhya Pradesh': [
-    'Bhopal', 'Indore', 'Jabalpur', 'Gwalior', 'Ujjain', 'Rewa', 'Other',
+    'Bhopal', 'Indore', 'Jabalpur', 'Gwalior', 'Ujjain', 'Rewa',
+    'Sagar', 'Satna', 'Dewas', 'Chhindwara', 'Ratlam', 'Other',
   ],
+  'Bihar': [
+    'Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Darbhanga',
+    'Arrah', 'Begusarai', 'Chhapra', 'Katihar', 'Purnia',
+    'Samastipur', 'Hajipur', 'Bihar Sharif', 'Sasaram', 'Other',
+  ],
+  'Assam': [
+    'Guwahati', 'Silchar', 'Dibrugarh', 'Jorhat', 'Nagaon',
+    'Tinsukia', 'Dhubri', 'Bongaigaon', 'Sivasagar', 'Lakhimpur',
+    'Goalpara', 'Karimganj', 'Other',
+  ],
+  'Odisha': [
+    'Bhubaneswar', 'Cuttack', 'Rourkela', 'Brahmapur (Berhampur)', 'Sambalpur',
+    'Puri', 'Balasore', 'Bhadrak', 'Baripada', 'Jharsuguda',
+    'Koraput', 'Angul', 'Keonjhar', 'Other',
+  ],
+  'Chhattisgarh': [
+    'Raipur', 'Bhilai', 'Bilaspur', 'Korba', 'Durg',
+    'Rajnandgaon', 'Raigarh', 'Ambikapur', 'Jagdalpur', 'Other',
+  ],
+  'Jharkhand': [
+    'Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro', 'Hazaribagh',
+    'Deoghar', 'Giridih', 'Ramgarh', 'Phusro', 'Other',
+  ],
+  'Uttarakhand': [
+    'Dehradun', 'Haridwar', 'Roorkee', 'Haldwani', 'Rudrapur',
+    'Kashipur', 'Rishikesh', 'Nainital', 'Mussoorie', 'Kotdwar', 'Other',
+  ],
+  'Himachal Pradesh': [
+    'Shimla', 'Dharamshala', 'Mandi', 'Solan', 'Bilaspur',
+    'Kullu', 'Hamirpur', 'Una', 'Baddi', 'Palampur', 'Other',
+  ],
+  'Goa': [
+    'Panaji', 'Margao', 'Vasco da Gama', 'Mapusa', 'Ponda',
+    'Bicholim', 'Calangute', 'Other',
+  ],
+  'Jammu & Kashmir': [
+    'Srinagar', 'Jammu', 'Sopore', 'Anantnag', 'Baramulla',
+    'Kathua', 'Udhampur', 'Punch', 'Rajouri', 'Other',
+  ],
+  'Ladakh': ['Leh', 'Kargil', 'Other'],
+  'Chandigarh': ['Chandigarh', 'Other'],
+  'Puducherry': ['Puducherry', 'Karaikal', 'Yanam', 'Mahe', 'Other'],
+  'Andaman & Nicobar Islands': ['Port Blair', 'Havelock Island', 'Car Nicobar', 'Other'],
+  'Lakshadweep': ['Kavaratti', 'Minicoy', 'Amini', 'Other'],
+  'Dadra & Nagar Haveli': ['Silvassa', 'Daman', 'Other'],
+  'Daman & Diu': ['Daman', 'Diu', 'Other'],
+  'Meghalaya': ['Shillong', 'Tura', 'Jowai', 'Nongstoin', 'Other'],
+  'Manipur': ['Imphal', 'Churachandpur', 'Thoubal', 'Bishnupur', 'Other'],
+  'Tripura': ['Agartala', 'Udaipur', 'Dharmanagar', 'Kailasahar', 'Other'],
+  'Mizoram': ['Aizawl', 'Lunglei', 'Champhai', 'Serchhip', 'Other'],
+  'Nagaland': ['Kohima', 'Dimapur', 'Mokokchung', 'Wokha', 'Other'],
+  'Arunachal Pradesh': ['Itanagar', 'Naharlagun', 'Tawang', 'Ziro', 'Pasighat', 'Other'],
+  'Sikkim': ['Gangtok', 'Namchi', 'Pelling', 'Mangan', 'Other'],
 };
 
 // ── DIET / HABITS ────────────────────────────────────────────────────
