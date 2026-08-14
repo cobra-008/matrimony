@@ -10,9 +10,12 @@ import { useAuth } from "@/context/AuthContext";
 import {
   RELIGIONS, RELIGION_TO_CASTES, CASTE_TO_SUBCASTE, MOTHER_TONGUES, HEIGHTS,
   EDUCATION_LEVELS, OCCUPATIONS, INCOME_RANGES, INDIAN_STATES,
-  TAMIL_NADU_CITIES, MARITAL_STATUS, EATING_HABITS, DHOSHAM_OPTIONS,
+  CITIES_BY_STATE, MARITAL_STATUS, EATING_HABITS, DHOSHAM_OPTIONS,
   PROFILE_FOR_OPTIONS,
 } from "@/data/matrimony-data";
+import {
+  COMPATIBILITY_QUESTIONS,
+} from "@/data/compatibility-questions";
 import SearchableSelect from "@/components/ui/SearchableSelect";
 
 // HEIGHTS is {value: number (cm), label: string}[] — use cm as option value
@@ -21,6 +24,26 @@ const HEIGHT_OPTIONS = HEIGHTS.map((h) => ({ value: String(h.value), label: h.la
 const INCOME_OPTIONS = INCOME_RANGES.map((r) => r.label);
 // Max DOB for 18+ validation — computed once at module load (never during render)
 const MAX_DOB_DATE = new Date(Date.now() - 18 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+// DOB dropdown helpers
+const MONTHS = [
+  { value: 1, label: "January" }, { value: 2, label: "February" }, { value: 3, label: "March" },
+  { value: 4, label: "April" }, { value: 5, label: "May" }, { value: 6, label: "June" },
+  { value: 7, label: "July" }, { value: 8, label: "August" }, { value: 9, label: "September" },
+  { value: 10, label: "October" }, { value: 11, label: "November" }, { value: 12, label: "December" },
+];
+
+function daysInMonth(month: number, year: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+function dobPartsToString(day: string, month: string, year: string): string {
+  if (!day || !month || !year) return "";
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: 60 }, (_, i) => CURRENT_YEAR - 18 - i); // 18..78 years ago
 
 // ── Inline field error display ────────────────────────────────────────────
 function FieldError({ msg }: { msg?: string }) {
@@ -224,6 +247,9 @@ function RegisterWizard() {
     name: initName,
     mobile: initMobile,
     dob: "",
+    dobDay: "",
+    dobMonth: "",
+    dobYear: "",
     gender: "",
     password: "",
     email: "",
@@ -250,14 +276,34 @@ function RegisterWizard() {
     partnerReligion: "",
     partnerMaritalStatus: [] as string[],
     partnerState: "",
-    // Step 4 — Photo
+    // Step 5 — Photo
     photoUrl: "",
     about: "",
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);  // ← prevents double-submit
 
+  // Compatibility answers (step 4)
+  const [compatAnswers, setCompatAnswers] = useState<Record<string, string>>({});
+
   const set = (key: string, val: string) => setForm((f) => ({ ...f, [key]: val }));
+
+  // DOB derived values
+  const dobDayOptions = form.dobMonth && form.dobYear
+    ? Array.from({ length: daysInMonth(Number(form.dobMonth), Number(form.dobYear)) }, (_, i) => i + 1)
+    : Array.from({ length: 31 }, (_, i) => i + 1);
+
+  // Sync dob string whenever parts change
+  const updateDobPart = (part: "dobDay" | "dobMonth" | "dobYear", val: string) => {
+    const next = { ...form, [part]: val };
+    // Clamp day if month change makes it invalid
+    if (part === "dobMonth" || part === "dobYear") {
+      const maxDay = next.dobMonth && next.dobYear ? daysInMonth(Number(next.dobMonth), Number(next.dobYear)) : 31;
+      if (Number(next.dobDay) > maxDay) next.dobDay = String(maxDay);
+    }
+    const dobStr = dobPartsToString(next.dobDay, next.dobMonth, next.dobYear);
+    setForm({ ...next, dob: dobStr });
+  };
 
   // Derived: castes based on religion
   const castes = form.religion && RELIGION_TO_CASTES[form.religion] ? RELIGION_TO_CASTES[form.religion] : [];
@@ -297,28 +343,74 @@ function RegisterWizard() {
     }, 1000);
   };
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     if (!form.mobile || form.mobile.length < 10) { toast.error("Enter valid 10-digit mobile number"); return; }
     setOtpSent(true);
     setOtp("");
     setOtpModalOpen(true);
     startResendTimer();
-    toast.success(`OTP sent to +91 ${form.mobile}`);
+    try {
+      const res = await fetch("/api/send-phone-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: form.mobile }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Failed to send OTP. Please try again.");
+        setOtpSent(false);
+        setOtpModalOpen(false);
+        return;
+      }
+      toast.success(`OTP sent to +91 ${form.mobile}`);
+    } catch {
+      toast.error("Network error. Please check your connection and try again.");
+      setOtpSent(false);
+      setOtpModalOpen(false);
+    }
   };
 
   const handleVerifyOtp = async () => {
     if (otp.length !== 4) { toast.error("Enter the 4-digit OTP"); return; }
-    if (otp !== "1234") { toast.error("Incorrect OTP. Please try again."); setOtp(""); return; }
-    setOtpVerified(true);
-    setOtpModalOpen(false);
-    toast.success("Mobile verified successfully!");
+    try {
+      const res = await fetch("/api/verify-phone-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: form.mobile, otp }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Incorrect OTP. Please try again.");
+        setOtp("");
+        return;
+      }
+      setOtpVerified(true);
+      setOtpModalOpen(false);
+      toast.success("Mobile verified successfully!");
+    } catch {
+      toast.error("Network error. Please try again.");
+    }
   };
 
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     if (otpResendSeconds > 0) return;
     setOtp("");
     startResendTimer();
-    toast.success(`OTP resent to +91 ${form.mobile}`);
+    try {
+      const res = await fetch("/api/send-phone-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: form.mobile }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Failed to resend OTP.");
+        return;
+      }
+      toast.success(`OTP resent to +91 ${form.mobile}`);
+    } catch {
+      toast.error("Network error. Please try again.");
+    }
   };
 
   // ── Email OTP handlers ──────────────────────────────────────────────────
@@ -745,23 +837,67 @@ function RegisterWizard() {
                 <FieldError msg={fieldErrors.gender} />
               </div>
 
-              {/* Date of Birth */}
+              {/* Date of Birth — three dropdowns with leap year support */}
               <div style={{ marginBottom: "1rem" }}>
                 <label className="form-label">Date of Birth <span style={{ color: "var(--primary)" }}>*</span></label>
-                <input
-                  type="date"
-                  className="form-input"
-                  value={form.dob}
-                  onChange={(e) => {
-                    set("dob", e.target.value);
-                    const err = validateDob(e.target.value);
-                    if (err) setFieldError("dob", err);
-                    else clearFieldError("dob");
-                  }}
-                  max={MAX_DOB_DATE}
-                  aria-required="true"
-                  style={{ borderColor: fieldErrors.dob ? "#D32F2F" : undefined }}
-                />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: "0.5rem" }}>
+                  {/* Day */}
+                  <select
+                    className="form-select"
+                    value={form.dobDay}
+                    onChange={(e) => {
+                      updateDobPart("dobDay", e.target.value);
+                      clearFieldError("dob");
+                    }}
+                    aria-label="Day of birth"
+                    style={{ borderColor: fieldErrors.dob ? "#D32F2F" : undefined }}
+                  >
+                    <option value="">DD</option>
+                    {dobDayOptions.map((d) => (
+                      <option key={d} value={String(d)}>{String(d).padStart(2, "0")}</option>
+                    ))}
+                  </select>
+                  {/* Month */}
+                  <select
+                    className="form-select"
+                    value={form.dobMonth}
+                    onChange={(e) => {
+                      updateDobPart("dobMonth", e.target.value);
+                      clearFieldError("dob");
+                    }}
+                    aria-label="Month of birth"
+                    style={{ borderColor: fieldErrors.dob ? "#D32F2F" : undefined }}
+                  >
+                    <option value="">Month</option>
+                    {MONTHS.map((m) => (
+                      <option key={m.value} value={String(m.value)}>{m.label}</option>
+                    ))}
+                  </select>
+                  {/* Year */}
+                  <select
+                    className="form-select"
+                    value={form.dobYear}
+                    onChange={(e) => {
+                      updateDobPart("dobYear", e.target.value);
+                      clearFieldError("dob");
+                    }}
+                    aria-label="Year of birth"
+                    style={{ borderColor: fieldErrors.dob ? "#D32F2F" : undefined }}
+                  >
+                    <option value="">YYYY</option>
+                    {YEAR_OPTIONS.map((y) => (
+                      <option key={y} value={String(y)}>{y}</option>
+                    ))}
+                  </select>
+                </div>
+                {form.dob && (
+                  <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
+                    {(() => {
+                      const age = Math.floor((Date.now() - new Date(form.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+                      return `Age: ${age} years`;
+                    })()}
+                  </p>
+                )}
                 <FieldError msg={fieldErrors.dob} />
               </div>
 
@@ -1104,15 +1240,33 @@ function RegisterWizard() {
 
               <div style={{ marginBottom: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border-light)" }}>
                 <h3 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "1rem" }}>Location</h3>
-                <FloatSelect label="State" value={form.state} onChange={(v) => { set("state", v); set("city", ""); }} options={INDIAN_STATES} />
-                {form.state === "Tamil Nadu" ? (
-                  <FloatSelect label="City" value={form.city} onChange={(v) => set("city", v)} options={TAMIL_NADU_CITIES} placeholder="Select city" />
-                ) : (
+                <FloatSelect
+                  label="State"
+                  value={form.state}
+                  onChange={(v) => { set("state", v); set("city", ""); }}
+                  options={INDIAN_STATES}
+                />
+                {form.state && CITIES_BY_STATE[form.state] ? (
+                  <FloatSelect
+                    label="City"
+                    value={form.city}
+                    onChange={(v) => set("city", v)}
+                    options={CITIES_BY_STATE[form.state]}
+                    placeholder="Select city"
+                  />
+                ) : form.state ? (
                   <div style={{ marginBottom: "1rem" }}>
                     <label className="form-label" htmlFor="city-input">City</label>
-                    <input id="city-input" type="text" className="form-input" placeholder="Enter your city" value={form.city} onChange={(e) => set("city", e.target.value)} />
+                    <input
+                      id="city-input"
+                      type="text"
+                      className="form-input"
+                      placeholder="Enter your city"
+                      value={form.city}
+                      onChange={(e) => set("city", e.target.value)}
+                    />
                   </div>
-                )}
+                ) : null}
               </div>
 
               <div style={{ paddingTop: "0.75rem", borderTop: "1px solid var(--border-light)", marginBottom: "0.5rem" }}>
@@ -1135,7 +1289,7 @@ function RegisterWizard() {
         {/* ===== STEP 3: Partner Preferences ===== */}
         {step === 3 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={4} total={5} />
+            <StepProgressBar step={4} total={6} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 <button onClick={() => setStep(2)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
@@ -1248,14 +1402,107 @@ function RegisterWizard() {
           </div>
         )}
 
-        {/* ===== STEP 4: Add Photo ===== */}
-        {step === 4 && (
+        {/* ===== STEP 4: Compatibility Questions ===== */}
+        {step === 4 && (() => {
+          const categories = Array.from(new Set(COMPATIBILITY_QUESTIONS.map(q => q.category)));
+          const answeredCount = Object.keys(compatAnswers).length;
+          const totalQ = COMPATIBILITY_QUESTIONS.length;
+          return (
+            <div className="animate-fade-in-up">
+              <StepProgressBar step={5} total={6} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <button onClick={() => setStep(3)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
+                    <ChevronLeft size={20} />
+                  </button>
+                  <div>
+                    <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>Compatibility Questions</h2>
+                    <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "2px 0 0" }}>{answeredCount}/{totalQ} answered</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setStep(5)}
+                  style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "none", cursor: "pointer", color: "var(--primary)", fontWeight: 700, fontSize: "0.875rem", fontFamily: "var(--font-sans)" }}
+                >
+                  Skip
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+
+              <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.5rem" }}>
+                <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "1.5rem", lineHeight: 1.6 }}>
+                  These 21 questions help us calculate a compatibility score between you and potential matches. Answers are private — only the score is shared.
+                </p>
+
+                {categories.map(category => (
+                  <div key={category} style={{ marginBottom: "1.75rem" }}>
+                    <h3 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "var(--primary)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "1rem", paddingBottom: "0.5rem", borderBottom: "1px solid var(--border-light)" }}>
+                      {category}
+                    </h3>
+                    {COMPATIBILITY_QUESTIONS.filter(q => q.category === category).map(q => (
+                      <div key={q.id} style={{ marginBottom: "1.25rem" }}>
+                        <label style={{ display: "block", fontWeight: 600, fontSize: "0.9rem", color: "var(--text-dark)", marginBottom: "0.625rem", lineHeight: 1.45 }}>
+                          {q.question}
+                        </label>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                          {q.options.map(opt => {
+                            const selected = compatAnswers[q.id] === opt.value;
+                            return (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => setCompatAnswers(prev => ({ ...prev, [q.id]: opt.value }))}
+                                style={{
+                                  padding: "0.4rem 0.875rem",
+                                  borderRadius: "var(--radius-full)",
+                                  border: `1.5px solid ${selected ? "var(--primary)" : "var(--border-color)"}`,
+                                  background: selected ? "var(--primary)" : "#fff",
+                                  color: selected ? "#fff" : "var(--text-dark)",
+                                  fontWeight: selected ? 700 : 400,
+                                  fontSize: "0.8125rem",
+                                  cursor: "pointer",
+                                  fontFamily: "var(--font-sans)",
+                                  transition: "all 0.15s ease",
+                                }}
+                              >
+                                {opt.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+
+                {answeredCount > 0 && answeredCount < totalQ && (
+                  <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
+                    {totalQ - answeredCount} question{totalQ - answeredCount !== 1 ? "s" : ""} unanswered — you can still continue.
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setStep(5)}
+                  className="btn btn-primary"
+                  style={{ width: "100%", justifyContent: "center", marginTop: "0.5rem" }}
+                >
+                  {answeredCount > 0 ? `Save & Continue (${answeredCount}/${totalQ} answered)` : "Skip for now"}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ===== STEP 5: Add Photo ===== */}
+
+        {step === 5 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={5} total={5} />
+            <StepProgressBar step={6} total={6} />
             {/* Header row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <button onClick={() => setStep(3)} aria-label="Go back" style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
+                <button onClick={() => setStep(4)} aria-label="Go back" style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
                   <ChevronLeft size={20} />
                 </button>
                 <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>Add photo</h2>
