@@ -1004,25 +1004,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* =================== TRUST STRIP — honest for new platform =================== */}
-        <section style={{ background: "var(--bm-green-muted)", borderBottom: "1px solid #C5E0B8", padding: "1.25rem 0" }}>
-          <div className="container">
-            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexWrap: "wrap", justifyContent: "center" }}>
-              {[
-                { icon: <Shield size={18} stroke="#3D7A28" />, text: "Privacy Protected" },
-                { icon: <CheckCircle size={18} stroke="#3D7A28" />, text: "Mobile-Verified Profiles" },
-                { icon: <Users size={18} stroke="#3D7A28" />, text: "Tamil Community Focus" },
-                { icon: <Star size={18} stroke="#3D7A28" fill="none" />, text: "Free Registration" },
-              ].map((b) => (
-                <div key={b.text} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  {b.icon}
-                  <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-dark)" }}>{b.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* =================== LATEST PROFILES =================== */}
         <GuestLatestProfiles />
 

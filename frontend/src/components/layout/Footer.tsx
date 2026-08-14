@@ -215,33 +215,6 @@ export default function Footer() {
 
       {/* ── Main Footer ─────────────────────────────────────────────────── */}
       <footer style={{ background: "var(--primary-dark)", color: "rgba(255,255,255,0.8)", marginTop: "auto" }}>
-        {/* Trust strip */}
-        <div style={{ background: "var(--primary)", borderBottom: "1px solid rgba(255,255,255,0.1)", padding: "0.875rem 0" }}>
-          <div className="container">
-            <div
-              className="footer-trust-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "0.75rem 1rem",
-              }}
-            >
-              {TRUST_BADGES.map((badge) => (
-                <div key={badge.label} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  {badge.icon}
-                  <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#fff" }}>{badge.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <style>{`
-            @media (min-width: 640px) {
-              .footer-trust-grid { grid-template-columns: repeat(4, 1fr) !important; }
-            }
-          `}</style>
-        </div>
-
         {/* Main footer body */}
         <div className="container" style={{ padding: "2rem 1rem" }}>
           {/* Brand row — uses /logo.svg same as Navbar */}
