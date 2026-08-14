@@ -1,46 +1,21 @@
-import Link from "next/link";
+"use client";
 
+import Link from "next/link";
+import Image from "next/image";
+
+// Only Discover and Information sections — all links verified to existing routes
 const FOOTER_LINKS = {
   "Discover": [
     { label: "Search Profiles", href: "/search" },
-    { label: "New Profiles", href: "/matches?filter=new" },
     { label: "Recommended Matches", href: "/matches" },
-    { label: "Recently Joined", href: "/matches?filter=recent" },
     { label: "Daily Recommendations", href: "/daily-recs" },
     { label: "Success Stories", href: "/success-stories" },
   ],
   "Information": [
     { label: "About Us", href: "/about" },
-    { label: "How It Works", href: "/faq#how-it-works" },
     { label: "Membership Plans", href: "/membership" },
-    { label: "Success Stories", href: "/success-stories" },
     { label: "FAQs", href: "/faq" },
     { label: "Contact Us", href: "/contact" },
-    { label: "Help Center", href: "/faq" },
-  ],
-  "Safety": [
-    { label: "Safety Tips", href: "/safety" },
-    { label: "Privacy & Security", href: "/privacy" },
-    { label: "Report a Profile", href: "/report-abuse" },
-    { label: "Block a Profile", href: "/safety#block" },
-    { label: "Community Guidelines", href: "/safety#guidelines" },
-    { label: "Grievance Officer", href: "/grievance" },
-  ],
-  "Legal": [
-    { label: "Terms & Conditions", href: "/terms" },
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Cookie Policy", href: "/cookies" },
-    { label: "Refund Policy", href: "/refund" },
-    { label: "Membership Terms", href: "/terms#membership" },
-  ],
-  "Community": [
-    { label: "Brahmin Tamil Matrimony", href: "/community/brahmin" },
-    { label: "Mudaliar Matrimony", href: "/community/mudaliar" },
-    { label: "Vellalar Matrimony", href: "/community/vellalar" },
-    { label: "Gounder Matrimony", href: "/community/gounder" },
-    { label: "Nadar Matrimony", href: "/community/nadar" },
-    { label: "NRI Tamil Matrimony", href: "/nri" },
-    { label: "View All Communities", href: "/community" },
   ],
 };
 
@@ -53,7 +28,7 @@ const TRUST_BADGES = [
         <polyline points="13,25 15.5,27.5 20,22" strokeWidth="2" />
       </svg>
     ),
-    label: "Verified Profiles",
+    label: "Mobile-Verified Profiles",
   },
   {
     icon: (
@@ -72,7 +47,7 @@ const TRUST_BADGES = [
         <polyline points="11,16 14,19 21,13" strokeWidth="2" />
       </svg>
     ),
-    label: "100% Privacy",
+    label: "Privacy Protected",
   },
   {
     icon: (
@@ -114,17 +89,6 @@ const SOCIAL_LINKS = [
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
         <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.4a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" />
         <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" />
-      </svg>
-    ),
-  },
-  {
-    label: "LinkedIn",
-    href: "#",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-        <rect x="2" y="9" width="4" height="12" />
-        <circle cx="4" cy="4" r="2" />
       </svg>
     ),
   },
@@ -251,36 +215,9 @@ export default function Footer() {
 
       {/* ── Main Footer ─────────────────────────────────────────────────── */}
       <footer style={{ background: "var(--primary-dark)", color: "rgba(255,255,255,0.8)", marginTop: "auto" }}>
-        {/* Trust strip */}
-        <div style={{ background: "var(--primary)", borderBottom: "1px solid rgba(255,255,255,0.1)", padding: "0.875rem 0" }}>
-          <div className="container">
-            <div
-              className="footer-trust-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "0.75rem 1rem",
-              }}
-            >
-              {TRUST_BADGES.map((badge) => (
-                <div key={badge.label} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  {badge.icon}
-                  <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#fff" }}>{badge.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <style>{`
-            @media (min-width: 640px) {
-              .footer-trust-grid { grid-template-columns: repeat(4, 1fr) !important; }
-            }
-          `}</style>
-        </div>
-
         {/* Main footer body */}
         <div className="container" style={{ padding: "2rem 1rem" }}>
-          {/* Brand row */}
+          {/* Brand row — uses /logo.svg same as Navbar */}
           <div
             className="footer-brand-row"
             style={{
@@ -290,40 +227,20 @@ export default function Footer() {
               marginBottom: "1.5rem",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-              <div
-                style={{
-                  background: "var(--secondary)",
-                  borderRadius: "4px 0 0 4px",
-                  padding: "4px 8px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="7" r="4" fill="white" />
-                  <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" fill="white" />
-                </svg>
-              </div>
-              <div
-                style={{
-                  background: "var(--primary)",
-                  borderRadius: "0 4px 4px 0",
-                  padding: "4px 10px",
-                }}
-              >
-                <span style={{ color: "white", fontWeight: 900, fontSize: "0.875rem" }}>Elite Tamil</span>
-                <br />
-                <span style={{ color: "white", fontWeight: 700, fontSize: "0.625rem", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                  Matrimony
-                </span>
-              </div>
-            </div>
+            <Link href="/" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
+              <Image
+                src="/logo.svg"
+                alt="Elite Tamil Matrimony"
+                width={140}
+                height={40}
+                style={{ height: "40px", width: "auto" }}
+                priority
+              />
+            </Link>
 
             <div>
               <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", maxWidth: "360px", lineHeight: 1.6, margin: "0 0 0.625rem" }}>
-                Elite Tamil Matrimony is a dedicated matrimonial platform helping Tamil individuals and families discover meaningful marriage relationships.
+                Elite Tamil Matrimony is a newly launched dedicated platform helping Tamil individuals and families discover meaningful marriage relationships.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
                 <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)" }}>
@@ -374,7 +291,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Links grid */}
+          {/* Links grid — only Discover + Information */}
           <div
             className="footer-links-grid"
             style={{
@@ -387,8 +304,7 @@ export default function Footer() {
             }}
           >
             <style>{`
-              @media (min-width: 640px) { .footer-links-grid { grid-template-columns: repeat(3, 1fr) !important; } }
-              @media (min-width: 900px) { .footer-links-grid { grid-template-columns: repeat(5, 1fr) !important; } }
+              @media (min-width: 480px) { .footer-links-grid { grid-template-columns: repeat(2, 1fr) !important; max-width: 480px; } }
               @media (min-width: 640px) { .footer-brand-row { flex-direction: row !important; align-items: flex-start !important; } }
             `}</style>
 
@@ -430,12 +346,12 @@ export default function Footer() {
             ))}
           </div>
 
-          {/* Bottom bar */}
+          {/* Bottom bar — no dead links */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "0.5rem",
+              gap: "0.375rem",
               borderTop: "1px solid rgba(255,255,255,0.1)",
               paddingTop: "1rem",
             }}
@@ -444,24 +360,8 @@ export default function Footer() {
               &copy; {new Date().getFullYear()} Elite Tamil Matrimony. All rights reserved.
             </p>
             <p style={{ fontSize: "0.6875rem", color: "rgba(255,255,255,0.25)", margin: 0 }}>
-              Made for Tamil families and individuals seeking meaningful marriage relationships.
+              A newly launched platform for Tamil families and individuals seeking meaningful marriage relationships.
             </p>
-            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "0.25rem" }}>
-              {[
-                { label: "Privacy Policy", href: "/privacy" },
-                { label: "Terms of Service", href: "/terms" },
-                { label: "Cookies", href: "/cookies" },
-                { label: "Sitemap", href: "/sitemap" },
-              ].map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", textDecoration: "none" }}
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </div>
           </div>
         </div>
       </footer>

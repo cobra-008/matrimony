@@ -350,8 +350,8 @@ export default function Navbar() {
 
             {/* Right: Premium badge + Avatar */}
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
-              {/* Upgrade / Plan badge — hidden on very small screens to save space */}
-              <div className="hide-mobile" style={{ display: "flex" }}>
+              {/* Plan badge — always visible for logged-in users */}
+              <div className="hide-mobile" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 {user.isPremium ? (
                   <div
                     style={{
@@ -377,28 +377,50 @@ export default function Navbar() {
                     {user.membershipPlan ?? "Premium"}
                   </div>
                 ) : (
-                  <button
-                    onClick={() => router.push("/membership")}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "5px",
-                      background: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
-                      border: "none",
-                      borderRadius: "20px",
-                      padding: "0.3rem 0.875rem",
-                      fontSize: "0.75rem",
-                      fontWeight: 700,
-                      color: "#fff",
-                      cursor: "pointer",
-                      fontFamily: "var(--font-sans)",
-                      whiteSpace: "nowrap",
-                      boxShadow: "0 2px 8px rgba(200,151,58,0.35)",
-                    }}
-                  >
-                    <Sparkles size={12} />
-                    Upgrade
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+                    {/* FREE badge */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        background: "rgba(0,0,0,0.06)",
+                        border: "1.5px solid rgba(0,0,0,0.12)",
+                        borderRadius: "20px",
+                        padding: "0.275rem 0.75rem",
+                        fontSize: "0.6875rem",
+                        fontWeight: 700,
+                        color: "var(--text-medium)",
+                        letterSpacing: "0.04em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Free Plan
+                    </div>
+                    <button
+                      onClick={() => router.push("/membership")}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        background: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
+                        border: "none",
+                        borderRadius: "20px",
+                        padding: "0.3rem 0.75rem",
+                        fontSize: "0.6875rem",
+                        fontWeight: 700,
+                        color: "#fff",
+                        cursor: "pointer",
+                        fontFamily: "var(--font-sans)",
+                        whiteSpace: "nowrap",
+                        boxShadow: "0 2px 6px rgba(200,151,58,0.35)",
+                        letterSpacing: "0.02em",
+                      }}
+                    >
+                      <Sparkles size={11} />
+                      Upgrade
+                    </button>
+                  </div>
                 )}
               </div>
 

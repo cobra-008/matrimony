@@ -831,7 +831,7 @@ function GuestLatestProfiles() {
                           <img
                             src={profile.photoUrl}
                             alt={profile.name}
-                            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", background: "#F8F0F0", filter: "blur(6px)", transform: "scale(1.1)" }}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", background: "#F8F0F0", filter: "blur(18px)", transform: "scale(1.2)" }}
                           />
                         ) : (
                           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary-light)" }}>
@@ -912,9 +912,9 @@ export default function HomePage() {
                   lineHeight: 1.25,
                   marginBottom: "1.5rem",
                 }}>
-                  The{" "}
-                  <span style={{ color: "var(--primary)" }}>biggest and most trusted</span>
-                  {" "}matrimony service for Tamils!
+                  A new{" "}
+                  <span style={{ color: "var(--primary)" }}>dedicated platform</span>
+                  {" "}for Tamil matrimony
                 </h1>
                 
                 {/* Illustration — hidden on mobile */}
@@ -1000,124 +1000,6 @@ export default function HomePage() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* =================== TRUST STRIP =================== */}
-        <section style={{ background: "var(--bm-green-muted)", borderBottom: "1px solid #C5E0B8", padding: "1.25rem 0" }}>
-          <div className="container">
-            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
-              {/* Limca Book badge */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                  background: "#fff",
-                  border: "1px solid #C5E0B8",
-                  borderRadius: "var(--radius-lg)",
-                  padding: "0.875rem 1.25rem",
-                  flex: 1,
-                  minWidth: "260px",
-                }}
-              >
-                {/* Book icon */}
-                <div style={{ flexShrink: 0 }}>
-                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                    <rect x="8" y="6" width="28" height="36" rx="3" stroke="#E8401A" strokeWidth="1.8" fill="none" />
-                    <rect x="4" y="8" width="6" height="32" rx="2" fill="#E8401A" />
-                    <line x1="14" y1="16" x2="30" y2="16" stroke="#3D7A28" strokeWidth="1.5" />
-                    <line x1="14" y1="22" x2="30" y2="22" stroke="#3D7A28" strokeWidth="1.5" />
-                    <line x1="14" y1="28" x2="24" y2="28" stroke="#3D7A28" strokeWidth="1.5" />
-                  </svg>
-                </div>
-                <div>
-                  <div style={{ color: "var(--bm-orange)", fontWeight: 700, fontSize: "0.9375rem" }}>
-                    Lakhs of Happy Marriages!
-                  </div>
-                  <div style={{ fontSize: "0.8125rem", color: "var(--text-medium)", marginTop: "2px" }}>
-                    Featured for highest number of documented marriages online
-                  </div>
-                </div>
-              </div>
-
-              {/* Trust badges */}
-              {[
-                { icon: <CheckCircle size={18} stroke="#3D7A28" />, text: "ISO 27001 Certified" },
-                { icon: <Shield size={18} stroke="#3D7A28" />, text: "100% Privacy" },
-                { icon: <Users size={18} stroke="#3D7A28" />, text: "Verified Profiles" },
-                { icon: <Star size={18} stroke="#3D7A28" fill="none" />, text: "4.8 App Rating" },
-              ].map((b) => (
-                <div key={b.text} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  {b.icon}
-                  <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-dark)" }}>{b.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* =================== ASSISTED SERVICE =================== */}
-        <section style={{ background: "var(--bg-page)", padding: "3rem 0" }}>
-          <div className="container">
-            <div style={{ display: "flex", alignItems: "center", gap: "3rem", flexWrap: "wrap" }}>
-              {/* Left text */}
-              <div style={{ flex: 1, minWidth: "280px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
-                  <div
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "50%",
-                      background: "var(--bm-green)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">
-                      <circle cx="12" cy="8" r="4" />
-                      <path d="M6 21v-1a6 6 0 0 1 12 0v1" />
-                      <path d="M19 11l2 2-4 4" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-dark)" }}>Assisted Service</div>
-                    <div style={{ fontSize: "0.8125rem", color: "var(--text-medium)" }}>Personalised matchmaking service</div>
-                  </div>
-                </div>
-                <h2 style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--text-dark)", marginBottom: "0.625rem" }}>
-                  Find your match <span style={{ color: "var(--bm-orange)" }}>10x faster</span>
-                </h2>
-                <p style={{ fontSize: "0.9375rem", color: "var(--text-medium)", marginBottom: "1.25rem", lineHeight: 1.6 }}>
-                  Personalized matchmaking service through expert Relationship Managers who shortlist profiles on your behalf.
-                </p>
-                <Link
-                  href="/membership"
-                  className="btn btn-primary"
-                  style={{ display: "inline-flex" }}
-                >
-                  Know More
-                  <ArrowRight size={15} />
-                </Link>
-              </div>
-
-              {/* Right — model image */}
-              <div style={{ flexShrink: 0 }}>
-                <img
-                  src="https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=400&h=500&dpr=1"
-                  alt="Relationship Manager"
-                  style={{
-                    width: "260px",
-                    height: "320px",
-                    objectFit: "cover",
-                    objectPosition: "top",
-                    borderRadius: "var(--radius-xl)",
-                    display: "block",
-                  }}
-                />
-              </div>
             </div>
           </div>
         </section>
