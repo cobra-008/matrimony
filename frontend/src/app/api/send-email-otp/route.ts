@@ -25,10 +25,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please enter a real email address." }, { status: 400 });
     }
 
-    const otp = generateOtp();
+    // In development mode, if API key is missing or dummy, fallback to 123456
+    const resendKey = process.env.RESEND_API_KEY;
+    const isMock = !resendKey || resendKey === 're_dummy_key_for_build';
+    
+    const otp = isMock ? '123456' : generateOtp();
     await storeOtp(email, otp);
 
     const displayName = name || "there";
+    
+    if (isMock) {
+      console.warn("[send-email-otp] Mock mode: No valid RESEND_API_KEY configured. OTP generated but not sent:", otp);
+      return NextResponse.json({ success: true });
+    }
 
     const { error } = await resend.emails.send({
       from: FROM,
