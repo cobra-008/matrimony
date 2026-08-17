@@ -89,6 +89,8 @@ export interface RegisteredUser {
   membershipPlan?: 'Gold' | 'Diamond' | 'Platinum' | null;  // active plan name
   membershipExpiry?: string;  // ISO datetime
   membershipActivated?: string;
+  membershipPricePaid?: number;  // INR paid (after GST)
+  membershipPlanPeriod?: string; // e.g. "1 Month", "3 Months"
   photos?: ProfilePhoto[];
 }
 
@@ -166,6 +168,8 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     membershipPlan: (row.membership_expiry && new Date(row.membership_expiry) < new Date()) ? null : (row.membership_plan ?? null),
     membershipExpiry: row.membership_expiry ?? undefined,
     membershipActivated: row.membership_activated ?? undefined,
+    membershipPricePaid: row.membership_price_paid ?? undefined,
+    membershipPlanPeriod: row.membership_plan_period ?? undefined,
     photos: row.photos ? row.photos.map((p: any) => ({
       id: p.id,
       profileId: p.profile_id,
@@ -623,9 +627,12 @@ export async function logout(): Promise<void> {
  */
 export async function upgradeMembership(
   userId: string,
-  plan: 'Gold' | 'Diamond' | 'Platinum'
+  plan: 'Gold' | 'Diamond' | 'Platinum',
+  pricePaid?: number,
+  planPeriod?: string,
 ): Promise<RegisteredUser | null> {
   const months = plan === 'Platinum' ? 3 : 1;
+  const period = planPeriod ?? (plan === 'Platinum' ? '3 Months' : '1 Month');
   const expiry = new Date();
   expiry.setMonth(expiry.getMonth() + months);
 
@@ -636,6 +643,8 @@ export async function upgradeMembership(
       membership_plan: plan,
       membership_expiry: expiry.toISOString(),
       membership_activated: new Date().toISOString(),
+      membership_price_paid: pricePaid ?? null,
+      membership_plan_period: period,
       updated_at: new Date().toISOString(),
     })
     .eq('id', userId);
@@ -646,6 +655,32 @@ export async function upgradeMembership(
   }
 
   return fetchProfile(userId);
+}
+
+/**
+ * Cancel a user's active membership plan.
+ * Reverts them to Free — benefits are removed immediately.
+ * NOTE: No refund is issued. This is a hard revoke.
+ */
+export async function cancelMembership(userId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      is_premium: false,
+      membership_plan: null,
+      membership_expiry: null,
+      membership_activated: null,
+      membership_price_paid: null,
+      membership_plan_period: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', userId);
+
+  if (error) {
+    console.error('[cancelMembership] Error cancelling membership:', error.message);
+    return false;
+  }
+  return true;
 }
 
 // ── PHOTO GALLERY FUNCTIONS ───────────────────────────────────────────

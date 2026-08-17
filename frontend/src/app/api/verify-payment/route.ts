@@ -90,11 +90,22 @@ export async function POST(req: NextRequest) {
 
     // Signature valid — upgrade membership in Supabase if userId provided
     let profile = null;
+    const planInfo = PLAN_CONFIG[planKey as keyof typeof PLAN_CONFIG];
+    const planAmounts = { Gold: 1179, Diamond: 2359, Platinum: 11799 };
+    const pricePaidInr = amountPaid
+      ? Math.round(amountPaid / 100)
+      : planAmounts[planKey as keyof typeof planAmounts] ?? 0;
+
     if (userId) {
       try {
-        profile = await upgradeMembership(userId, planKey as "Gold" | "Diamond" | "Platinum");
+        profile = await upgradeMembership(
+          userId,
+          planKey as 'Gold' | 'Diamond' | 'Platinum',
+          pricePaidInr,
+          planInfo?.period,
+        );
       } catch (dbErr) {
-        console.error("[verify-payment] DB upgrade failed:", dbErr);
+        console.error('[verify-payment] DB upgrade failed:', dbErr);
       }
       // Fetch profile if upgrade didn't return it (for email data)
       if (!profile) {
@@ -104,20 +115,17 @@ export async function POST(req: NextRequest) {
 
     // Send confirmation email (non-blocking — fire and forget)
     const recipientEmail = userEmail || profile?.email;
-    const recipientName = userName || profile?.name || "Member";
-    if (recipientEmail && !recipientEmail.endsWith("@etm.app")) {
+    const recipientName = userName || profile?.name || 'Member';
+    if (recipientEmail && !recipientEmail.endsWith('@etm.app')) {
       const planInfo = PLAN_CONFIG[planKey as keyof typeof PLAN_CONFIG];
-      const months = planKey === "Platinum" ? 3 : 1;
+      const months = planKey === 'Platinum' ? 3 : 1;
       const expiry = new Date();
       expiry.setMonth(expiry.getMonth() + months);
-      const expiryStr = expiry.toLocaleDateString("en-IN", {
-        day: "numeric", month: "long", year: "numeric",
+      const expiryStr = expiry.toLocaleDateString('en-IN', {
+        day: 'numeric', month: 'long', year: 'numeric',
       });
 
-      const planAmounts = { Gold: 1179, Diamond: 2359, Platinum: 11799 };
-      const amount = amountPaid
-        ? Math.round(amountPaid / 100)
-        : planAmounts[planKey as keyof typeof planAmounts] ?? 0;
+      const amount = pricePaidInr;
 
       resend.emails.send({
         from: FROM,
