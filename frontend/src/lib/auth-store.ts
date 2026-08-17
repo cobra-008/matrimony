@@ -453,7 +453,7 @@ export async function getProfilesByEmail(email: string): Promise<RegisteredUser[
       *,
       photos:profile_photos(*)
     `)
-    .eq('auth_email', email.trim().toLowerCase())
+    .or(`auth_email.eq.${email.trim().toLowerCase()},email.eq.${email.trim().toLowerCase()}`)
     .order('created_at', { ascending: false });
 
   return (data || []).map(dbToUser);

@@ -6,7 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Eye, EyeOff, ChevronDown, AlertCircle, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
-import { loginWithPassword, getProfilesByMobile, loginToProfile, loginWithOtpSession, type RegisteredUser } from "@/lib/auth-store";
+import { loginWithPassword, getProfilesByMobile, getProfilesByEmail, loginToProfile, loginWithOtpSession, type RegisteredUser } from "@/lib/auth-store";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -276,25 +276,21 @@ function LoginContent() {
     }
 
     // OTP correct — look up profile by email
-    const { data: profileRows, error } = await import("@/lib/supabase").then(m =>
-      m.supabase.from("profiles").select("id").eq("email", otpIdentifier.trim().toLowerCase())
-    );
-    if (error || !profileRows || profileRows.length === 0) {
+    const profiles = await getProfilesByEmail(otpIdentifier.trim());
+    if (profiles.length === 0) {
       setLoading(false);
       toast.error("No account found with this email. Please register first.");
       return;
     }
-    if (profileRows.length === 1) {
-      const result = await loginToProfile(profileRows[0].id);
+    if (profiles.length === 1) {
+      const result = await loginToProfile(profiles[0].id);
       setLoading(false);
       if (!result) { toast.error("Login failed. Please try again."); return; }
       toast.success("Login successful!");
       router.push("/matches");
       return;
     }
-    // Multiple profiles — fetch full data
-    const { getProfilesByEmail } = await import("@/lib/auth-store");
-    const profiles = await getProfilesByEmail(otpIdentifier.trim());
+    // Multiple profiles
     setLoading(false);
     setMultiProfiles(profiles);
   };
