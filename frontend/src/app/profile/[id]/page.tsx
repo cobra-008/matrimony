@@ -1,13 +1,13 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { MOCK_PROFILES, MOCK_GROOM_PROFILES } from "@/data/mock-profiles";
 import { Heart, BookmarkPlus, MessageCircle, Phone, Share2, Flag, ArrowLeft, ChevronRight, Edit2, CheckCircle, Camera, UserCircle, Briefcase, Star, FileText, MapPin, Crown, Lock } from "lucide-react";
 import toast from "react-hot-toast";
-import { getUserById, sendInterest, shortlistProfile } from "@/lib/auth-store";
+import { getUserById, sendInterest, shortlistProfile, recordProfileViewWithNotification } from "@/lib/auth-store";
 import { useAuth } from "@/context/AuthContext";
 import { useMembership } from "@/hooks/useMembership";
 import { ProfileViewSkeleton } from "@/components/ui/Skeleton";
@@ -372,6 +372,8 @@ export default function ProfileDetailPage({
   const [shortlisted, setShortlisted] = useState(false);
   const [activeSection, setActiveSection] = useState("Basic Information");
 
+  const viewRecorded = useRef(false);
+
   const handleSendInterest = async () => {
     if (!user) { toast.error("Please login"); return; }
     await sendInterest(user.id, id);
@@ -385,6 +387,21 @@ export default function ProfileDetailPage({
     setShortlisted(v => !v);
     toast.success(shortlisted ? "Removed from shortlist" : "Added to shortlist");
   };
+
+  // Record profile view once the profile is loaded and viewer ≠ owner
+  useEffect(() => {
+    if (viewRecorded.current) return;       // only once per mount
+    if (loading) return;                    // wait for load
+    if (!user) return;                      // must be logged in
+    const resolvedProfile = mockProfile || dbProfile;
+    if (!resolvedProfile) return;           // profile must exist
+    if (user.id === resolvedProfile.id) return; // don't record own-profile views
+
+    viewRecorded.current = true;
+    recordProfileViewWithNotification(user.id, resolvedProfile.id, user.name).catch(
+      (err) => console.warn('[profile-view] Failed to record view:', err)
+    );
+  }, [loading, user, mockProfile, dbProfile]);
 
   if (loading) {
     return (

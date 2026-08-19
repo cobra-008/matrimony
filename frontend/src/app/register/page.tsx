@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronDown, ChevronLeft, Phone, Upload, X, Check, AlertCircle, Mail } from "lucide-react";
 import toast from "react-hot-toast";
-import { registerUser } from "@/lib/auth-store";
+import { registerUser, saveCompatibilityAnswers } from "@/lib/auth-store";
 import { uploadProfilePhoto } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -566,6 +566,13 @@ function RegisterWizard() {
         partnerMaritalStatus: form.partnerMaritalStatus.length > 0 ? form.partnerMaritalStatus : undefined,
         partnerCountry: form.partnerState && form.partnerState !== "Any" ? "India" : undefined,
       });
+
+      // Save compatibility questionnaire answers (non-fatal if it fails)
+      if (newUser.id && Object.keys(compatAnswers).length > 0) {
+        saveCompatibilityAnswers(newUser.id, compatAnswers).catch(e =>
+          console.warn('[register] Failed to save compatibility answers:', e)
+        );
+      }
 
       // Upload photo to Supabase Storage if file was selected
       if (photoFile && newUser.id) {

@@ -16,10 +16,13 @@ export async function storeOtp(identifier: string, otp: string): Promise<void> {
   const key = identifier.toLowerCase();
 
   // Upsert — replace any existing OTP for this identifier
-  await supabase.from("otp_store").upsert(
+  const { error } = await supabase.from("otp_store").upsert(
     { identifier: key, otp, expires_at: expiresAt, attempts: 0 },
     { onConflict: "identifier" }
   );
+  if (error) {
+    console.error("[otp-store] storeOtp failed for", key, "→", error.message);
+  }
 }
 
 export type VerifyResult =

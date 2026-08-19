@@ -5,6 +5,7 @@
 
 import { supabase } from './supabase';
 import type { User, Session } from '@supabase/supabase-js';
+import { COMPATIBLE_PAIRS } from '@/data/compatibility-questions';
 
 // ── TYPE DEFINITIONS ──────────────────────────────────────────────────
 
@@ -790,8 +791,9 @@ export async function updateProfile(
  */
 /**
  * Compute a 0–100 preference match score between the current user's
- * partner preferences and a candidate's profile.
- * Used to rank results in "Your Matches".
+ * partner preferences and a candidate's profile (profile fields only).
+ * This is a synchronous helper — call fetchMatchProfiles for the full
+ * combined score that also weighs compatibility questionnaire answers.
  */
 export function computeMatchScore(
   currentUser: RegisteredUser,
@@ -810,7 +812,6 @@ export function computeMatchScore(
     const max = currentUser.partnerAgeMax ?? 60;
     if (age >= min && age <= max) score += 25;
     else {
-      // Partial credit if within 2 years of range
       const proximity = Math.min(Math.abs(age - min), Math.abs(age - max));
       if (proximity <= 2) score += 12;
     }
@@ -823,7 +824,7 @@ export function computeMatchScore(
   } else if (candidate.religion && currentUser.religion) {
     maxScore += 20;
     if (candidate.religion === currentUser.religion) score += 20;
-    else score += 10; // bonus for any religion filled
+    else score += 10;
   }
 
   // ── Marital Status (20 pts) ──────────────────────────────────────
@@ -833,7 +834,6 @@ export function computeMatchScore(
       score += 20;
     }
   } else {
-    // If no preference set, any marital status is OK — give neutral score
     maxScore += 20;
     score += 20;
   }
@@ -862,6 +862,99 @@ export function computeMatchScore(
   return maxScore > 0 ? Math.round((score / maxScore) * 100) : 50;
 }
 
+// ── COMPATIBILITY ANSWERS ─────────────────────────────────────────────
+
+/**
+ * Save questionnaire answers for a profile to the compatibility_answers table.
+ * answers = { questionId: answerValue }  e.g. { lifestyle_1: 'home_family' }
+ * Uses UPSERT so it's safe to call again if the user re-takes the questionnaire.
+ */
+export async function saveCompatibilityAnswers(
+  profileId: string,
+  answers: Record<string, string>
+): Promise<void> {
+  const rows = Object.entries(answers)
+    .filter(([, v]) => !!v)
+    .map(([question_id, answer]) => ({ profile_id: profileId, question_id, answer }));
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabase
+    .from('compatibility_answers')
+    .upsert(rows, { onConflict: 'profile_id,question_id' });
+
+  if (error) {
+    console.error('[saveCompatibilityAnswers] Failed:', error.message);
+  }
+}
+
+/**
+ * Batch-load compatibility answers for multiple profiles in a single query.
+ * Returns: { profileId → { questionId → answerValue } }
+ */
+export async function getCompatibilityAnswersBatch(
+  profileIds: string[]
+): Promise<Record<string, Record<string, string>>> {
+  if (profileIds.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from('compatibility_answers')
+    .select('profile_id, question_id, answer')
+    .in('profile_id', profileIds);
+
+  if (error) {
+    console.error('[getCompatibilityAnswersBatch] Failed:', error.message);
+    return {};
+  }
+
+  const map: Record<string, Record<string, string>> = {};
+  for (const row of (data || [])) {
+    if (!map[row.profile_id]) map[row.profile_id] = {};
+    map[row.profile_id][row.question_id] = row.answer;
+  }
+  return map;
+}
+
+/**
+ * Compute a 0–100 answer-based compatibility score between two profiles.
+ * Full credit for exact matches, half credit for compatible-pair answers
+ * (defined in COMPATIBLE_PAIRS), zero otherwise.
+ */
+export function computeAnswerCompatibility(
+  myAnswers: Record<string, string>,
+  theirAnswers: Record<string, string>
+): number {
+  const questions = Object.keys(myAnswers);
+  if (questions.length === 0) return 50; // no data → neutral
+
+  let score = 0;
+  let total = 0;
+
+  for (const qId of questions) {
+    const mine = myAnswers[qId];
+    const theirs = theirAnswers[qId];
+    if (!mine || !theirs) continue; // skip unanswered
+
+    total += 1;
+    if (mine === theirs) {
+      score += 1; // exact match → full point
+    } else {
+      const compatibles = COMPATIBLE_PAIRS[mine] ?? [];
+      if (compatibles.includes(theirs)) {
+        score += 0.5; // adjacent/compatible → half point
+      }
+    }
+  }
+
+  return total === 0 ? 50 : Math.round((score / total) * 100);
+}
+
+/**
+ * Fetch all profiles for the matches page (excludes current user).
+ * Returns top 50 profiles ranked by a COMBINED score:
+ *   70% profile-field preference score + 30% questionnaire answer score.
+ * Falls back gracefully if no answers are stored yet.
+ */
 export async function fetchMatchProfiles(
   currentUserIdOrUser?: string | RegisteredUser,
   currentUserGender?: 'male' | 'female'
@@ -878,38 +971,41 @@ export async function fetchMatchProfiles(
     currentUserId = currentUserIdOrUser as string | undefined;
   }
 
-  // Determine the opposite gender to show
   const oppositeGender = currentUserGender === 'male' ? 'female'
     : currentUserGender === 'female' ? 'male'
     : null;
 
   let query = supabase
     .from('profiles')
-    .select(`
-      *,
-      photos:profile_photos(*)
-    `)
+    .select(`*, photos:profile_photos(*)`)
     .order('last_active', { ascending: false })
     .limit(100);
 
-  if (currentUserId) {
-    query = query.neq('id', currentUserId);
-  }
-
-  // Filter by opposite gender if known
-  if (oppositeGender) {
-    query = query.eq('gender', oppositeGender);
-  }
+  if (currentUserId) query = query.neq('id', currentUserId);
+  if (oppositeGender) query = query.eq('gender', oppositeGender);
 
   const { data, error } = await query;
   if (error) return [];
 
   const profiles = (data || []).map(dbToUser);
 
-  // If we have a full user object with preferences, score and sort
   if (currentUser) {
+    // Batch-load answers for current user + all candidates in 1 query
+    const allIds = [currentUser.id, ...profiles.map(p => p.id)];
+    const answersMap = await getCompatibilityAnswersBatch(allIds);
+    const myAnswers = answersMap[currentUser.id] ?? {};
+    const hasMyAnswers = Object.keys(myAnswers).length > 0;
+
     return profiles
-      .map(p => ({ ...p, compatibilityScore: computeMatchScore(currentUser!, p) }))
+      .map(p => {
+        const profileScore = computeMatchScore(currentUser!, p);
+        const answerScore = hasMyAnswers
+          ? computeAnswerCompatibility(myAnswers, answersMap[p.id] ?? {})
+          : 50;
+        // 70% profile-field weight, 30% questionnaire weight
+        const combined = Math.round(profileScore * 0.7 + answerScore * 0.3);
+        return { ...p, compatibilityScore: combined };
+      })
       .sort((a, b) => (b.compatibilityScore ?? 0) - (a.compatibilityScore ?? 0))
       .slice(0, 50);
   }
