@@ -371,7 +371,7 @@ function RegisterWizard() {
   };
 
   const handleVerifyOtp = async () => {
-    if (otp.length !== 4) { toast.error("Enter the 4-digit OTP"); return; }
+    if (otp.length !== 6) { toast.error("Enter the 6-digit OTP"); return; }
     try {
       const res = await fetch("/api/verify-phone-otp", {
         method: "POST",
@@ -676,13 +676,13 @@ function RegisterWizard() {
               </p>
             </div>
 
-            {/* 4-box OTP input */}
+            {/* 6-box OTP input */}
             <div style={{ marginBottom: "1.25rem" }}>
               <label style={{ display: "block", fontWeight: 600, fontSize: "0.8125rem", color: "var(--text-medium)", marginBottom: "0.75rem", textAlign: "center", letterSpacing: "0.02em" }}>
-                ENTER 4-DIGIT OTP
+                ENTER 6-DIGIT OTP
               </label>
-              <div style={{ display: "flex", gap: "0.625rem", justifyContent: "center" }}>
-                {[0, 1, 2, 3].map((i) => (
+              <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                {[0, 1, 2, 3, 4, 5].map((i) => (
                   <input
                     key={i}
                     id={`otp-box-${i}`}
@@ -695,10 +695,10 @@ function RegisterWizard() {
                       const val = e.target.value.replace(/\D/g, "");
                       const arr = otp.split("");
                       arr[i] = val;
-                      const next = arr.join("").slice(0, 4);
+                      const next = arr.join("").slice(0, 6);
                       setOtp(next);
                       // Auto-focus next box
-                      if (val && i < 3) {
+                      if (val && i < 5) {
                         (document.getElementById(`otp-box-${i + 1}`) as HTMLInputElement)?.focus();
                       }
                     }}
@@ -708,8 +708,8 @@ function RegisterWizard() {
                       }
                     }}
                     style={{
-                      width: "56px", height: "60px",
-                      textAlign: "center", fontSize: "1.5rem", fontWeight: 800,
+                      width: "44px", height: "52px",
+                      textAlign: "center", fontSize: "1.375rem", fontWeight: 800,
                       border: `2px solid ${otp[i] ? "var(--primary)" : "var(--border-color)"}`,
                       borderRadius: "var(--radius-lg)",
                       background: otp[i] ? "var(--primary-light)" : "#fff",
@@ -726,9 +726,9 @@ function RegisterWizard() {
             {/* Verify button */}
             <button
               onClick={handleVerifyOtp}
-              disabled={otp.length !== 4}
+              disabled={otp.length !== 6}
               className="btn btn-primary"
-              style={{ width: "100%", justifyContent: "center", opacity: otp.length !== 4 ? 0.6 : 1, cursor: otp.length !== 4 ? "not-allowed" : "pointer" }}
+              style={{ width: "100%", justifyContent: "center", opacity: otp.length !== 6 ? 0.6 : 1, cursor: otp.length !== 6 ? "not-allowed" : "pointer" }}
             >
               Verify &amp; Proceed
             </button>
@@ -756,7 +756,7 @@ function RegisterWizard() {
 
             {/* Dev hint */}
             <p style={{ textAlign: "center", fontSize: "0.6875rem", color: "#ccc", marginTop: "0.875rem", borderTop: "1px solid #f5f5f5", paddingTop: "0.75rem" }}>
-              Demo mode — use OTP <strong style={{ color: "var(--text-muted)" }}>1234</strong>
+              Demo mode — use OTP <strong style={{ color: "var(--text-muted)" }}>123456</strong>
             </p>
           </div>
         </div>
