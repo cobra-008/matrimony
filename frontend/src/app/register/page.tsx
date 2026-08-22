@@ -315,6 +315,7 @@ function RegisterWizard() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [otpResendSeconds, setOtpResendSeconds] = useState(0);
+  const [otpSending, setOtpSending] = useState(false);
 
   // Email OTP state
   const [emailOtpSent, setEmailOtpSent] = useState(false);
@@ -347,10 +348,13 @@ function RegisterWizard() {
 
   const handleSendOtp = async () => {
     if (!form.mobile || form.mobile.length < 10) { toast.error("Enter valid 10-digit mobile number"); return; }
+    if (otpSending) return; // prevent double-tap
+    setOtpSending(true);
     setOtp("");
     // Phone must have country code without '+': 91XXXXXXXXXX
     const phone = `91${form.mobile.replace(/\D/g, "")}`;
     const result = await msg91.sendOtp(phone);
+    setOtpSending(false);
     if (!result.success) {
       toast.error(result.error ?? "Failed to send OTP. Please try again.");
       return;
@@ -925,9 +929,10 @@ function RegisterWizard() {
                   ) : (
                     <button
                       type="button" onClick={handleSendOtp}
-                      style={{ background: "var(--primary)", color: "#fff", border: "none", borderRadius: "var(--radius-md)", padding: "0 0.875rem", fontWeight: 700, fontSize: "0.8125rem", cursor: "pointer", fontFamily: "var(--font-sans)", flexShrink: 0, whiteSpace: "nowrap" }}
+                      disabled={otpSending}
+                      style={{ background: "var(--primary)", color: "#fff", border: "none", borderRadius: "var(--radius-md)", padding: "0 0.875rem", fontWeight: 700, fontSize: "0.8125rem", cursor: otpSending ? "wait" : "pointer", fontFamily: "var(--font-sans)", flexShrink: 0, whiteSpace: "nowrap", opacity: otpSending ? 0.7 : 1 }}
                     >
-                      {otpSent ? "Resend OTP" : "Send OTP"}
+                      {otpSending ? "Sending…" : otpSent ? "Resend OTP" : "Send OTP"}
                     </button>
                   )}
                 </div>
