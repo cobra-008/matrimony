@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { registerUser, saveCompatibilityAnswers } from "@/lib/auth-store";
 import { uploadProfilePhoto } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
-import { useMSG91 } from "@/hooks/useMSG91";
+import { useMSG91, CAPTCHA_DIV_ID } from "@/hooks/useMSG91";
 import {
   RELIGIONS, RELIGION_TO_CASTES, CASTE_TO_SUBCASTE, MOTHER_TONGUES, HEIGHTS,
   EDUCATION_LEVELS, OCCUPATIONS, INCOME_RANGES, INDIAN_STATES,
@@ -603,6 +603,10 @@ function RegisterWizard() {
   // =====================================
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-page)" }}>
+      {/* MSG91 hCaptcha container — must be a visible DOM element for exposeMethods:true.
+          Without this, MSG91 routes through grecaptcha.enterprise which silently hangs
+          on production domains when reCAPTCHA Enterprise is not configured. */}
+      <div id={CAPTCHA_DIV_ID} style={{ position: "fixed", bottom: "1rem", right: "1rem", zIndex: 0 }} />
       {/* Minimal header */}
       <header style={{ background: "#fff", borderBottom: "1px solid var(--border-color)", padding: "0.75rem 0" }}>
         <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>

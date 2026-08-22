@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { loginWithPassword, getProfilesByMobile, getProfilesByEmail, loginToProfile, loginWithOtpSession, type RegisteredUser } from "@/lib/auth-store";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMSG91 } from "@/hooks/useMSG91";
+import { useMSG91, CAPTCHA_DIV_ID } from "@/hooks/useMSG91";
 
 // Detect if input is an email or phone number
 function detectInputType(value: string): "email" | "phone" | "unknown" {
@@ -369,6 +369,8 @@ function LoginContent() {
 
   return (
     <>
+      {/* MSG91 hCaptcha container — must be in DOM for exposeMethods:true to avoid grecaptcha hang */}
+      <div id={CAPTCHA_DIV_ID} style={{ position: "fixed", bottom: "1rem", right: "1rem", zIndex: 0 }} />
       <Navbar />
       <main style={{ background: "var(--bg-page)", minHeight: "calc(100vh - 120px)", display: "flex", alignItems: "center", padding: "2.5rem 0" }}>
         <div className="container">
