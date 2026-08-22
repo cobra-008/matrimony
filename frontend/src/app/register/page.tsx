@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { registerUser, saveCompatibilityAnswers } from "@/lib/auth-store";
 import { uploadProfilePhoto } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
+import { useMSG91 } from "@/hooks/useMSG91";
 import {
   RELIGIONS, RELIGION_TO_CASTES, CASTE_TO_SUBCASTE, MOTHER_TONGUES, HEIGHTS,
   EDUCATION_LEVELS, OCCUPATIONS, INCOME_RANGES, INDIAN_STATES,
@@ -226,6 +227,7 @@ function RegisterWizard() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { refresh } = useAuth();
+  const msg91 = useMSG91();
 
   // Data passed from homepage form
   const initProfileFor = searchParams.get("profileFor") || "";
@@ -345,72 +347,63 @@ function RegisterWizard() {
 
   const handleSendOtp = async () => {
     if (!form.mobile || form.mobile.length < 10) { toast.error("Enter valid 10-digit mobile number"); return; }
-    setOtpSent(true);
     setOtp("");
+    // Phone must have country code without '+': 91XXXXXXXXXX
+    const phone = `91${form.mobile.replace(/\D/g, "")}`;
+    const result = await msg91.sendOtp(phone);
+    if (!result.success) {
+      toast.error(result.error ?? "Failed to send OTP. Please try again.");
+      return;
+    }
+    setOtpSent(true);
     setOtpModalOpen(true);
     startResendTimer();
-    try {
-      const res = await fetch("/api/send-phone-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: form.mobile }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? "Failed to send OTP. Please try again.");
-        setOtpSent(false);
-        setOtpModalOpen(false);
-        return;
-      }
-      toast.success(`OTP sent to +91 ${form.mobile}`);
-    } catch {
-      toast.error("Network error. Please check your connection and try again.");
-      setOtpSent(false);
-      setOtpModalOpen(false);
-    }
+    toast.success(`OTP sent to +91 ${form.mobile}`);
   };
 
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) { toast.error("Enter the 6-digit OTP"); return; }
+    // Step 1: Verify OTP via MSG91 widget — returns a JWT access_token
+    const verifyResult = await msg91.verifyOtp(otp);
+    if (!verifyResult.success) {
+      toast.error(verifyResult.error ?? "Incorrect OTP. Please try again.");
+      setOtp("");
+      return;
+    }
+    // Step 2: Server-side validation of the MSG91 JWT token
     try {
-      const res = await fetch("/api/verify-phone-otp", {
+      const res = await fetch("/api/verify-msg91-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: form.mobile, otp }),
+        body: JSON.stringify({ accessToken: verifyResult.accessToken }),
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? "Incorrect OTP. Please try again.");
+        toast.error(data.error ?? "OTP verification failed. Please try again.");
         setOtp("");
         return;
       }
-      setOtpVerified(true);
-      setOtpModalOpen(false);
-      toast.success("Mobile verified successfully!");
     } catch {
-      toast.error("Network error. Please try again.");
+      toast.error("Network error during verification. Please try again.");
+      setOtp("");
+      return;
     }
+    setOtpVerified(true);
+    setOtpModalOpen(false);
+    toast.success("Mobile verified successfully!");
   };
 
   const handleResendOtp = async () => {
     if (otpResendSeconds > 0) return;
     setOtp("");
     startResendTimer();
-    try {
-      const res = await fetch("/api/send-phone-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: form.mobile }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? "Failed to resend OTP.");
-        return;
-      }
-      toast.success(`OTP resent to +91 ${form.mobile}`);
-    } catch {
-      toast.error("Network error. Please try again.");
+    // Use retryOtp with null = default channel (SMS)
+    const result = await msg91.retryOtp(null);
+    if (!result.success) {
+      toast.error(result.error ?? "Failed to resend OTP.");
+      return;
     }
+    toast.success(`OTP resent to +91 ${form.mobile}`);
   };
 
   // ── Email OTP handlers ──────────────────────────────────────────────────
@@ -761,10 +754,7 @@ function RegisterWizard() {
               </button>
             </div>
 
-            {/* Dev hint */}
-            <p style={{ textAlign: "center", fontSize: "0.6875rem", color: "#ccc", marginTop: "0.875rem", borderTop: "1px solid #f5f5f5", paddingTop: "0.75rem" }}>
-              Demo mode — use OTP <strong style={{ color: "var(--text-muted)" }}>123456</strong>
-            </p>
+            {/* MSG91 handles OTP delivery — no dev hint needed */}
           </div>
         </div>
       )}

@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { loginWithPassword, getProfilesByMobile, getProfilesByEmail, loginToProfile, loginWithOtpSession, type RegisteredUser } from "@/lib/auth-store";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useMSG91 } from "@/hooks/useMSG91";
 
 // Detect if input is an email or phone number
 function detectInputType(value: string): "email" | "phone" | "unknown" {
@@ -121,6 +122,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const prefillMobile = searchParams.get("mobile") || "";
+  const msg91 = useMSG91();
 
   useEffect(() => {
     if (user) router.replace("/");
@@ -201,9 +203,16 @@ function LoginContent() {
         return;
       }
     } else {
-      // Phone: MSG91 not yet set up — use test OTP 123456
-      await new Promise((r) => setTimeout(r, 800));
-      toast.success(`OTP sent to +91 ${val.replace(/\D/g, "")}`);
+      // Phone: send via MSG91 OTP Widget
+      const digits = val.replace(/\D/g, "");
+      const phone = `91${digits}`; // MSG91 format: country code + number, no '+'
+      const result = await msg91.sendOtp(phone);
+      if (!result.success) {
+        toast.error(result.error ?? "Failed to send OTP. Please try again.");
+        setLoading(false);
+        return;
+      }
+      toast.success(`OTP sent to +91 ${digits}`);
     }
 
     setLoading(false);
@@ -217,13 +226,32 @@ function LoginContent() {
     setLoading(true);
 
     if (otpType === "phone") {
-      // Test OTP for phone (MSG91 not yet configured)
-      if (otp !== "123456") {
+      // Step 1: Verify OTP via MSG91 widget — returns a JWT access_token
+      const verifyResult = await msg91.verifyOtp(otp);
+      if (!verifyResult.success) {
         setLoading(false);
-        toast.error("Incorrect OTP. Please try again.");
+        toast.error(verifyResult.error ?? "Incorrect OTP. Please try again.");
         return;
       }
-      // Look up profiles by mobile
+      // Step 2: Server-side validation of MSG91 JWT token
+      try {
+        const tokenRes = await fetch("/api/verify-msg91-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessToken: verifyResult.accessToken }),
+        });
+        const tokenData = await tokenRes.json();
+        if (!tokenRes.ok) {
+          setLoading(false);
+          toast.error(tokenData.error ?? "OTP verification failed. Please try again.");
+          return;
+        }
+      } catch {
+        setLoading(false);
+        toast.error("Network error during verification. Please try again.");
+        return;
+      }
+      // OTP verified — look up profiles by mobile
       const digits = otpIdentifier.replace(/\D/g, "");
       const profiles = await getProfilesByMobile(digits);
       if (profiles.length === 0) {
@@ -238,13 +266,13 @@ function LoginContent() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ profileId: profiles[0].id }),
         });
-        const tokenData = await res.json();
+        const loginData = await res.json();
         if (!res.ok) {
           setLoading(false);
-          toast.error(tokenData.error || "Login failed. Please try again.");
+          toast.error(loginData.error || "Login failed. Please try again.");
           return;
         }
-        const result = await loginWithOtpSession(tokenData.access_token, tokenData.refresh_token);
+        const result = await loginWithOtpSession(loginData.access_token, loginData.refresh_token);
         setLoading(false);
         if (!result) { toast.error("Login failed. Please try again or re-register."); return; }
         toast.success("Login successful!");
@@ -392,7 +420,7 @@ function LoginContent() {
                             {!fieldErrors.otpId && otpIdentifier && (
                               <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
                                 {inputType === "email" ? "✉️ OTP will be sent to this email via Resend" :
-                                 inputType === "phone" ? "📱 Use OTP: 123456 (SMS service coming soon)" :
+                                 inputType === "phone" ? "📱 OTP will be sent via SMS to this number" :
                                  "Enter a valid email or 10-digit mobile number"}
                               </p>
                             )}
@@ -415,12 +443,21 @@ function LoginContent() {
                           <div style={{ marginBottom: "1rem" }}>
                             <label className="form-label">Enter 6-digit OTP</label>
                             <input type="text" className="form-input" placeholder="- - - - - -" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} style={{ textAlign: "center", fontSize: "1.125rem", letterSpacing: "0.25em" }} autoFocus />
-                            {otpType === "phone" && (
-                              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>📱 Use test OTP: <strong>123456</strong></p>
-                            )}
                           </div>
                           <div style={{ textAlign: "right", marginBottom: "1.125rem" }}>
-                            <button type="button" onClick={handleSendOtp} style={{ fontSize: "0.8125rem", color: "var(--bm-orange)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 600 }}>Resend OTP</button>
+                            <button type="button" onClick={async () => {
+                              // Resend via MSG91 retryOtp (null = default channel)
+                              if (otpType === "phone") {
+                                const result = await msg91.retryOtp(null);
+                                if (!result.success) {
+                                  toast.error(result.error ?? "Failed to resend OTP.");
+                                } else {
+                                  toast.success("OTP resent successfully.");
+                                }
+                              } else {
+                                handleSendOtp({ preventDefault: () => {} } as React.FormEvent);
+                              }
+                            }} style={{ fontSize: "0.8125rem", color: "var(--bm-orange)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 600 }}>Resend OTP</button>
                           </div>
                           <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
                             {loading ? "Verifying..." : "Verify & Login"}
