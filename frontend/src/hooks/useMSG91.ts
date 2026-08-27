@@ -18,6 +18,20 @@
 //
 // 3. Every public method (sendOtp / verifyOtp / retryOtp) has a hard 30-second
 //    timeout so the UI can never get permanently stuck.
+//
+// BUG FIXES:
+//
+// FIX-1: _injectScript() is now called INSIDE useEffect (after first DOM paint).
+//   Previously it could be called before the captchaRenderId <div> was mounted,
+//   causing the MSG91 Angular widget to fail to render hCaptcha and never
+//   expose window.sendOtp → 15 s timeout fired every time.
+//
+// FIX-2: Added _failed flag + _reset() so singleton state is cleared after a
+//   timeout. Previously _initPromise stayed permanently rejected and _injected
+//   stayed true — every retry failed instantly without re-trying the network.
+//
+// FIX-3: _getInitPromise() is always called BEFORE _injectScript() so
+//   _resolveInit / _rejectInit are non-null when script callbacks fire them.
 
 import { useEffect, useRef, useState } from "react";
 
@@ -77,6 +91,18 @@ let _initPromise: Promise<void> | null = null;
 let _resolveInit: (() => void)         | null = null;
 let _rejectInit:  ((e: Error) => void) | null = null;
 let _injected = false;
+let _failed   = false; // FIX-2: tracks permanent failure so we can reset
+
+// FIX-2: Clears all singleton state so the hook can make a fresh attempt.
+function _reset(): void {
+  _initPromise  = null;
+  _resolveInit  = null;
+  _rejectInit   = null;
+  _injected     = false;
+  _failed       = false;
+  const old = document.getElementById(SCRIPT_ID);
+  if (old) old.remove();
+}
 
 function _getInitPromise(): Promise<void> {
   if (!_initPromise) {
@@ -88,35 +114,42 @@ function _getInitPromise(): Promise<void> {
   return _initPromise;
 }
 
-function _injectScript(): void {
+// FIX-1: captchaDiv is passed in (not read from the constant at module level)
+// to guarantee the element is already in the DOM before initSendOTP() fires.
+// This function must only be called from inside useEffect.
+function _injectScript(captchaDiv: string): void {
   if (_injected) return;
   _injected = true;
 
-  // Hot-reload guard: widget already bootstrapped
+  // Hot-reload guard: widget already bootstrapped from a previous render.
+  // FIX-3: _resolveInit is guaranteed non-null because _getInitPromise() is
+  // always called before _injectScript() in the useEffect below.
   if (typeof window.sendOtp === "function") {
     _resolveInit?.();
     return;
   }
 
   const timeoutId = setTimeout(() => {
+    _failed = true; // FIX-2
     _rejectInit?.(
       new Error("MSG91 widget timed out. Please refresh the page and try again.")
     );
   }, INIT_TIMEOUT_MS);
 
   const config: MSG91Config = {
-    widgetId:       WIDGET_ID,
-    tokenAuth:      TOKEN_AUTH,
-    exposeMethods:  true,
-    // Providing a real captchaRenderId routes through hCaptcha widget path
-    // and avoids the grecaptcha.enterprise path which silently hangs in
-    // production when reCAPTCHA Enterprise is blocked or not configured.
-    captchaRenderId: CAPTCHA_DIV_ID,
+    widgetId:        WIDGET_ID,
+    tokenAuth:       TOKEN_AUTH,
+    exposeMethods:   true,
+    // FIX-1: captchaDiv is guaranteed mounted before this call (useEffect).
+    // Routes hCaptcha path instead of grecaptcha.enterprise, which silently
+    // hangs when reCAPTCHA Enterprise is blocked or unconfigured.
+    captchaRenderId: captchaDiv,
   };
 
   const doInit = () => {
     if (typeof window.initSendOTP !== "function") {
       clearTimeout(timeoutId);
+      _failed = true; // FIX-2
       _rejectInit?.(new Error("MSG91 initSendOTP not found after script load."));
       return;
     }
@@ -132,18 +165,19 @@ function _injectScript(): void {
         clearInterval(pollId);
         clearTimeout(timeoutId);
         _resolveInit?.();
-      } else if (polls >= 150) {
-        // 150 × 100 ms = 15 s
+      } else if (polls >= 200) {
+        // 200 × 100 ms = 20 s (matches INIT_TIMEOUT_MS)
         clearInterval(pollId);
         clearTimeout(timeoutId);
+        _failed = true; // FIX-2
         _rejectInit?.(
-          new Error("MSG91 widget did not expose sendOtp after 15 seconds.")
+          new Error("MSG91 widget did not expose sendOtp after 20 seconds.")
         );
       }
     }, 100);
   };
 
-  // Reuse an existing script tag if present
+  // Reuse an existing script tag if present (e.g. after a soft navigation)
   const existing = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
   if (existing) {
     if (typeof window.sendOtp === "function") {
@@ -153,6 +187,7 @@ function _injectScript(): void {
       existing.addEventListener("load", doInit);
       existing.addEventListener("error", () => {
         clearTimeout(timeoutId);
+        _failed = true; // FIX-2
         _rejectInit?.(new Error("Failed to load MSG91 otp-provider.js."));
       });
     }
@@ -167,6 +202,7 @@ function _injectScript(): void {
   script.onload  = doInit;
   script.onerror = () => {
     clearTimeout(timeoutId);
+    _failed = true; // FIX-2
     _rejectInit?.(new Error("Failed to load MSG91 otp-provider.js."));
   };
 
@@ -204,10 +240,25 @@ export function useMSG91() {
 
   useEffect(() => {
     mountedRef.current = true;
-    _injectScript();
-    _getInitPromise()
-      .then(() => { if (mountedRef.current) setReady(true); })
+
+    // FIX-2: If a previous attempt permanently failed, reset singleton state
+    // so this mount makes a fresh network attempt rather than instantly failing.
+    if (_failed) {
+      _reset();
+    }
+
+    // FIX-3: Create the promise FIRST so _resolveInit / _rejectInit are
+    // assigned before _injectScript()'s callbacks can fire them.
+    const promise = _getInitPromise();
+
+    // FIX-1: Inject here (inside useEffect = after first DOM paint) so the
+    // captchaRenderId <div> is guaranteed mounted before initSendOTP() runs.
+    _injectScript(CAPTCHA_DIV_ID);
+
+    promise
+      .then(() => { if (mountedRef.current) { setReady(true); setInitError(null); } })
       .catch((err: Error) => { if (mountedRef.current) setInitError(err.message); });
+
     return () => { mountedRef.current = false; };
   }, []);
 
