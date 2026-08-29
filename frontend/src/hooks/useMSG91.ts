@@ -83,8 +83,11 @@ const TOKEN_AUTH       = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH  ?? "";
 const SCRIPT_URL       = "https://verify.msg91.com/otp-provider.js";
 const SCRIPT_ID        = "msg91-otp-provider";
 const CAPTCHA_DIV_ID   = "msg91-captcha-container";   // must exist in DOM
-const INIT_TIMEOUT_MS  = 15_000;   // 15 s for script + Angular bootstrap
+const INIT_TIMEOUT_MS  = 25_000;   // 25 s for script + Angular bootstrap (bumped from 15 s)
 const METHOD_TIMEOUT_MS = 30_000;  // 30 s per sendOtp / verifyOtp / retryOtp
+
+// True only when both env vars are present — export so pages can show a setup hint.
+export const credentialsSet = Boolean(WIDGET_ID && TOKEN_AUTH);
 
 // ── Module-level singleton ────────────────────────────────────────────────────
 let _initPromise: Promise<void> | null = null;
@@ -165,8 +168,8 @@ function _injectScript(captchaDiv: string): void {
         clearInterval(pollId);
         clearTimeout(timeoutId);
         _resolveInit?.();
-      } else if (polls >= 200) {
-        // 200 × 100 ms = 20 s (matches INIT_TIMEOUT_MS)
+      } else if (polls >= 250) {
+        // 250 × 100 ms = 25 s (matches INIT_TIMEOUT_MS)
         clearInterval(pollId);
         clearTimeout(timeoutId);
         _failed = true; // FIX-2
@@ -240,6 +243,18 @@ export function useMSG91() {
 
   useEffect(() => {
     mountedRef.current = true;
+
+    // GUARD: If credentials are missing, fail immediately with an actionable error
+    // instead of silently waiting 25 s for the timeout.
+    if (!credentialsSet) {
+      const missingVars: string[] = [];
+      if (!WIDGET_ID)  missingVars.push("NEXT_PUBLIC_MSG91_WIDGET_ID");
+      if (!TOKEN_AUTH) missingVars.push("NEXT_PUBLIC_MSG91_TOKEN_AUTH");
+      const msg = `MSG91 OTP widget is not configured. Add ${missingVars.join(" and ")} to .env.local and restart the dev server.`;
+      console.error("[useMSG91]", msg);
+      if (mountedRef.current) setInitError(msg);
+      return () => { mountedRef.current = false; };
+    }
 
     // FIX-2: If a previous attempt permanently failed, reset singleton state
     // so this mount makes a fresh network attempt rather than instantly failing.
