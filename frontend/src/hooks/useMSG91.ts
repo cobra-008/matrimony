@@ -73,7 +73,7 @@ const WIDGET_ID        = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID  ?? "";
 const TOKEN_AUTH       = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH ?? "";
 const SCRIPT_URL       = "https://verify.msg91.com/otp-provider.js";
 const SCRIPT_ID        = "msg91-otp-provider";
-const CAPTCHA_DIV_ID   = "msg91-captcha-container";   // must exist in DOM
+export const CAPTCHA_DIV_ID   = "msg91-captcha-container";   // must exist in DOM
 const INIT_TIMEOUT_MS  = 25_000;   // 25 s for script + Angular bootstrap (bumped from 15 s)
 const METHOD_TIMEOUT_MS = 30_000;  // 30 s per sendOtp / verifyOtp / retryOtp
 
@@ -393,5 +393,3 @@ export function useMSG91() {
   return { ready, initError, sendOtp, verifyOtp, retryOtp };
 }
 
-// Exported for backwards compatibility (captcha div no longer needed with default config)
-export const CAPTCHA_DIV_ID = "msg91-captcha-container";
