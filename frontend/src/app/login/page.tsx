@@ -6,7 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Eye, EyeOff, ChevronDown, AlertCircle, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
-import { loginWithPassword, getProfilesByMobile, getProfilesByEmail, loginToProfile, loginWithOtpSession, type RegisteredUser } from "@/lib/auth-store";
+import { loginWithPassword, getProfilesByMobile, getProfilesByEmail, loginWithOtpSession, type RegisteredUser } from "@/lib/auth-store";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMSG91, CAPTCHA_DIV_ID } from "@/hooks/useMSG91";
@@ -327,9 +327,21 @@ function LoginContent() {
       return;
     }
     if (profiles.length === 1) {
-      const result = await loginToProfile(profiles[0].id);
+      // Use server-side OTP login (service role) — same as phone OTP path
+      const res = await fetch("/api/otp-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: profiles[0].id }),
+      });
+      const loginData = await res.json();
+      if (!res.ok) {
+        setLoading(false);
+        toast.error(loginData.error || "Login failed. Please try again.");
+        return;
+      }
+      const result = await loginWithOtpSession(loginData.access_token, loginData.refresh_token);
       setLoading(false);
-      if (!result) { toast.error("Login failed. Please try again."); return; }
+      if (!result) { toast.error("Login failed. Please try again or re-register."); return; }
       toast.success("Login successful!");
       router.push("/matches");
       return;
