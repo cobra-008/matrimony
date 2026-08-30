@@ -2,22 +2,12 @@
 
 // src/hooks/useMSG91.ts
 //
-// KEY DESIGN DECISIONS (informed by reading otp-provider.js source):
-//
-// 1. `window.initSendOTP(config)` bootstraps an Angular app asynchronously.
-//    `window.sendOtp` is only exposed AFTER `exposeMethodsToWindow()` runs
-//    inside Angular's ngOnInit. We must POLL for it — resolving immediately
-//    after calling initSendOTP is too early.
-//
-// 2. When `exposeMethods: true` and NO `captchaRenderId` is supplied, the
-//    widget routes through `grecaptcha.enterprise.execute()`. If reCAPTCHA
-//    Enterprise is blocked or misconfigured (common on custom domains), the
-//    callback never fires — causing infinite "Sending…". Providing a real
-//    DOM element as `captchaRenderId` routes through the hCaptcha widget
-//    path instead, which is more reliable.
-//
-// 3. Every public method (sendOtp / verifyOtp / retryOtp) has a hard 30-second
-//    timeout so the UI can never get permanently stuck.
+// MSG91 OTP Widget integration using the official SDK pattern:
+//   1. A <script> tag loads otp-provider.js with onload="initSendOTP(configuration)"
+//   2. exposeMethods: true prevents the popup and exposes window.sendOtp,
+//      window.verifyOtp, window.retryOtp on the window object
+//   3. We inject the script once (singleton) and poll for window.sendOtp
+//      because Angular bootstraps asynchronously after initSendOTP() is called.
 
 import { useEffect, useRef, useState } from "react";
 
@@ -47,9 +37,10 @@ declare global {
   }
 }
 
-export interface MSG91Config {
+interface MSG91Config {
   widgetId: string;
   tokenAuth: string;
+  identifier?: string;
   exposeMethods: boolean;
   captchaRenderId?: string;
   success?: (data: unknown) => void;
@@ -64,19 +55,27 @@ interface MSG91ResponseData {
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const WIDGET_ID        = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID   ?? "";
-const TOKEN_AUTH       = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH  ?? "";
+const WIDGET_ID        = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID  ?? "";
+const TOKEN_AUTH       = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH ?? "";
 const SCRIPT_URL       = "https://verify.msg91.com/otp-provider.js";
 const SCRIPT_ID        = "msg91-otp-provider";
-const CAPTCHA_DIV_ID   = "msg91-captcha-container";   // must exist in DOM
-const INIT_TIMEOUT_MS  = 15_000;   // 15 s for script + Angular bootstrap
-const METHOD_TIMEOUT_MS = 30_000;  // 30 s per sendOtp / verifyOtp / retryOtp
+const INIT_TIMEOUT_MS  = 20_000; // 20 s for script + Angular bootstrap
+const METHOD_TIMEOUT_MS = 30_000; // 30 s per sendOtp / verifyOtp / retryOtp
 
 // ── Module-level singleton ────────────────────────────────────────────────────
-let _initPromise: Promise<void> | null = null;
-let _resolveInit: (() => void)         | null = null;
-let _rejectInit:  ((e: Error) => void) | null = null;
+let _initPromise:  Promise<void>        | null = null;
+let _resolveInit:  (() => void)         | null = null;
+let _rejectInit:   ((e: Error) => void) | null = null;
 let _injected = false;
+
+function _resetSingleton(): void {
+  _initPromise = null;
+  _resolveInit = null;
+  _rejectInit  = null;
+  _injected    = false;
+  const old = document.getElementById(SCRIPT_ID);
+  if (old) old.remove();
+}
 
 function _getInitPromise(): Promise<void> {
   if (!_initPromise) {
@@ -92,94 +91,106 @@ function _injectScript(): void {
   if (_injected) return;
   _injected = true;
 
-  // Hot-reload guard: widget already bootstrapped
+  // Already bootstrapped (e.g. hot-reload)
   if (typeof window.sendOtp === "function") {
     _resolveInit?.();
     return;
   }
 
+  const rejectAndReset = (err: Error) => {
+    _rejectInit?.(err);
+    setTimeout(_resetSingleton, 0);
+  };
+
   const timeoutId = setTimeout(() => {
-    _rejectInit?.(
+    rejectAndReset(
       new Error("MSG91 widget timed out. Please refresh the page and try again.")
     );
   }, INIT_TIMEOUT_MS);
 
+  // Configuration object exactly as documented by MSG91
   const config: MSG91Config = {
-    widgetId:       WIDGET_ID,
-    tokenAuth:      TOKEN_AUTH,
-    exposeMethods:  true,
-    // Providing a real captchaRenderId routes through hCaptcha widget path
-    // and avoids the grecaptcha.enterprise path which silently hangs in
-    // production when reCAPTCHA Enterprise is blocked or not configured.
-    captchaRenderId: CAPTCHA_DIV_ID,
+    widgetId:      WIDGET_ID,
+    tokenAuth:     TOKEN_AUTH,
+    exposeMethods: true,
+    success: (data) => {
+      console.log("[MSG91] success callback", data);
+    },
+    failure: (error) => {
+      console.log("[MSG91] failure callback", error);
+    },
   };
 
   const doInit = () => {
     if (typeof window.initSendOTP !== "function") {
       clearTimeout(timeoutId);
-      _rejectInit?.(new Error("MSG91 initSendOTP not found after script load."));
+      rejectAndReset(new Error("MSG91 initSendOTP not found after script load."));
       return;
     }
 
+    // Call initSendOTP exactly as the SDK specifies: initSendOTP(configuration)
     window.initSendOTP(config);
 
-    // POLL until Angular's ngOnInit exposes window.sendOtp (async bootstrap).
-    // Calling resolve() immediately after initSendOTP() is too early.
+    // Poll for window.sendOtp — Angular bootstraps asynchronously
     let polls = 0;
+    const maxPolls = INIT_TIMEOUT_MS / 100;
     const pollId = setInterval(() => {
       polls++;
       if (typeof window.sendOtp === "function") {
         clearInterval(pollId);
         clearTimeout(timeoutId);
         _resolveInit?.();
-      } else if (polls >= 150) {
-        // 150 × 100 ms = 15 s
+      } else if (polls >= maxPolls) {
         clearInterval(pollId);
         clearTimeout(timeoutId);
-        _rejectInit?.(
-          new Error("MSG91 widget did not expose sendOtp after 15 seconds.")
+        rejectAndReset(
+          new Error("MSG91 widget did not expose sendOtp after 20 seconds.")
         );
       }
     }, 100);
   };
 
-  // Reuse an existing script tag if present
+  // Reuse existing script tag (e.g. hot-reload)
   const existing = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
   if (existing) {
     if (typeof window.sendOtp === "function") {
       clearTimeout(timeoutId);
       _resolveInit?.();
     } else {
-      existing.addEventListener("load", doInit);
+      existing.addEventListener("load", doInit, { once: true });
       existing.addEventListener("error", () => {
         clearTimeout(timeoutId);
-        _rejectInit?.(new Error("Failed to load MSG91 otp-provider.js."));
-      });
+        rejectAndReset(new Error("Failed to load MSG91 otp-provider.js."));
+      }, { once: true });
     }
     return;
   }
 
+  // Inject the script — MSG91 SDK pattern: onload calls initSendOTP(configuration)
   const script = document.createElement("script");
-  script.id    = SCRIPT_ID;
-  script.type  = "text/javascript";
-  script.src   = SCRIPT_URL;
-  script.async = true;
+  script.id      = SCRIPT_ID;
+  script.type    = "text/javascript";
+  script.src     = SCRIPT_URL;
+  script.async   = true;
   script.onload  = doInit;
   script.onerror = () => {
     clearTimeout(timeoutId);
-    _rejectInit?.(new Error("Failed to load MSG91 otp-provider.js."));
+    rejectAndReset(new Error("Failed to load MSG91 otp-provider.js."));
   };
 
   document.body.appendChild(script);
 }
 
-// ── Await helper with error unwrapping ───────────────────────────────────────
+// ── Await helper ──────────────────────────────────────────────────────────────
 async function _awaitWidget(): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
     await _getInitPromise();
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "MSG91 failed to load." };
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "MSG91 failed to load.",
+    };
   }
 }
 
@@ -196,6 +207,16 @@ function withTimeout<T>(
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timerId));
 }
 
+// ── Utility ───────────────────────────────────────────────────────────────────
+function toData(value: unknown): MSG91ResponseData {
+  if (!value) return {};
+  if (typeof value === "string") {
+    try { return JSON.parse(value) as MSG91ResponseData; }
+    catch { return { message: value }; }
+  }
+  return value as MSG91ResponseData;
+}
+
 // ── Hook ──────────────────────────────────────────────────────────────────────
 export function useMSG91() {
   const [ready, setReady]         = useState(false);
@@ -204,6 +225,7 @@ export function useMSG91() {
 
   useEffect(() => {
     mountedRef.current = true;
+    setInitError(null);
     _injectScript();
     _getInitPromise()
       .then(() => { if (mountedRef.current) setReady(true); })
@@ -212,8 +234,10 @@ export function useMSG91() {
   }, []);
 
   // ── sendOtp ──────────────────────────────────────────────────────────────
+  // Sends an OTP to the given identifier (email or mobile with country code, no '+')
+  // Calls: window.sendOtp(identifier, successCb, failureCb)
   const sendOtp = async (
-    phone: string
+    identifier: string
   ): Promise<{ success: boolean; error?: string }> => {
     const w = await _awaitWidget();
     if (!w.ok) return { success: false, error: w.error };
@@ -222,10 +246,14 @@ export function useMSG91() {
       METHOD_TIMEOUT_MS,
       new Promise<{ success: boolean; error?: string }>((resolve) => {
         window.sendOtp(
-          phone,
-          () => resolve({ success: true }),
-          (err) => {
-            const d = toData(err);
+          identifier,
+          (data) => {
+            console.log("[MSG91] sendOtp success", data);
+            resolve({ success: true });
+          },
+          (error) => {
+            console.log("[MSG91] sendOtp failure", error);
+            const d = toData(error);
             resolve({ success: false, error: d.message ?? "Failed to send OTP." });
           }
         );
@@ -235,6 +263,8 @@ export function useMSG91() {
   };
 
   // ── verifyOtp ────────────────────────────────────────────────────────────
+  // Verifies the OTP entered by the user.
+  // Calls: window.verifyOtp(otp, successCb, failureCb)
   const verifyOtp = async (
     otp: string
   ): Promise<{ success: boolean; accessToken?: string; error?: string }> => {
@@ -247,6 +277,7 @@ export function useMSG91() {
         window.verifyOtp(
           otp,
           (data) => {
+            console.log("[MSG91] verifyOtp success", data);
             const d = toData(data);
             if (d.type === "error") {
               resolve({ success: false, error: d.message ?? "OTP verification failed." });
@@ -254,13 +285,18 @@ export function useMSG91() {
             }
             resolve({ success: true, accessToken: d.access_token ?? "" });
           },
-          (err) => {
-            const d = toData(err);
+          (error) => {
+            console.log("[MSG91] verifyOtp failure", error);
+            const d = toData(error);
+            // Some MSG91 widget versions fire the success data in the failure callback
             if (d.type === "success" || d.access_token) {
               resolve({ success: true, accessToken: d.access_token ?? "" });
               return;
             }
-            resolve({ success: false, error: d.message ?? "Incorrect OTP. Please try again." });
+            resolve({
+              success: false,
+              error: d.message ?? "Incorrect OTP. Please try again.",
+            });
           }
         );
       }),
@@ -269,6 +305,9 @@ export function useMSG91() {
   };
 
   // ── retryOtp ─────────────────────────────────────────────────────────────
+  // Retries OTP delivery on a given channel.
+  // channel: null for default, '11'=SMS, '4'=Voice, '3'=Email, '12'=WhatsApp
+  // Calls: window.retryOtp(channel, successCb, failureCb)
   const retryOtp = async (
     channel: string | null = null
   ): Promise<{ success: boolean; error?: string }> => {
@@ -280,9 +319,13 @@ export function useMSG91() {
       new Promise<{ success: boolean; error?: string }>((resolve) => {
         window.retryOtp(
           channel,
-          () => resolve({ success: true }),
-          (err) => {
-            const d = toData(err);
+          (data) => {
+            console.log("[MSG91] retryOtp success", data);
+            resolve({ success: true });
+          },
+          (error) => {
+            console.log("[MSG91] retryOtp failure", error);
+            const d = toData(error);
             resolve({ success: false, error: d.message ?? "Failed to resend OTP." });
           }
         );
@@ -294,15 +337,5 @@ export function useMSG91() {
   return { ready, initError, sendOtp, verifyOtp, retryOtp };
 }
 
-// ── Captcha container div ID — import this in pages that use OTP ──────────────
-export { CAPTCHA_DIV_ID };
-
-// ── Utility ───────────────────────────────────────────────────────────────────
-function toData(value: unknown): MSG91ResponseData {
-  if (!value) return {};
-  if (typeof value === "string") {
-    try { return JSON.parse(value) as MSG91ResponseData; }
-    catch { return { message: value }; }
-  }
-  return value as MSG91ResponseData;
-}
+// Exported for backwards compatibility (captcha div no longer needed with default config)
+export const CAPTCHA_DIV_ID = "msg91-captcha-container";
