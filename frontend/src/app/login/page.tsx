@@ -204,6 +204,16 @@ function LoginContent() {
       }
     } else {
       // Phone: send via MSG91 OTP Widget
+      // Guard: if MSG91 widget failed to init (e.g. missing credentials), bail early.
+      if (msg91.initError) {
+        toast.error(
+          msg91.initError.includes("not configured")
+            ? "OTP service is not configured. Please contact support."
+            : "OTP service failed to load. Please refresh the page and try again."
+        );
+        setLoading(false);
+        return;
+      }
       const digits = val.replace(/\D/g, "");
       const phone = `91${digits}`; // MSG91 format: country code + number, no '+'
       const result = await msg91.sendOtp(phone);
