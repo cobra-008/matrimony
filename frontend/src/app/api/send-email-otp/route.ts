@@ -30,7 +30,16 @@ export async function POST(req: NextRequest) {
     const isMock = !resendKey || resendKey === 're_dummy_key_for_build';
     
     const otp = isMock ? '123456' : generateOtp();
-    await storeOtp(email, otp);
+    // Store OTP in DB FIRST — if this fails, do not send the email
+    try {
+      await storeOtp(email, otp);
+    } catch (storeErr) {
+      console.error("[send-email-otp] storeOtp threw:", storeErr);
+      return NextResponse.json(
+        { error: "Could not save OTP. Please try again." },
+        { status: 500 }
+      );
+    }
 
     const displayName = name || "there";
     
