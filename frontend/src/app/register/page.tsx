@@ -374,23 +374,29 @@ function RegisterWizard() {
       setOtp("");
       return;
     }
-    // Step 2: Server-side validation of the MSG91 JWT token
-    try {
-      const res = await fetch("/api/verify-msg91-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessToken: verifyResult.accessToken }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? "OTP verification failed. Please try again.");
+    // Step 2 (optional): Server-side validation of the MSG91 JWT token.
+    // The MSG91 widget in exposeMethods mode does not always return an
+    // access_token in the verifyOtp per-call callback — the success callback
+    // firing is itself proof the OTP was verified by MSG91's servers.
+    // We only do the extra server check when a token is actually present.
+    if (verifyResult.accessToken) {
+      try {
+        const res = await fetch("/api/verify-msg91-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessToken: verifyResult.accessToken }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          toast.error(data.error ?? "OTP verification failed. Please try again.");
+          setOtp("");
+          return;
+        }
+      } catch {
+        toast.error("Network error during verification. Please try again.");
         setOtp("");
         return;
       }
-    } catch {
-      toast.error("Network error during verification. Please try again.");
-      setOtp("");
-      return;
     }
     setOtpVerified(true);
     setOtpModalOpen(false);

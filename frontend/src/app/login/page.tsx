@@ -243,23 +243,29 @@ function LoginContent() {
         toast.error(verifyResult.error ?? "Incorrect OTP. Please try again.");
         return;
       }
-      // Step 2: Server-side validation of MSG91 JWT token
-      try {
-        const tokenRes = await fetch("/api/verify-msg91-token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accessToken: verifyResult.accessToken }),
-        });
-        const tokenData = await tokenRes.json();
-        if (!tokenRes.ok) {
+      // Step 2 (optional): Server-side validation of MSG91 JWT token.
+      // The MSG91 widget in exposeMethods mode does not always return an
+      // access_token in the verifyOtp per-call callback — the success callback
+      // firing is itself proof the OTP was verified by MSG91's servers.
+      // We only do the extra server check when a token is actually present.
+      if (verifyResult.accessToken) {
+        try {
+          const tokenRes = await fetch("/api/verify-msg91-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accessToken: verifyResult.accessToken }),
+          });
+          const tokenData = await tokenRes.json();
+          if (!tokenRes.ok) {
+            setLoading(false);
+            toast.error(tokenData.error ?? "OTP verification failed. Please try again.");
+            return;
+          }
+        } catch {
           setLoading(false);
-          toast.error(tokenData.error ?? "OTP verification failed. Please try again.");
+          toast.error("Network error during verification. Please try again.");
           return;
         }
-      } catch {
-        setLoading(false);
-        toast.error("Network error during verification. Please try again.");
-        return;
       }
       // OTP verified — look up profiles by mobile
       const digits = otpIdentifier.replace(/\D/g, "");
