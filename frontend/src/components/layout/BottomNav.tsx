@@ -39,7 +39,7 @@ export default function BottomNav() {
               aria-current={active ? "page" : undefined}
               aria-label={label}
             >
-              <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
+              <Icon size={22} strokeWidth={active ? 2.2 : 1.8} />
               <span>{label}</span>
             </Link>
           );

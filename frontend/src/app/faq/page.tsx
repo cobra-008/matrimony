@@ -164,7 +164,7 @@ export default function FaqPage() {
           <div className="container max-w-3xl">
             {filtered.length === 0 ? (
               <div className="text-center py-10">
-                <div className="text-4xl mb-3">🔍</div>
+                <Search size={40} className="mx-auto mb-3" style={{ color: "var(--border-color)" }} />
                 <p className="text-[var(--text-secondary)]">No results found for &ldquo;{search}&rdquo;</p>
               </div>
             ) : (

@@ -8,8 +8,9 @@ const BASE_STYLE = `
 
 const BRAND_PRIMARY = '#6B1A2A';
 const BRAND_GOLD = '#C8973A';
+const LOGO_URL = 'https://elitetamilmatrimony.com/logo-full.jpg';
 
-// ── Shared header + footer wrappers ───────────────────────────────────────
+// â”€â”€ Shared header + footer wrappers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function emailWrapper(bodyContent: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -25,11 +26,9 @@ function emailWrapper(bodyContent: string): string {
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:580px; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 32px rgba(107,26,42,0.10); border:1px solid #EDD5B8;">
           <!-- HEADER -->
           <tr>
-            <td style="background:linear-gradient(135deg,${BRAND_PRIMARY} 0%,#9E1F33 100%); padding:28px 32px; text-align:center;">
-              <div style="font-size:22px; font-weight:900; color:#fff; letter-spacing:0.5px;">
-                ❤ Elite Tamil Matrimony
-              </div>
-              <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:4px; letter-spacing:1px; text-transform:uppercase;">
+            <td style="background:linear-gradient(135deg,${BRAND_PRIMARY} 0%,#9E1F33 100%); padding:24px 32px; text-align:center;">
+              <img src="${LOGO_URL}" alt="Elite Tamil Matrimony" width="180" style="max-width:180px; height:auto; display:inline-block; border-radius:6px;" />
+              <div style="font-size:11px; color:rgba(255,255,255,0.65); margin-top:8px; letter-spacing:1.5px; text-transform:uppercase;">
                 Find Your Perfect Match
               </div>
             </td>
@@ -47,10 +46,17 @@ function emailWrapper(bodyContent: string): string {
           <!-- FOOTER -->
           <tr>
             <td style="background:#FAF6F1; border-top:1px solid #EDD5B8; padding:20px 32px; text-align:center;">
-              <p style="font-size:11px; color:#A08060; margin:0 0 6px;">
-                © ${new Date().getFullYear()} Elite Tamil Matrimony. All rights reserved.
+              <p style="font-size:11px; color:#A08060; margin:0 0 4px;">
+                &copy; ${new Date().getFullYear()} Elite Tamil Matrimony. All rights reserved.
               </p>
-              <p style="font-size:11px; color:#BBA080; margin:0;">
+              <p style="font-size:11px; color:#A08060; margin:0 0 4px;">
+                support@elitetamilmatrimony.com &nbsp;|&nbsp; +91 93606 53547
+              </p>
+              <p style="font-size:10px; color:#BBA080; margin:0 0 6px;">
+                2nd Floor, Sona College of Technology, Sona Valliappa Block,<br/>
+                Sona Incubation Foundation, Junction Main Rd, Salem, Tamil Nadu 636005
+              </p>
+              <p style="font-size:10px; color:#C4A080; margin:0;">
                 This is an automated email. Please do not reply to this message.
               </p>
             </td>
@@ -63,7 +69,7 @@ function emailWrapper(bodyContent: string): string {
 </html>`;
 }
 
-// ── OTP Email ─────────────────────────────────────────────────────────────
+// â”€â”€ OTP Email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function otpEmailHtml(name: string, otp: string): string {
   const body = `
     <h1 style="font-size:24px; font-weight:900; color:${BRAND_PRIMARY}; margin:0 0 8px; line-height:1.2;">
@@ -96,21 +102,30 @@ export function otpEmailHtml(name: string, otp: string): string {
     </div>
 
     <!-- Security note -->
-    <div style="display:flex; align-items:center; gap:8px; background:#F5FBF5; border:1px solid #C8E6C9; border-radius:8px; padding:12px 16px;">
-      <span style="font-size:18px;">🔒</span>
-      <p style="font-size:12px; color:#3A7040; margin:0; line-height:1.5;">
-        <strong>Security tip:</strong> Elite Tamil Matrimony will never call or ask you for this OTP. Keep it confidential.
-      </p>
-    </div>
+    <table cellpadding="0" cellspacing="0" width="100%" style="background:#F5FBF5; border:1px solid #C8E6C9; border-radius:8px;">
+      <tr>
+        <td style="padding:12px 16px; vertical-align:top; width:28px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3A7040" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </td>
+        <td style="padding:12px 16px 12px 0;">
+          <p style="font-size:12px; color:#3A7040; margin:0; line-height:1.5;">
+            <strong>Security tip:</strong> Elite Tamil Matrimony will never call or ask you for this OTP. Keep it confidential.
+          </p>
+        </td>
+      </tr>
+    </table>
   `;
   return emailWrapper(body);
 }
 
 export function otpEmailText(name: string, otp: string): string {
-  return `Hello ${name},\n\nYour Elite Tamil Matrimony email verification OTP is: ${otp}\n\nThis OTP is valid for 10 minutes. Do not share it with anyone.\n\nIf you did not request this, please ignore this email.\n\n— Elite Tamil Matrimony Team`;
+  return `Hello ${name},\n\nYour Elite Tamil Matrimony email verification OTP is: ${otp}\n\nThis OTP is valid for 10 minutes. Do not share it with anyone.\n\nIf you did not request this, please ignore this email.\n\nâ€” Elite Tamil Matrimony Team`;
 }
 
-// ── Payment Confirmation Email ─────────────────────────────────────────────
+// â”€â”€ Payment Confirmation Email â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function paymentConfirmationHtml(opts: {
   name: string;
   plan: string;
@@ -123,7 +138,7 @@ export function paymentConfirmationHtml(opts: {
   const featuresHtml = opts.planFeatures.map(f => `
     <tr>
       <td style="padding:6px 0; font-size:13px; color:#333; border-bottom:1px solid #F0E8DA;">
-        <span style="color:${BRAND_GOLD}; margin-right:8px; font-weight:700;">✓</span>${f}
+        <span style="color:${BRAND_GOLD}; margin-right:8px; font-weight:700;">&#10003;</span>${f}
       </td>
     </tr>
   `).join('');
@@ -131,11 +146,13 @@ export function paymentConfirmationHtml(opts: {
   const body = `
     <!-- Success Icon -->
     <div style="text-align:center; margin-bottom:28px;">
-      <div style="width:72px; height:72px; background:linear-gradient(135deg,${BRAND_PRIMARY},#9E1F33); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:16px; box-shadow:0 6px 20px rgba(107,26,42,0.25);">
-        <span style="font-size:32px; line-height:1;">✓</span>
+      <div style="width:72px; height:72px; background:linear-gradient(135deg,${BRAND_PRIMARY},#9E1F33); border-radius:50%; display:inline-block; margin-bottom:16px; box-shadow:0 6px 20px rgba(107,26,42,0.25); line-height:72px; text-align:center;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
       </div>
       <h1 style="font-size:26px; font-weight:900; color:${BRAND_PRIMARY}; margin:0 0 6px;">
-        Payment Confirmed! 🎉
+        Payment Confirmed!
       </h1>
       <p style="font-size:15px; color:#777; margin:0;">
         Your membership is now active
@@ -143,9 +160,9 @@ export function paymentConfirmationHtml(opts: {
     </div>
 
     <!-- Plan Badge -->
-    <div style="background:linear-gradient(135deg,${BRAND_GOLD},#E8C060); border-radius:50px; padding:10px 24px; text-align:center; margin:0 0 28px; display:block;">
+    <div style="background:linear-gradient(135deg,${BRAND_GOLD},#E8C060); border-radius:50px; padding:10px 24px; text-align:center; margin:0 0 28px;">
       <span style="font-size:16px; font-weight:900; color:#fff; letter-spacing:0.5px;">
-        ⭐ ${opts.plan} Member
+        ${opts.plan} Member
       </span>
     </div>
 
@@ -174,12 +191,12 @@ export function paymentConfirmationHtml(opts: {
           <td style="font-size:13px; color:#222; font-weight:700; text-align:right;">${opts.expiryDate}</td>
         </tr>
         <tr>
-          <td style="font-size:13px; color:#888; padding:5px 0; border-top:1px solid #EDD5B8; padding-top:10px; margin-top:5px;">Payment ID</td>
+          <td style="font-size:13px; color:#888; padding:5px 0; border-top:1px solid #EDD5B8; padding-top:10px;">Payment ID</td>
           <td style="font-size:11px; color:#666; font-family:'Courier New',monospace; text-align:right; border-top:1px solid #EDD5B8; padding-top:10px;">${opts.paymentId}</td>
         </tr>
         <tr>
           <td style="font-size:15px; font-weight:900; color:${BRAND_PRIMARY}; padding-top:12px; border-top:2px solid ${BRAND_GOLD};">Amount Paid</td>
-          <td style="font-size:18px; font-weight:900; color:${BRAND_PRIMARY}; text-align:right; padding-top:12px; border-top:2px solid ${BRAND_GOLD};">₹${opts.amount.toLocaleString('en-IN')}</td>
+          <td style="font-size:18px; font-weight:900; color:${BRAND_PRIMARY}; text-align:right; padding-top:12px; border-top:2px solid ${BRAND_GOLD};">&#8377;${opts.amount.toLocaleString('en-IN')}</td>
         </tr>
       </table>
     </div>
@@ -198,14 +215,14 @@ export function paymentConfirmationHtml(opts: {
     <div style="text-align:center; margin:0 0 24px;">
       <a href="https://elitetamilmatrimony.com/matches"
          style="display:inline-block; background:linear-gradient(135deg,${BRAND_PRIMARY},#9E1F33); color:#fff; font-size:15px; font-weight:700; text-decoration:none; padding:14px 36px; border-radius:50px; box-shadow:0 4px 16px rgba(107,26,42,0.3); letter-spacing:0.3px;">
-        Start Finding Matches →
+        Start Finding Matches &rarr;
       </a>
     </div>
 
     <!-- Support note -->
     <p style="font-size:12px; color:#A08060; text-align:center; margin:0; line-height:1.6;">
       Questions? Email us at <a href="mailto:support@elitetamilmatrimony.com" style="color:${BRAND_PRIMARY}; text-decoration:none; font-weight:700;">support@elitetamilmatrimony.com</a><br/>
-      or call us at <a href="tel:+914412345678" style="color:${BRAND_PRIMARY}; text-decoration:none; font-weight:700;">+91 44 1234 5678</a>
+      or call us at <a href="tel:+919360653547" style="color:${BRAND_PRIMARY}; text-decoration:none; font-weight:700;">+91 93606 53547</a>
     </p>
   `;
   return emailWrapper(body);
@@ -219,5 +236,5 @@ export function paymentConfirmationText(opts: {
   planPeriod: string;
   expiryDate: string;
 }): string {
-  return `Dear ${opts.name},\n\nYour payment for Elite Tamil Matrimony ${opts.plan} membership has been confirmed!\n\nPayment ID: ${opts.paymentId}\nAmount: ₹${opts.amount.toLocaleString('en-IN')}\nPlan: ${opts.plan} (${opts.planPeriod})\nValid until: ${opts.expiryDate}\n\nStart finding your matches at: https://elitetamilmatrimony.com/matches\n\nFor support: support@elitetamilmatrimony.com\n\n— Elite Tamil Matrimony Team`;
+  return `Dear ${opts.name},\n\nYour payment for Elite Tamil Matrimony ${opts.plan} membership has been confirmed!\n\nPayment ID: ${opts.paymentId}\nAmount: Rs.${opts.amount.toLocaleString('en-IN')}\nPlan: ${opts.plan} (${opts.planPeriod})\nValid until: ${opts.expiryDate}\n\nStart finding your matches at: https://elitetamilmatrimony.com/matches\n\nFor support: support@elitetamilmatrimony.com | +91 93606 53547\n\nâ€” Elite Tamil Matrimony Team`;
 }

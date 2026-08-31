@@ -618,15 +618,15 @@ function RegisterWizard() {
         <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <img
-              src="/logo.svg"
+              src="/logo-full.jpg"
               alt="Elite Tamil Matrimony"
-              style={{ height: "40px", width: "auto" }}
+              style={{ height: "48px", width: "auto", borderRadius: "4px" }}
             />
           </a>
           <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.875rem", color: "var(--text-medium)" }}>
             Need help? Call
-            <a href="tel:+914412345678" style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}>
-              +91 44 1234 5678
+            <a href="tel:+919360653547" style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}>
+              +91 93606 53547
             </a>
           </div>
         </div>

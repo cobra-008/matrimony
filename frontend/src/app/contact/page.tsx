@@ -57,7 +57,7 @@ export default function ContactPage() {
                   {
                     icon: <Phone size={20} />,
                     label: "Phone Support",
-                    value: "+91 98765 43210",
+                    value: "+91 93606 53547",
                     sub: "Mon–Sat, 9am–6pm IST",
                     color: "hsl(142, 71%, 45%)",
                     bg: "hsl(142, 71%, 95%)",
@@ -73,8 +73,8 @@ export default function ContactPage() {
                   {
                     icon: <MapPin size={20} />,
                     label: "Office",
-                    value: "Chennai, Tamil Nadu, India",
-                    sub: "Headquarters",
+                    value: "2nd Floor, Sona College of Technology",
+                    sub: "Sona Valliappa Block, Sona Incubation Foundation, Junction Main Rd, Salem, Tamil Nadu 636005",
                     color: "var(--saffron)",
                     bg: "hsl(28, 88%, 95%)",
                   },

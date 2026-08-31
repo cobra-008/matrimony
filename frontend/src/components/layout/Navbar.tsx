@@ -38,7 +38,7 @@ const LOGGED_IN_NAV = [
   {
     label: "Home",
     href: "/",
-    icon: <Home size={18} />,
+    icon: <Home size={20} />,
     preview: {
       title: "Dashboard",
       desc: "Your daily match recommendations and profile completeness.",
@@ -49,7 +49,7 @@ const LOGGED_IN_NAV = [
   {
     label: "Matches",
     href: "/matches",
-    icon: <Heart size={18} />,
+    icon: <Heart size={20} />,
     preview: {
       title: "All Matches",
       desc: "Browse profiles matching your partner preferences.",
@@ -60,7 +60,7 @@ const LOGGED_IN_NAV = [
   {
     label: "Interests",
     href: "/interests",
-    icon: <Send size={18} />,
+    icon: <Send size={20} />,
     preview: {
       title: "Interests Sent & Received",
       desc: "Track all interests you have sent and received.",
@@ -71,7 +71,7 @@ const LOGGED_IN_NAV = [
   {
     label: "Messages",
     href: "/messages",
-    icon: <MessageSquare size={18} />,
+    icon: <MessageSquare size={20} />,
     preview: {
       title: "Messages",
       desc: "Chat with matched profiles. Available for Gold and above.",
@@ -82,7 +82,7 @@ const LOGGED_IN_NAV = [
   {
     label: "Search",
     href: "/search",
-    icon: <Search size={18} />,
+    icon: <Search size={20} />,
     preview: {
       title: "Advanced Search",
       desc: "Filter by caste, city, education, income and 25+ filters.",
@@ -93,7 +93,7 @@ const LOGGED_IN_NAV = [
   {
     label: "Alerts",
     href: "/notifications",
-    icon: <Bell size={18} />,
+    icon: <Bell size={20} />,
     preview: {
       title: "Notifications",
       desc: "Stay updated on views, interests, and messages.",
@@ -206,13 +206,15 @@ export default function Navbar() {
       <>
         <header
           style={{
-            background: scrolled ? "rgba(255,255,255,0.97)" : "#fff",
+            background: scrolled ? "rgba(255,255,255,0.98)" : "#fff",
             borderBottom: "1px solid #e0e0e0",
-            position: "sticky",
+            position: "fixed",
             top: 0,
-            zIndex: 100,
-            boxShadow: scrolled ? "0 2px 12px rgba(107,26,42,0.10)" : "0 1px 3px rgba(0,0,0,0.06)",
-            backdropFilter: scrolled ? "blur(8px)" : "none",
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            boxShadow: scrolled ? "0 3px 16px rgba(107,26,42,0.12)" : "0 1px 4px rgba(0,0,0,0.07)",
+            backdropFilter: scrolled ? "blur(10px)" : "none",
             paddingLeft: "env(safe-area-inset-left, 0px)",
             paddingRight: "env(safe-area-inset-right, 0px)",
             transition: "box-shadow 0.2s ease, background 0.2s ease",
@@ -226,17 +228,17 @@ export default function Navbar() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              height: scrolled ? "50px" : "56px",
-              gap: "0.5rem",
+              height: scrolled ? "62px" : "70px",
+              gap: "0.75rem",
               transition: "height 0.2s ease",
             }}
           >
             {/* Logo */}
             <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
               <img
-                src="/logo.svg"
+                src="/logo-full.jpg"
                 alt="Elite Tamil Matrimony"
-                style={{ height: "40px", width: "auto", display: "block" }}
+                style={{ height: "52px", width: "auto", display: "block", borderRadius: "4px" }}
               />
             </Link>
 
@@ -259,12 +261,12 @@ export default function Navbar() {
                         flexDirection: "column",
                         alignItems: "center",
                         gap: "2px",
-                        padding: "0 0.625rem",
-                        height: "56px",
+                        padding: "0 0.75rem",
+                        height: "70px",
                         justifyContent: "center",
                         color: active ? "var(--primary)" : isLocked ? "#aaa" : "#555",
                         textDecoration: "none",
-                        fontSize: "0.625rem",
+                        fontSize: "0.75rem",
                         fontWeight: active ? 700 : 500,
                         borderBottom: active ? "2px solid var(--primary)" : "2px solid transparent",
                         position: "relative",
@@ -446,8 +448,8 @@ export default function Navbar() {
                 >
                   <div
                     style={{
-                      width: "34px",
-                      height: "34px",
+                      width: "40px",
+                      height: "40px",
                       borderRadius: "50%",
                       background: "#ddd",
                       display: "flex",
@@ -686,13 +688,15 @@ export default function Navbar() {
   return (
     <header
       style={{
-        position: "sticky",
+        position: "fixed",
         top: 0,
-        zIndex: 100,
-        background: scrolled ? "rgba(255,255,255,0.97)" : "#fff",
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        background: scrolled ? "rgba(255,255,255,0.98)" : "#fff",
         borderBottom: "1px solid #e0e0e0",
-        boxShadow: scrolled ? "0 2px 12px rgba(107,26,42,0.10)" : "0 1px 3px rgba(0,0,0,0.06)",
-        backdropFilter: scrolled ? "blur(8px)" : "none",
+        boxShadow: scrolled ? "0 3px 16px rgba(107,26,42,0.12)" : "0 1px 4px rgba(0,0,0,0.07)",
+        backdropFilter: scrolled ? "blur(10px)" : "none",
         paddingLeft: "env(safe-area-inset-left, 0px)",
         paddingRight: "env(safe-area-inset-right, 0px)",
         transition: "box-shadow 0.2s ease, background 0.2s ease",
@@ -709,25 +713,22 @@ export default function Navbar() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: "1rem",
-            minHeight: scrolled ? "44px" : "52px",
+            minHeight: scrolled ? "56px" : "64px",
             transition: "min-height 0.2s ease",
           }}
         >
           {/* Logo */}
-          <Link href="/" style={{ textDecoration: "none", display: "flex", flexDirection: "column", gap: "1px", flexShrink: 0 }}>
-            <span style={{ fontSize: "0.5rem", color: "#aaa", letterSpacing: "0.04em", textTransform: "uppercase", fontWeight: 600 }}>
-              Trusted Tamil Matrimony
-            </span>
+          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
             <img
-              src="/logo.svg"
+              src="/logo-full.jpg"
               alt="Elite Tamil Matrimony"
-              style={{ height: "36px", width: "auto", display: "block" }}
+              style={{ height: "48px", width: "auto", display: "block", borderRadius: "4px" }}
             />
           </Link>
 
           {/* Desktop right actions */}
           <div className="desktop-nav" style={{ alignItems: "center", gap: "1rem" }}>
-            <span style={{ fontSize: "0.8125rem", color: "#777" }}>Already a member?</span>
+            <span style={{ fontSize: "0.9rem", color: "#777" }}>Already a member?</span>
             <Link
               href="/login"
               style={{
@@ -831,7 +832,7 @@ export default function Navbar() {
                 href={item.href}
                 style={{
                   padding: "0.5rem 0.875rem",
-                  fontSize: "0.8125rem",
+                  fontSize: "0.9rem",
                   fontWeight: active ? 700 : 500,
                   color: active ? "var(--primary)" : "#555",
                   textDecoration: "none",
@@ -878,7 +879,7 @@ export default function Navbar() {
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <img src="/logo.svg" alt="Elite Tamil Matrimony" style={{ height: "32px" }} />
+              <img src="/logo-full.jpg" alt="Elite Tamil Matrimony" style={{ height: "44px", width: "auto", borderRadius: "4px" }} />
               <button
                 onClick={() => setMobileOpen(false)}
                 style={{ background: "none", border: "none", cursor: "pointer", padding: "8px", color: "#333" }}

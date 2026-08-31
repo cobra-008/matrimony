@@ -148,7 +148,7 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
       }}
     >
       {/* Photo area */}
-      <div style={{ position: "relative", height: "210px", overflow: "hidden", background: "#F8F0F0" }}>
+      <div style={{ position: "relative", height: "240px", overflow: "hidden", background: "#F8F0F0" }}>
         <Link href={`/profile/${profile.id}`}>
           <img
             src={photo}
@@ -224,12 +224,12 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
       </div>
 
       {/* Info section */}
-      <div style={{ padding: "0.75rem" }}>
+      <div style={{ padding: "1rem" }}>
         {/* Name + Verified */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", marginBottom: "2px" }}>
           <Link
             href={`/profile/${profile.id}`}
-            style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", textDecoration: "none" }}
+            style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-dark)", textDecoration: "none" }}
           >
             {profile.name}
           </Link>
@@ -247,15 +247,15 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
         <div style={{ display: "flex", flexDirection: "column", gap: "3px", marginBottom: "0.625rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <MapPin size={12} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-            <span style={{ fontSize: "0.75rem", color: "var(--text-light)" }}>{profile.location}</span>
+            <span style={{ fontSize: "0.8125rem", color: "var(--text-light)" }}>{profile.location}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <Briefcase size={12} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-            <span style={{ fontSize: "0.75rem", color: "var(--text-light)" }}>{profile.occupation}</span>
+            <span style={{ fontSize: "0.8125rem", color: "var(--text-light)" }}>{profile.occupation}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <GraduationCap size={12} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-            <span style={{ fontSize: "0.75rem", color: "var(--text-light)" }}>{profile.education}</span>
+            <span style={{ fontSize: "0.8125rem", color: "var(--text-light)" }}>{profile.education}</span>
           </div>
         </div>
 
@@ -284,13 +284,13 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
             aria-pressed={interested}
             style={{
               flex: 1,
-              padding: "0.4375rem",
+              padding: "0.5rem",
               background: interested ? "var(--primary)" : "#fff",
               border: "1.5px solid var(--primary)",
               color: interested ? "#fff" : "var(--primary)",
               borderRadius: "var(--radius-md)",
               cursor: "pointer",
-              fontSize: "0.75rem",
+              fontSize: "0.8125rem",
               fontWeight: 700,
               fontFamily: "var(--font-sans)",
               display: "flex",
@@ -298,9 +298,10 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
               justifyContent: "center",
               gap: "4px",
               transition: "background 0.15s, color 0.15s",
+              minHeight: "44px",
             }}
           >
-            <Heart size={13} style={{ fill: interested ? "white" : "none" }} />
+            <Heart size={15} style={{ fill: interested ? "white" : "none" }} />
             {interested ? "Interested" : "Interest"}
           </button>
 
@@ -310,13 +311,13 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
             aria-pressed={shortlisted}
             style={{
               flex: 1,
-              padding: "0.4375rem",
+              padding: "0.5rem",
               background: shortlisted ? "var(--success)" : "#fff",
               border: "1.5px solid var(--success)",
               color: shortlisted ? "#fff" : "var(--success)",
               borderRadius: "var(--radius-md)",
               cursor: "pointer",
-              fontSize: "0.75rem",
+              fontSize: "0.8125rem",
               fontWeight: 700,
               fontFamily: "var(--font-sans)",
               display: "flex",
@@ -324,9 +325,10 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
               justifyContent: "center",
               gap: "4px",
               transition: "background 0.15s, color 0.15s",
+              minHeight: "44px",
             }}
           >
-            <BookmarkPlus size={13} />
+            <BookmarkPlus size={15} />
             {shortlisted ? "Saved" : "Shortlist"}
           </button>
 
@@ -334,13 +336,13 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
             href={`/profile/${profile.id}`}
             style={{
               flex: 1,
-              padding: "0.4375rem",
+              padding: "0.5rem",
               background: "#fff",
               border: "1.5px solid var(--border-color)",
               color: "var(--text-medium)",
               borderRadius: "var(--radius-md)",
               cursor: "pointer",
-              fontSize: "0.75rem",
+              fontSize: "0.8125rem",
               fontWeight: 700,
               fontFamily: "var(--font-sans)",
               display: "flex",
@@ -348,9 +350,10 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
               justifyContent: "center",
               gap: "4px",
               textDecoration: "none",
+              minHeight: "44px",
             }}
           >
-            <MessageCircle size={13} />
+            <MessageCircle size={15} />
             View
           </Link>
         </div>

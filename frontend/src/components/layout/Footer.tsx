@@ -217,7 +217,7 @@ export default function Footer() {
       <footer style={{ background: "var(--primary-dark)", color: "rgba(255,255,255,0.8)", marginTop: "auto" }}>
         {/* Main footer body */}
         <div className="container" style={{ padding: "2rem 1rem" }}>
-          {/* Brand row — uses /logo.svg same as Navbar */}
+          {/* Brand row — uses /logo-transparent.png (inverted for dark background) */}
           <div
             className="footer-brand-row"
             style={{
@@ -229,11 +229,11 @@ export default function Footer() {
           >
             <Link href="/" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
               <Image
-                src="/logo.svg"
+                src="/logo-transparent.png"
                 alt="Elite Tamil Matrimony"
-                width={140}
-                height={40}
-                style={{ height: "40px", width: "auto" }}
+                width={160}
+                height={80}
+                style={{ height: "64px", width: "auto", filter: "brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0,0,0,0.3))" }}
                 priority
               />
             </Link>
@@ -243,11 +243,16 @@ export default function Footer() {
                 Elite Tamil Matrimony is a newly launched dedicated platform helping Tamil individuals and families discover meaningful marriage relationships.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-                <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)" }}>
+                <a href="mailto:support@elitetamilmatrimony.com" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
                   support@elitetamilmatrimony.com
-                </span>
-                <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)" }}>
-                  Chennai, Tamil Nadu, India
+                </a>
+                <a href="tel:+919360653547" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
+                  +91 93606 53547
+                </a>
+                <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
+                  2nd Floor, Sona College of Technology,<br />
+                  Sona Valliappa Block, Sona Incubation Foundation,<br />
+                  Junction Main Rd, Salem, TN 636005
                 </span>
               </div>
 

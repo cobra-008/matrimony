@@ -168,10 +168,10 @@ export default function SuccessStoriesPage() {
 
                   {/* Couple avatar */}
                   <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 text-2xl"
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
                     style={{ background: "var(--gradient-hero)" }}
                   >
-                    💑
+                    <Heart size={28} className="fill-white text-white" />
                   </div>
 
                   {/* Name + meta */}
@@ -186,7 +186,10 @@ export default function SuccessStoriesPage() {
                         {story.city}
                       </span>
                       <span>•</span>
-                      <span>💍 {story.married}</span>
+                      <span className="flex items-center gap-1">
+                        <CheckCircle2 size={11} />
+                        {story.married}
+                      </span>
                     </div>
                   </div>
 

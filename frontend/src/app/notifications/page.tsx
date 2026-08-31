@@ -149,7 +149,7 @@ export default function NotificationsPage() {
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
             <div>
-              <h1 style={{ fontSize: "1.1875rem", fontWeight: 700, color: "#6B1A2A", margin: 0, fontFamily: "var(--font-sans)" }}>
+              <h1 style={{ fontSize: "1.375rem", fontWeight: 700, color: "#6B1A2A", margin: 0, fontFamily: "var(--font-sans)" }}>
                 Notifications
               </h1>
               {unreadCount > 0 && (
@@ -178,13 +178,15 @@ export default function NotificationsPage() {
               <Link
                 href="/settings"
                 style={{
-                  width: "34px", height: "34px", borderRadius: "50%",
-                  background: "#fff", border: "1px solid #E8D5B7",
+                  width: "42px", height: "42px", borderRadius: "50%",
+                  background: "#fff", border: "1.5px solid #E8D5B7",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "#6B1A2A",
+                  boxShadow: "0 1px 4px rgba(107,26,42,0.10)",
+                  flexShrink: 0,
                 }}
               >
-                <Settings size={15} />
+                <Settings size={20} />
               </Link>
             </div>
           </div>
@@ -284,7 +286,7 @@ export default function NotificationsPage() {
                   >
                     {/* Icon circle */}
                     <div style={{
-                      width: "38px", height: "38px", borderRadius: "50%",
+                      width: "44px", height: "44px", borderRadius: "50%",
                       background: config.bg, color: config.color,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       flexShrink: 0,
