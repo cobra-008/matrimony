@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
 @import "tailwindcss";
 
 /* ============================================================
    ELITE TAMIL MATRIMONY — Mobile-First PWA Design System
-   Font: Poppins | Colors: Primary #6B1A2A (maroon) + Cream BG
+   Font: Lato | Colors: Primary #6B1A2A (maroon) + Cream BG
    ============================================================ */
 
 /* ---- CSS Custom Properties ---- */
@@ -84,14 +84,14 @@
   --border:           #E8D5B7;
   --border-light:     #F2E8D6;
 
-  /* ── TEXT ── */
-  --text-dark:        #1A0A0E;
-  --text-primary:     #1A0A0E;
-  --text-medium:      #3D1A1F;
-  --text-secondary:   #6B4045;
-  --text-light:       #9E7070;
-  --text-muted:       #C4A0A0;
-  --text-muted-var:   #C4A0A0;
+  /* ── TEXT — all tones bumped for contrast ── */
+  --text-dark:        #111111;
+  --text-primary:     #111111;
+  --text-medium:      #2D1018;
+  --text-secondary:   #4A2030;
+  --text-light:       #5C3040;
+  --text-muted:       #7A5060;
+  --text-muted-var:   #7A5060;
 
   /* ── SHADOWS ── */
   --shadow-sm:        0 1px 3px rgba(107,26,42,0.08);
@@ -108,8 +108,9 @@
   --radius-full:      9999px;
 
   /* ── FONT ── */
-  --font-sans:        'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-serif:       'Poppins', sans-serif;
+  --font-sans:        'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif:       'Lato', sans-serif;
+  --font-lato:        'Lato', sans-serif;
 
   /* ── BOTTOM NAV HEIGHT (PWA) ── */
   --bottom-nav-height: 60px;
@@ -140,10 +141,12 @@ body {
   font-family: var(--font-sans);
   background-color: var(--bg-page);
   color: var(--text-dark);
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
   overflow-x: hidden;
   /* Offset fixed header so content isn't hidden beneath it */
   padding-top: var(--navbar-height);

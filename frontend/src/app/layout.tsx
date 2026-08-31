@@ -1,14 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
+import { Lato } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
 import MigrationRunner from "@/components/ui/MigrationRunner";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const lato = Lato({
+  variable: "--font-lato",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["300", "400", "700"],
   display: "swap",
 });
 
@@ -65,7 +65,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={poppins.variable}>
+    <html lang="en" className={lato.variable}>
       <head>
         {/* Favicon — Elite Tamil Matrimony transparent logo */}
         <link rel="icon" type="image/png" href="/logo-transparent.png" />
@@ -79,7 +79,7 @@ export default function RootLayout({
       </head>
       <body
         className="min-h-screen flex flex-col"
-        style={{ fontFamily: "var(--font-poppins, 'Poppins', sans-serif)" }}
+        style={{ fontFamily: "var(--font-lato, 'Lato', sans-serif)" }}
       >
         <AuthProvider>
           <MigrationRunner />
@@ -88,7 +88,7 @@ export default function RootLayout({
             position="top-center"
             toastOptions={{
               style: {
-                fontFamily: "var(--font-poppins, 'Poppins', sans-serif)",
+                fontFamily: "var(--font-lato, 'Lato', sans-serif)",
                 borderRadius: "4px",
                 border: "1px solid #DDDDDD",
                 fontSize: "14px",

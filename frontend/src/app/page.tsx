@@ -14,7 +14,6 @@ import { useAuth } from "@/context/AuthContext";
 import ProfileCard from "@/components/ui/ProfileCard";
 import { PROFILE_FOR_OPTIONS } from "@/data/matrimony-data";
 import { fetchMatchProfiles, type RegisteredUser } from "@/lib/auth-store";
-import PlanTabs from "@/components/ui/PlanTabs";
 
 // Helper: compute age from dob
 function calcAge(dob?: string): number {
@@ -346,7 +345,6 @@ function AuthenticatedDashboard() {
   return (
     <div style={{ background: "#FFF8F0", minHeight: "100vh" }}>
       <Navbar />
-      <PlanTabs activeTab="regular" />
 
       <style>{`
         @media (max-width: 899px) {
@@ -382,7 +380,9 @@ function AuthenticatedDashboard() {
             borderRadius: "6px",
             overflow: "hidden",
             position: "sticky",
-            top: "70px",
+            top: "80px",
+            maxHeight: "calc(100vh - 90px)",
+            overflowY: "auto",
           }}
         >
           {/* Avatar + name */}
@@ -417,8 +417,8 @@ function AuthenticatedDashboard() {
             </div>
 
             <div style={{ fontWeight: 700, fontSize: "1rem", color: "#111", marginBottom: "2px" }}>{user.name}</div>
-            <div style={{ fontSize: "0.75rem", color: "#888", marginBottom: "4px" }}>Elite Tamil Matrimony</div>
-            <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>{profileCode}</div>
+            <div style={{ fontSize: "0.75rem", color: "#5C3040", marginBottom: "4px" }}>Elite Tamil Matrimony</div>
+            <div style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#2D1018", marginBottom: "4px" }}>{profileCode}</div>
             {/* Premium badge — only for paid members */}
             {user.isPremium ? (
               <div style={{
@@ -430,7 +430,7 @@ function AuthenticatedDashboard() {
                 <Crown size={11} fill="#fff" strokeWidth={0} /> Premium Member
               </div>
             ) : (
-              <div style={{ fontSize: "0.75rem", color: "#aaa" }}>Free member</div>
+              <div style={{ fontSize: "0.75rem", color: "#5C3040", fontWeight: 400 }}>Free member</div>
             )}
           </div>
 
@@ -472,7 +472,7 @@ function AuthenticatedDashboard() {
                 display: "flex", alignItems: "center", gap: "6px",
                 textDecoration: "none",
                 fontFamily: "var(--font-sans)", fontSize: "0.875rem",
-                color: "#333", fontWeight: 500,
+                color: "#2D1018", fontWeight: 400,
               }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2">
@@ -497,9 +497,9 @@ function AuthenticatedDashboard() {
                 style={{
                   display: "flex", alignItems: "center", gap: "8px",
                   padding: "0.5rem 0.875rem",
-                  color: "#444", textDecoration: "none",
-                  fontSize: "0.875rem", fontWeight: 500,
-                  borderTop: "1px solid #F8F8F8",
+                  color: "#2D1018", textDecoration: "none",
+                  fontSize: "0.875rem", fontWeight: 400,
+                  borderTop: "1px solid #F2E8D6",
                 }}
               >
                 {item.icon} {item.label}
@@ -546,10 +546,10 @@ function AuthenticatedDashboard() {
                 }}
               >
                 {tile.icon}
-                <span style={{ fontSize: "1.25rem", fontWeight: 900, color: "#6B1A2A", lineHeight: 1 }}>
+                <span style={{ fontSize: "1.25rem", fontWeight: 700, color: "#6B1A2A", lineHeight: 1 }}>
                   {tile.count}
                 </span>
-                <span style={{ fontSize: "0.6875rem", color: "#888", lineHeight: 1.3 }}>{tile.label}</span>
+                <span style={{ fontSize: "0.6875rem", color: "#4A2030", lineHeight: 1.3 }}>{tile.label}</span>
               </Link>
             ))}
           </div>
@@ -569,7 +569,7 @@ function AuthenticatedDashboard() {
                 <div>
                   <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#111", margin: "0 0 3px" }}>Complete Your Profile</h2>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontSize: "0.75rem", color: "#888" }}>Profile completeness score {pct}%</span>
+                    <span style={{ fontSize: "0.75rem", color: "#5C3040" }}>Profile completeness score {pct}%</span>
                     <div style={{ width: "80px", height: "6px", background: "#E8D5B7", borderRadius: "3px", overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: "#C8973A", borderRadius: "3px" }} />
                     </div>

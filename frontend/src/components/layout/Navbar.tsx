@@ -233,13 +233,17 @@ export default function Navbar() {
               transition: "height 0.2s ease",
             }}
           >
-            {/* Logo */}
-            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
+            {/* Logo — transparent icon + brand text */}
+            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
               <img
-                src="/logo-full.jpg"
+                src="/logo-transparent.png"
                 alt="Elite Tamil Matrimony"
-                style={{ height: "52px", width: "auto", display: "block", borderRadius: "4px" }}
+                style={{ height: "46px", width: "auto", display: "block" }}
               />
+              <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
+                <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "1rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite Tamil</span>
+                <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.75rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Matrimony</span>
+              </div>
             </Link>
 
             {/* Desktop icon nav — hidden on mobile (bottom nav handles it) */}
@@ -264,10 +268,10 @@ export default function Navbar() {
                         padding: "0 0.75rem",
                         height: "70px",
                         justifyContent: "center",
-                        color: active ? "var(--primary)" : isLocked ? "#aaa" : "#555",
+                        color: active ? "var(--primary)" : isLocked ? "#8B6070" : "#2D1018",
                         textDecoration: "none",
-                        fontSize: "0.75rem",
-                        fontWeight: active ? 700 : 500,
+                        fontSize: "0.8rem",
+                        fontWeight: active ? 700 : 600,
                         borderBottom: active ? "2px solid var(--primary)" : "2px solid transparent",
                         position: "relative",
                         whiteSpace: "nowrap",
@@ -717,13 +721,17 @@ export default function Navbar() {
             transition: "min-height 0.2s ease",
           }}
         >
-          {/* Logo */}
-          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", flexShrink: 0 }}>
+          {/* Logo — transparent icon + brand text */}
+          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
             <img
-              src="/logo-full.jpg"
+              src="/logo-transparent.png"
               alt="Elite Tamil Matrimony"
-              style={{ height: "48px", width: "auto", display: "block", borderRadius: "4px" }}
+              style={{ height: "42px", width: "auto", display: "block" }}
             />
+            <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
+              <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.9375rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite Tamil</span>
+              <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.6875rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Matrimony</span>
+            </div>
           </Link>
 
           {/* Desktop right actions */}
@@ -879,7 +887,13 @@ export default function Navbar() {
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <img src="/logo-full.jpg" alt="Elite Tamil Matrimony" style={{ height: "44px", width: "auto", borderRadius: "4px" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <img src="/logo-transparent.png" alt="Elite Tamil Matrimony" style={{ height: "40px", width: "auto" }} />
+                <div style={{ lineHeight: 1.2 }}>
+                  <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.9375rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite Tamil</div>
+                  <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.6875rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Matrimony</div>
+                </div>
+              </div>
               <button
                 onClick={() => setMobileOpen(false)}
                 style={{ background: "none", border: "none", cursor: "pointer", padding: "8px", color: "#333" }}

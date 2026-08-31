@@ -616,12 +616,16 @@ function RegisterWizard() {
       {/* Minimal header */}
       <header style={{ background: "#fff", borderBottom: "1px solid var(--border-color)", padding: "0.75rem 0" }}>
         <div className="container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <a href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
             <img
-              src="/logo-full.jpg"
+              src="/logo-transparent.png"
               alt="Elite Tamil Matrimony"
-              style={{ height: "48px", width: "auto", borderRadius: "4px" }}
+              style={{ height: "44px", width: "auto" }}
             />
+            <div style={{ lineHeight: 1.2 }}>
+              <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.9375rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite Tamil</div>
+              <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.6875rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Matrimony</div>
+            </div>
           </a>
           <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", fontSize: "0.875rem", color: "var(--text-medium)" }}>
             Need help? Call
