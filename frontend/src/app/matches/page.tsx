@@ -183,12 +183,13 @@ function ProfileCard({
       style={{
         background: "#fff",
         border: "1px solid #e8e8e8",
-        borderRadius: "6px",
+        borderRadius: "8px",
         overflow: "visible",
         display: "flex",
         flexDirection: "column",
-        marginBottom: "10px",
+        marginBottom: "14px",
         position: "relative",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
       }}
       className="match-card-horizontal"
     >
@@ -282,7 +283,7 @@ function ProfileCard({
       <div
         style={{
           flex: 1,
-          padding: "0.875rem 1rem 0.875rem 1rem",
+          padding: "1rem 1.125rem 1rem 1.125rem",
           display: "flex",
           flexDirection: "column",
           minWidth: 0,
@@ -807,15 +808,18 @@ function MatchesContent() {
   return (
     <>
       <Navbar />
-      <main style={{ background: "#f2f2f2", minHeight: "100vh" }}>
+      <main style={{ background: "#f2f2f2", height: "calc(100vh - 64px)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <div
           style={{
             maxWidth: "1100px",
+            width: "100%",
             margin: "0 auto",
             padding: "0.75rem",
             display: "flex",
             gap: "1rem",
-            alignItems: "flex-start",
+            alignItems: "stretch",
+            flex: 1,
+            overflow: "hidden",
           }}
         >
 
@@ -834,15 +838,17 @@ function MatchesContent() {
           <aside
             className="matches-sidebar-panel"
             style={{
-              width: "252px",
+              width: "268px",
               flexShrink: 0,
               background: "#fff",
               border: "1px solid #e0e0e0",
               borderRadius: "6px",
               overflow: "hidden",
+              alignSelf: "flex-start",
               position: "sticky",
-              top: "72px",
-              maxHeight: "calc(100vh - 80px)",
+              top: 0,
+              height: "100%",
+              maxHeight: "100%",
               overflowY: "auto",
             }}
           >
@@ -946,7 +952,7 @@ function MatchesContent() {
           </aside>
 
           {/* ── MAIN ────────────────────────────────────────────────────── */}
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px" }}>
             {/* Mobile: Section select button */}
             <div className="matches-mobile-header" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
               <button
@@ -992,7 +998,7 @@ function MatchesContent() {
                 paddingBottom: "4px",
               }}
             >
-                {/* Filter button */}
+                {/* Filter button with active-count badge */}
               <button
                 onClick={() => setFilterOpen((v) => !v)}
                 style={{
@@ -1000,22 +1006,39 @@ function MatchesContent() {
                   alignItems: "center",
                   gap: "5px",
                   padding: "0.3125rem 0.75rem",
-                  border: "1.5px solid #ccc",
+                  border: filterOpen || activeChips.length > 0 ? "1.5px solid #6B1A2A" : "1.5px solid #ccc",
                   borderRadius: "20px",
-                  background: filterOpen ? "#f5f5f5" : "#fff",
+                  background: filterOpen ? "#FEF0F0" : "#fff",
                   fontWeight: 600,
                   fontSize: "0.8125rem",
                   cursor: "pointer",
                   fontFamily: "var(--font-sans)",
-                  color: "#333",
+                  color: filterOpen || activeChips.length > 0 ? "#6B1A2A" : "#333",
                   whiteSpace: "nowrap",
                   flexShrink: 0,
+                  position: "relative",
                 }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
                 </svg>
                 Filter
+                {activeChips.length > 0 && (
+                  <span style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "50%",
+                    background: "#E8401A",
+                    color: "#fff",
+                    fontSize: "0.625rem",
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    flexShrink: 0,
+                  }}>{activeChips.length}</span>
+                )}
               </button>
 
               {/* Sort by */}
@@ -1089,6 +1112,9 @@ function MatchesContent() {
                   key={chip}
                   onClick={() => toggleChip(chip)}
                   style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
                     padding: "0.3125rem 0.75rem",
                     border: activeChips.includes(chip)
                       ? "1.5px solid #6B1A2A"
@@ -1102,9 +1128,15 @@ function MatchesContent() {
                     color: activeChips.includes(chip) ? "#6B1A2A" : "#333",
                     whiteSpace: "nowrap",
                     flexShrink: 0,
+                    transition: "all 0.15s",
                   }}
                 >
                   {chip}
+                  {activeChips.includes(chip) && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  )}
                 </button>
               ))}
 
@@ -1309,7 +1341,7 @@ function MatchesContent() {
           .match-card-photo-wrap {
             width: 100% !important;
             aspect-ratio: 4/5 !important;
-            max-height: 320px !important;
+            max-height: 340px !important;
             overflow: hidden !important;
           }
           .match-card-photo {
@@ -1317,28 +1349,33 @@ function MatchesContent() {
             height: 100% !important;
             object-fit: cover !important;
             object-position: top center !important;
-            max-height: 320px !important;
+            max-height: 340px !important;
           }
         }
         /* Medium phones: side-by-side */
         @media (min-width: 480px) {
           .match-card-horizontal { flex-direction: row !important; }
           .match-card-photo-wrap {
-            width: 140px !important;
+            width: 165px !important;
             aspect-ratio: unset !important;
-            min-height: 190px !important;
+            min-height: 210px !important;
           }
           .match-card-photo {
             height: 100% !important;
-            min-height: 190px !important;
-            max-height: 280px !important;
+            min-height: 210px !important;
+            max-height: 300px !important;
           }
         }
         @media (min-width: 768px) {
-          .match-card-photo-wrap { width: 160px !important; min-height: 200px !important; }
-          .match-card-photo { min-height: 200px !important; max-height: 300px !important; }
+          .match-card-photo-wrap { width: 190px !important; min-height: 230px !important; }
+          .match-card-photo { min-height: 230px !important; max-height: 340px !important; }
         }
         .match-card-actions::-webkit-scrollbar { display: none; }
+        /* Right scroll panel custom scrollbar */
+        .matches-right-scroll::-webkit-scrollbar { width: 4px; }
+        .matches-right-scroll::-webkit-scrollbar-track { background: transparent; }
+        .matches-right-scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+        .matches-right-scroll::-webkit-scrollbar-thumb:hover { background: #bbb; }
       `}</style>
     </>
   );

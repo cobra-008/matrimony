@@ -3,19 +3,48 @@
 import Link from "next/link";
 import Image from "next/image";
 
-// Only Discover and Information sections — all links verified to existing routes
 const FOOTER_LINKS = {
-  "Discover": [
-    { label: "Search Profiles", href: "/search" },
-    { label: "Recommended Matches", href: "/matches" },
-    { label: "Daily Recommendations", href: "/daily-recs" },
-    { label: "Success Stories", href: "/success-stories" },
+  "Help & Support": [
+    { label: "24x7 Live help", href: "/contact" },
+    { label: "Contact us", href: "/contact" },
+    { label: "Feedback", href: "/contact" },
+    { label: "FAQs", href: "/faq" },
+  ],
+  "Our Other Services": [
+    { label: "EliteMatrimony.com", href: "/" },
+  ],
+  "Social Initiatives": [
+    { label: "AbilityMatrimony.com", href: "#" },
+    { label: "Happymarriages.com", href: "#" },
+  ],
+  "Our Wedding Services": [
+    { label: "MatrimonyMandaps.com", href: "#" },
+    { label: "weddingBazaar.com", href: "#" },
   ],
   "Information": [
     { label: "About Us", href: "/about" },
-    { label: "Membership Plans", href: "/membership" },
-    { label: "FAQs", href: "/faq" },
-    { label: "Contact Us", href: "/contact" },
+    { label: "Awards", href: "#" },
+    { label: "Milestones", href: "#" },
+    { label: "Success stories", href: "/success-stories" },
+    { label: "Careers", href: "#" },
+    { label: "Media Room", href: "#" },
+    { label: "Affiliates", href: "#" },
+    { label: "TV Commercials", href: "#" },
+    { label: "Advertise with us", href: "#" },
+    { label: "Terms & Conditions", href: "#" },
+    { label: "Privacy Policy", href: "#" },
+  ],
+  "Related Matrimony Services": [
+    { label: "HappyMarriages.com", href: "#" },
+    { label: "Safe Matrimony", href: "#" },
+    { label: "Matrimonial Tools", href: "#" },
+    { label: "Matrimonial Sites", href: "#" },
+    { label: "Tamil Matrimonials", href: "#" },
+    { label: "Matrimonial Websites", href: "#" },
+    { label: "Tamil Matrimony Branches", href: "#" },
+    { label: "Kalyana Mandapams", href: "#" },
+    { label: "Banquet Halls", href: "#" },
+    { label: "Muhurtham Dates", href: "#" },
   ],
 };
 
@@ -217,138 +246,177 @@ export default function Footer() {
       <footer style={{ background: "var(--primary-dark)", color: "rgba(255,255,255,0.8)", marginTop: "auto" }}>
         {/* Main footer body */}
         <div className="container" style={{ padding: "2rem 1rem" }}>
-          {/* Brand row — uses /logo-transparent.png (inverted for dark background) */}
+          {/* About Us section */}
           <div
-            className="footer-brand-row"
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: "1rem",
-              marginBottom: "1.5rem",
+              gap: "0.75rem",
+              marginBottom: "1.75rem",
             }}
           >
-            <Link href="/" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
-              <Image
-                src="/logo-transparent.png"
-                alt="Elite Tamil Matrimony"
-                width={160}
-                height={80}
-                style={{ height: "64px", width: "auto", filter: "brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0,0,0,0.3))" }}
-                priority
-              />
-            </Link>
-
-            <div>
-              <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", maxWidth: "360px", lineHeight: 1.6, margin: "0 0 0.625rem" }}>
-                Elite Tamil Matrimony is a newly launched dedicated platform helping Tamil individuals and families discover meaningful marriage relationships.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-                <a href="mailto:support@elitetamilmatrimony.com" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
-                  support@elitetamilmatrimony.com
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Link href="/" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
+                <Image
+                  src="/logo-transparent.png"
+                  alt="Elite Tamil Matrimony"
+                  width={120}
+                  height={60}
+                  style={{ height: "44px", width: "auto", filter: "brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0,0,0,0.3))" }}
+                  priority
+                />
+              </Link>
+            </div>
+            <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", maxWidth: "340px", lineHeight: 1.65, margin: 0 }}>
+              Elite Tamil Matrimony is a part of BharatMatrimony — the pioneers of online matrimony service. Today, we are the most trusted Matrimony website by Brand Trust Report. Millions of happy marriages happened and continue to happen through BharatMatrimony. We have been featured in the Limca Book of Records for the highest number of documented marriages online.
+            </p>
+            <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", maxWidth: "340px", lineHeight: 1.65, margin: 0 }}>
+              BharatMatrimony is the 1st group to offer 100% mobile verified profiles, reinforcing the trust that members have on us. We have also pioneered the highly personalized matchmaking services — Assisted Service and EliteMatrimony. Our{" "}
+              <a href="/about" style={{ color: "rgba(255,200,100,0.85)", textDecoration: "underline" }}>purpose</a>{" "}
+              is to build a better Bharat through happy marriages.
+            </p>
+            {/* Contact */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+              <a href="mailto:support@elitetamilmatrimony.com" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>support@elitetamilmatrimony.com</a>
+              <a href="tel:+919360653547" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", textDecoration: "none" }}>+91 93606 53547</a>
+            </div>
+            {/* Social media */}
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              {SOCIAL_LINKS.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  aria-label={s.label}
+                  title={`${s.label} — Coming Soon`}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.1)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "rgba(255,255,255,0.6)",
+                    textDecoration: "none",
+                    transition: "background 0.15s, color 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.2)";
+                    (e.currentTarget as HTMLElement).style.color = "#fff";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
+                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.6)";
+                  }}
+                >
+                  {s.icon}
                 </a>
-                <a href="tel:+919360653547" style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
-                  +91 93606 53547
-                </a>
-                <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>
-                  2nd Floor, Sona College of Technology,<br />
-                  Sona Valliappa Block, Sona Incubation Foundation,<br />
-                  Junction Main Rd, Salem, TN 636005
-                </span>
-              </div>
-
-              {/* Social media */}
-              <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.875rem", flexWrap: "wrap" }}>
-                {SOCIAL_LINKS.map((s) => (
-                  <a
-                    key={s.label}
-                    href={s.href}
-                    aria-label={s.label}
-                    title={`${s.label} — Coming Soon`}
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "50%",
-                      background: "rgba(255,255,255,0.1)",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "rgba(255,255,255,0.6)",
-                      textDecoration: "none",
-                      transition: "background 0.15s, color 0.15s",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.2)";
-                      (e.currentTarget as HTMLElement).style.color = "#fff";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
-                      (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.6)";
-                    }}
-                  >
-                    {s.icon}
-                  </a>
-                ))}
-              </div>
-              <p style={{ fontSize: "0.625rem", color: "rgba(255,255,255,0.3)", marginTop: "0.375rem" }}>
-                Social media accounts coming soon
-              </p>
+              ))}
             </div>
           </div>
 
-          {/* Links grid — only Discover + Information */}
+          {/* Links grid — Help, Services, Information, Related */}
           <div
             className="footer-links-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(2, 1fr)",
-              gap: "1.25rem 1rem",
+              gap: "1.5rem 1.5rem",
               borderTop: "1px solid rgba(255,255,255,0.1)",
               paddingTop: "1.5rem",
               marginBottom: "1.5rem",
             }}
           >
             <style>{`
-              @media (min-width: 480px) { .footer-links-grid { grid-template-columns: repeat(2, 1fr) !important; max-width: 480px; } }
-              @media (min-width: 640px) { .footer-brand-row { flex-direction: row !important; align-items: flex-start !important; } }
+              @media (min-width: 640px) { .footer-links-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+              @media (min-width: 900px) { .footer-links-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+              @media (min-width: 1100px) { .footer-links-grid { grid-template-columns: 1.4fr 1fr 1.2fr 1.3fr !important; } }
             `}</style>
 
-            {Object.entries(FOOTER_LINKS).map(([category, links]) => (
-              <div key={category}>
-                <h4
-                  style={{
-                    fontSize: "0.6875rem",
-                    fontWeight: 700,
-                    color: "#fff",
-                    marginBottom: "0.625rem",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                  }}
-                >
-                  {category}
-                </h4>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                  {links.map((link) => (
-                    <li key={link.href + link.label}>
-                      <Link
-                        href={link.href}
-                        style={{
-                          fontSize: "0.8125rem",
-                          color: "rgba(255,255,255,0.5)",
-                          textDecoration: "none",
-                          lineHeight: 1.6,
-                          transition: "color 0.15s",
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {/* Help & Support + sub-sections */}
+            <div>
+              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", marginBottom: "0.75rem", margin: "0 0 0.75rem" }}>Help &amp; Support</h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                {FOOTER_LINKS["Help & Support"].map((link) => (
+                  <li key={link.href + link.label}>
+                    <Link href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", margin: "0 0 0.5rem" }}>Our Other Services</h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                {FOOTER_LINKS["Our Other Services"].map((link) => (
+                  <li key={link.href + link.label}>
+                    <Link href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", margin: "0 0 0.5rem" }}>Social Initiatives</h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                {FOOTER_LINKS["Social Initiatives"].map((link) => (
+                  <li key={link.href + link.label}>
+                    <a href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)")}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)")}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", margin: "0 0 0.5rem" }}>Our Wedding Services</h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                {FOOTER_LINKS["Our Wedding Services"].map((link) => (
+                  <li key={link.href + link.label}>
+                    <a href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)")}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)")}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Information */}
+            <div>
+              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", margin: "0 0 0.75rem" }}>Information</h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                {FOOTER_LINKS["Information"].map((link) => (
+                  <li key={link.href + link.label}>
+                    <Link href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Related Matrimony Services */}
+            <div>
+              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", margin: "0 0 0.75rem" }}>Related Matrimony Services</h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                {FOOTER_LINKS["Related Matrimony Services"].map((link) => (
+                  <li key={link.href + link.label}>
+                    <a href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)")}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)")}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           {/* Bottom bar — no dead links */}
