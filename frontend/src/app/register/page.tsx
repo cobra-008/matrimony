@@ -777,7 +777,7 @@ function RegisterWizard() {
         </div>
       )}
 
-      <div style={{ maxWidth: "560px", margin: "0 auto", padding: "1.5rem 1.25rem" }}>
+      <div style={{ maxWidth: "560px", margin: "0 auto", padding: "0.5rem 1.25rem 1.5rem" }}>
 
         {/* ===== STEP 0: Basic Info ===== */}
         {step === 0 && (
@@ -1092,7 +1092,7 @@ function RegisterWizard() {
 
               <button
                 type="button"
-                onClick={() => { if (validateStep0()) setStep(1); }}
+                onClick={() => { if (validateStep0()) { setStep(1); window.scrollTo({ top: 0, behavior: "smooth" }); } }}
                 className="btn btn-primary animate-pulse-rose"
                 style={{ width: "100%", justifyContent: "center" }}
               >
@@ -1171,7 +1171,13 @@ function RegisterWizard() {
               />
               <FieldError msg={fieldErrors.religion} />
               {castes.length > 0 && (
-                <FloatSelect label="Caste" value={form.caste} onChange={(v) => { set("caste", v); set("subcaste", ""); }} options={castes} />
+                <SearchableSelect
+                  label="Caste"
+                  value={form.caste}
+                  onChange={(v) => { set("caste", v); set("subcaste", ""); }}
+                  options={castes}
+                  placeholder="Search or select caste"
+                />
               )}
 
               {/* ── SUB-CASTE SECTION ── */}
@@ -1214,7 +1220,7 @@ function RegisterWizard() {
 
               <button
                 type="button"
-                onClick={() => { if (validateStep1()) setStep(2); }}
+                onClick={() => { if (validateStep1()) { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); } }}
                 className="btn btn-primary"
                 style={{ width: "100%", justifyContent: "center", marginTop: "0.5rem" }}
               >
@@ -1292,7 +1298,7 @@ function RegisterWizard() {
 
               <button
                 type="button"
-                onClick={() => { if (validateStep2()) setStep(3); }}
+                onClick={() => { if (validateStep2()) { setStep(3); window.scrollTo({ top: 0, behavior: "smooth" }); } }}
                 className="btn btn-primary"
                 style={{ width: "100%", justifyContent: "center" }}
               >
@@ -1305,7 +1311,7 @@ function RegisterWizard() {
         {/* ===== STEP 3: Partner Preferences ===== */}
         {step === 3 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={4} total={6} />
+            <StepProgressBar step={4} total={5} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 <button onClick={() => setStep(2)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
@@ -1314,7 +1320,7 @@ function RegisterWizard() {
                 <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>Partner Preferences</h2>
               </div>
               <button
-                onClick={() => setStep(4)}
+                onClick={() => { setStep(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                 style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "none", cursor: "pointer", color: "var(--primary)", fontWeight: 700, fontSize: "0.875rem", fontFamily: "var(--font-sans)" }}
               >
                 Skip
@@ -1408,7 +1414,7 @@ function RegisterWizard() {
 
               <button
                 type="button"
-                onClick={() => setStep(4)}
+                onClick={() => { setStep(4); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                 className="btn btn-primary"
                 style={{ width: "100%", justifyContent: "center", marginTop: "0.5rem" }}
               >
@@ -1418,8 +1424,8 @@ function RegisterWizard() {
           </div>
         )}
 
-        {/* ===== STEP 4: Compatibility Questions ===== */}
-        {step === 4 && (() => {
+        {/* ===== STEP 4: Compatibility Questions — REMOVED (now post-registration) ===== */}
+        {false && step === 4 && (() => {
           const categories = Array.from(new Set(COMPATIBILITY_QUESTIONS.map(q => q.category)));
           const answeredCount = Object.keys(compatAnswers).length;
           const totalQ = COMPATIBILITY_QUESTIONS.length;
@@ -1510,15 +1516,15 @@ function RegisterWizard() {
           );
         })()}
 
-        {/* ===== STEP 5: Add Photo ===== */}
+        {/* ===== STEP 4: Add Photo ===== */}
 
-        {step === 5 && (
+        {step === 4 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={6} total={6} />
+            <StepProgressBar step={5} total={5} />
             {/* Header row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <button onClick={() => setStep(4)} aria-label="Go back" style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
+                <button onClick={() => setStep(3)} aria-label="Go back" style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
                   <ChevronLeft size={20} />
                 </button>
                 <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>Add photo</h2>

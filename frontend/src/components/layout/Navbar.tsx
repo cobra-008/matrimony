@@ -271,8 +271,10 @@ export default function Navbar() {
                         color: active ? "var(--primary)" : isLocked ? "#8B6070" : "#2D1018",
                         textDecoration: "none",
                         fontSize: "0.8rem",
-                        fontWeight: active ? 700 : 600,
-                        borderBottom: active ? "2px solid var(--primary)" : "2px solid transparent",
+                        fontWeight: active ? 800 : 600,
+                        borderBottom: active ? "3px solid var(--primary)" : "3px solid transparent",
+                        background: active ? "#FEF0F0" : "transparent",
+                        borderRadius: active ? "6px 6px 0 0" : undefined,
                         position: "relative",
                         whiteSpace: "nowrap",
                       }}

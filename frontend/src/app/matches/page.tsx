@@ -148,21 +148,34 @@ function ProfileCard({
     : 0;
 
   // Placeholder photos by gender (used when no photo uploaded)
+  // Use more photos and a stable ID-based hash to avoid same photo on consecutive profiles
   const MALE_PHOTOS = [
     "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400",
     "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400",
     "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1043473/pexels-photo-1043473.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/834863/pexels-photo-834863.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?auto=compress&cs=tinysrgb&w=400",
   ];
   const FEMALE_PHOTOS = [
     "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=400",
     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
     "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1138903/pexels-photo-1138903.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400",
   ];
+  // Stable hash from profile ID (UUID chars) so same profile always gets same photo
+  const idHash = profile.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const photo = profile.photoUrl
     ? profile.photoUrl
     : profile.gender === "male"
-    ? MALE_PHOTOS[index % 3]
-    : FEMALE_PHOTOS[index % 3];
+    ? MALE_PHOTOS[idHash % MALE_PHOTOS.length]
+    : FEMALE_PHOTOS[idHash % FEMALE_PHOTOS.length];
 
   const profileCode = `ETM${String(index + 1).padStart(3, "0")}`;
   const location = [profile.city, profile.state].filter(Boolean).join(", ") || profile.country || "India";
@@ -683,6 +696,8 @@ function MatchesContent() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(new Set());
+  const chipRowRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
   // Track last user ID to detect account switches
   const lastUserIdRef = useRef<string | null>(null);
 
@@ -738,6 +753,23 @@ function MatchesContent() {
     loadSection(activeSection, user);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id]);
+
+  // Restore window scroll position when navigating back from a profile
+  useEffect(() => {
+    if (loading) return; // wait until profiles have loaded and rendered
+    const saved = sessionStorage.getItem("matches_scroll");
+    if (saved) {
+      const scrollY = parseInt(saved, 10);
+      sessionStorage.removeItem("matches_scroll");
+      // Defer to next paint so cards are in DOM
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: scrollY, behavior: "instant" } as ScrollToOptions);
+        });
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   // Client-side chip filtering + hide
   const displayed = profiles.filter((p) => {
@@ -952,7 +984,9 @@ function MatchesContent() {
           </aside>
 
           {/* ── MAIN ────────────────────────────────────────────────────── */}
-          <div style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px" }}>
+          <div
+            ref={rightPanelRef}
+            style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px" }}>
             {/* Mobile: Section select button */}
             <div className="matches-mobile-header" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
               <button
@@ -986,6 +1020,7 @@ function MatchesContent() {
 
             {/* Filter / Sort / Chips row */}
             <div
+              ref={chipRowRef}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -1140,8 +1175,9 @@ function MatchesContent() {
                 </button>
               ))}
 
-              {/* Scroll arrow */}
+              {/* Scroll arrows — scroll chip row left/right */}
               <button
+                onClick={() => chipRowRef.current?.scrollBy({ left: -200, behavior: "smooth" })}
                 style={{
                   width: "26px",
                   height: "26px",
@@ -1154,6 +1190,27 @@ function MatchesContent() {
                   justifyContent: "center",
                   flexShrink: 0,
                 }}
+                title="Scroll left"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <button
+                onClick={() => chipRowRef.current?.scrollBy({ left: 200, behavior: "smooth" })}
+                style={{
+                  width: "26px",
+                  height: "26px",
+                  borderRadius: "50%",
+                  border: "1.5px solid #ccc",
+                  background: "#fff",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+                title="Scroll right"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5">
                   <polyline points="9 18 15 12 9 6" />
@@ -1265,17 +1322,24 @@ function MatchesContent() {
                 </div>
               )
               : displayed.map((profile, idx) => (
-                <ProfileCard
+                <div
                   key={profile.id}
-                  profile={profile}
-                  index={idx}
-                  onShortlist={() => handleShortlist(profile.id, profile.name)}
-                  onHide={() => handleHide(profile.id)}
-                  onSendInterest={() => handleSendInterest(profile.id, profile.name)}
-                  shortlisted={shortlistedIds.has(profile.id)}
-                  canMessage={canMessage}
-                  canViewContact={canViewContact}
-                />
+                  onClick={() => {
+                    // Save window scroll position before navigating to profile detail
+                    sessionStorage.setItem("matches_scroll", String(window.scrollY));
+                  }}
+                >
+                  <ProfileCard
+                    profile={profile}
+                    index={idx}
+                    onShortlist={() => handleShortlist(profile.id, profile.name)}
+                    onHide={() => handleHide(profile.id)}
+                    onSendInterest={() => handleSendInterest(profile.id, profile.name)}
+                    shortlisted={shortlistedIds.has(profile.id)}
+                    canMessage={canMessage}
+                    canViewContact={canViewContact}
+                  />
+                </div>
               ))
             }
 
