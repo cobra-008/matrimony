@@ -31,6 +31,7 @@ import {
   getNRIMatches,
   getStarMatches,
   getHoroscopeMatches,
+  getInterestsSent,
   type RegisteredUser,
 } from "@/lib/auth-store";
 
@@ -131,6 +132,7 @@ function ProfileCard({
   onHide,
   onSendInterest,
   shortlisted,
+  interestSent = false,
   canMessage = false,
   canViewContact = false,
 }: {
@@ -140,6 +142,7 @@ function ProfileCard({
   onHide: () => void;
   onSendInterest: () => void;
   shortlisted?: boolean;
+  interestSent?: boolean;
   canMessage?: boolean;
   canViewContact?: boolean;
 }) {
@@ -537,7 +540,7 @@ function ProfileCard({
             </button>
           )}
 
-          {/* Send Interest — dark maroon */}
+          {/* Send Interest — dark maroon / Interest Sent state */}
           <button
             onClick={onSendInterest}
             style={{
@@ -545,20 +548,22 @@ function ProfileCard({
               alignItems: "center",
               gap: "5px",
               padding: "0.4375rem 1.125rem",
-              border: "none",
+              border: interestSent ? "1.5px solid #6B1A2A" : "none",
               borderRadius: "20px",
-              background: "#6B1A2A",
-              color: "#fff",
+              background: interestSent ? "#FEF0F0" : "#6B1A2A",
+              color: interestSent ? "#6B1A2A" : "#fff",
               fontSize: "0.8125rem",
               fontWeight: 700,
               cursor: "pointer",
               fontFamily: "var(--font-sans)",
+              transition: "all 0.2s",
             }}
+            title={interestSent ? "Interest already sent" : "Send Interest"}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill={interestSent ? "#6B1A2A" : "white"}>
               <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
             </svg>
-            Send Interest
+            {interestSent ? "Interest Sent ✓" : "Send Interest"}
           </button>
 
           {/* View Contact — Gold+ */}
@@ -612,19 +617,44 @@ function ProfileCard({
             </Link>
           )}
 
-          {/* Message — Gold+ */}
-          {canMessage && (
+          {/* Message — always visible, quick action */}
+          <Link
+            href={`/messages?partnerId=${profile.id}`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              padding: "0.4375rem 1rem",
+              border: "1.5px solid #1565C0",
+              borderRadius: "20px",
+              background: "#fff",
+              color: "#1565C0",
+              fontSize: "0.8125rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "var(--font-sans)",
+              textDecoration: "none",
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1565C0" strokeWidth="2">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+            Message
+          </Link>
+
+          {/* View Contact — Gold+ */}
+          {canViewContact ? (
             <Link
-              href={`/messages?partnerId=${profile.id}`}
+              href={`/profile/${profile.id}`}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "5px",
                 padding: "0.4375rem 1rem",
-                border: "1.5px solid #6B1A2A",
+                border: "1.5px solid #E8401A",
                 borderRadius: "20px",
                 background: "#fff",
-                color: "#6B1A2A",
+                color: "#E8401A",
                 fontSize: "0.8125rem",
                 fontWeight: 600,
                 cursor: "pointer",
@@ -632,12 +662,11 @@ function ProfileCard({
                 textDecoration: "none",
               }}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-              </svg>
-              Message
+              <PhoneIcon />
+              View Contact
             </Link>
-          )}
+          ) : null}
+
         </div>
       </div>
     </div>
@@ -708,6 +737,8 @@ function MatchesContent() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(new Set());
+  const [sentInterestIds, setSentInterestIds] = useState<Set<string>>(new Set());
+  const [nameSearch, setNameSearch] = useState("");
   const chipRowRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   // Track last user ID to detect account switches
@@ -723,7 +754,12 @@ function MatchesContent() {
     try {
       switch (sectionId) {
         case "your_matches":         result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined); break;
-        case "shortlisted_by_you":   result = await getShortlistedProfiles(currentUser.id); break;
+        case "shortlisted_by_you":   {
+          const all = await getShortlistedProfiles(currentUser.id);
+          const og = currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null;
+          result = og ? all.filter(p => p.gender === og) : all;
+          break;
+        }
         case "viewed_you":           result = await getViewedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "shortlisted_you":      result = await getShortlistedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "viewed_by_you":        result = await getViewedByMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
@@ -748,6 +784,15 @@ function MatchesContent() {
     setProfiles(result.slice(0, 30));
     setLoading(false);
   }, []);
+
+  // Load sent interest IDs on mount
+  useEffect(() => {
+    if (!user) return;
+    getInterestsSent(user.id).then(rows => {
+      setSentInterestIds(new Set(rows.map(r => r.receiverId)));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // Reload data whenever the user changes (account switch) or active section changes
   useEffect(() => {
@@ -785,9 +830,10 @@ function MatchesContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
-  // Client-side chip filtering + hide
+  // Client-side chip filtering + hide + name search
   const displayed = profiles.filter((p) => {
     if (hiddenIds.has(p.id)) return false;
+    if (nameSearch.trim() && !p.name.toLowerCase().includes(nameSearch.toLowerCase())) return false;
     if (activeChips.includes("Profiles with photo") && !p.photoUrl) return false;
     if (activeChips.includes("Matches with horoscope") && !p.star && !p.rasi) return false;
     if (activeChips.includes("Newly joined")) {
@@ -821,7 +867,12 @@ function MatchesContent() {
 
   const handleSendInterest = async (profileId: string, name: string) => {
     if (!user) { toast.error("Please login"); return; }
+    if (sentInterestIds.has(profileId)) {
+      toast("Interest already sent to " + name);
+      return;
+    }
     await sendInterestWithNotification(user.id, profileId, user.name);
+    setSentInterestIds(prev => new Set([...prev, profileId]));
     toast.success(`Interest sent to ${name}!`);
   };
 
@@ -1030,6 +1081,49 @@ function MatchesContent() {
               >
                 {loading ? "Loading…" : `${displayed.length} matches`}
               </h1>
+            </div>
+
+            {/* Name Search Bar */}
+            <div style={{ marginBottom: "0.75rem", position: "relative" }}>
+              <svg
+                width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"
+                style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
+              >
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search profiles by name…"
+                value={nameSearch}
+                onChange={(e) => setNameSearch(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "0.5rem 0.75rem 0.5rem 2rem",
+                  border: nameSearch ? "1.5px solid #6B1A2A" : "1.5px solid #ddd",
+                  borderRadius: "20px",
+                  fontSize: "0.875rem",
+                  fontFamily: "var(--font-sans)",
+                  color: "#222",
+                  background: "#fff",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  transition: "border-color 0.2s",
+                }}
+              />
+              {nameSearch && (
+                <button
+                  onClick={() => setNameSearch("")}
+                  style={{
+                    position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", cursor: "pointer", color: "#aaa",
+                    padding: "2px", lineHeight: 1,
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             {/* Filter / Sort / Chips row */}
@@ -1353,6 +1447,7 @@ function MatchesContent() {
                     onHide={() => handleHide(profile.id)}
                     onSendInterest={() => handleSendInterest(profile.id, profile.name)}
                     shortlisted={shortlistedIds.has(profile.id)}
+                    interestSent={sentInterestIds.has(profile.id)}
                     canMessage={canMessage}
                     canViewContact={canViewContact}
                   />
