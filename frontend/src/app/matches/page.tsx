@@ -679,7 +679,14 @@ function MatchesContent() {
   const canViewContact = can("contacts");
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab");
-  const [activeSection, setActiveSection] = useState(tab || "your_matches");
+  const [activeSection, setActiveSection] = useState(() => {
+    // Restore the last-visited section from sessionStorage on back-navigation
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("matches_section");
+      if (saved) return saved;
+    }
+    return tab || "your_matches";
+  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -688,6 +695,11 @@ function MatchesContent() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  // Keep sessionStorage in sync whenever the user changes section
+  useEffect(() => {
+    sessionStorage.setItem("matches_section", activeSection);
+  }, [activeSection]);
   const [profiles, setProfiles] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChips, setActiveChips] = useState<string[]>([]);
@@ -754,17 +766,19 @@ function MatchesContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id]);
 
-  // Restore window scroll position when navigating back from a profile
+  // Restore scroll position of the right panel when navigating back from a profile
   useEffect(() => {
     if (loading) return; // wait until profiles have loaded and rendered
     const saved = sessionStorage.getItem("matches_scroll");
     if (saved) {
-      const scrollY = parseInt(saved, 10);
+      const scrollTop = parseInt(saved, 10);
       sessionStorage.removeItem("matches_scroll");
-      // Defer to next paint so cards are in DOM
+      // Double RAF: first RAF waits for paint, second waits for layout
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          window.scrollTo({ top: scrollY, behavior: "instant" } as ScrollToOptions);
+          if (rightPanelRef.current) {
+            rightPanelRef.current.scrollTop = scrollTop;
+          }
         });
       });
     }
@@ -1325,8 +1339,11 @@ function MatchesContent() {
                 <div
                   key={profile.id}
                   onClick={() => {
-                    // Save window scroll position before navigating to profile detail
-                    sessionStorage.setItem("matches_scroll", String(window.scrollY));
+                    // Save the right-panel scroll + active section before navigating into profile detail
+                    if (rightPanelRef.current) {
+                      sessionStorage.setItem("matches_scroll", String(rightPanelRef.current.scrollTop));
+                    }
+                    sessionStorage.setItem("matches_section", activeSection);
                   }}
                 >
                   <ProfileCard

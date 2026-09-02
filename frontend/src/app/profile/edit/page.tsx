@@ -268,7 +268,7 @@ function EditProfileContent() {
   const [country, setCountry] = useState(user?.country || "India");
   const [state, setState] = useState(user?.state || "");
   const [city, setCity] = useState(user?.city || "");
-  const [nativePlace, setNativePlace] = useState("");
+  const [nativePlace, setNativePlace] = useState(user?.nativePlace || "");
   const [address, setAddress] = useState("");
 
   // § About
@@ -279,14 +279,94 @@ function EditProfileContent() {
   const [pAgeMax, setPAgeMax] = useState(String(user?.partnerAgeMax || 35));
   const [pReligion, setPReligion] = useState(user?.partnerReligion || "");
   const [pCaste, setPCaste] = useState(user?.partnerCaste || "");
-  const [pEducation, setPEducation] = useState("");
-  const [pOccupation, setPOccupation] = useState("");
-  const [pIncome, setPIncome] = useState("");
-  const [pHeightMin, setPHeightMin] = useState("152");
-  const [pHeightMax, setPHeightMax] = useState("193");
-  const [pMotherTongue, setPMotherTongue] = useState<string[]>([]);
-  const [pMaritalStatus, setPMaritalStatus] = useState<string[]>([]);
-  const [pCountry, setPCountry] = useState("India");
+  const [pEducation, setPEducation] = useState(user?.partnerEducation || "");
+  const [pOccupation, setPOccupation] = useState(user?.partnerOccupation || "");
+  const [pIncome, setPIncome] = useState(user?.partnerIncome || "");
+  const [pHeightMin, setPHeightMin] = useState(user?.partnerHeightMin || "152");
+  const [pHeightMax, setPHeightMax] = useState(user?.partnerHeightMax || "193");
+  const [pMotherTongue, setPMotherTongue] = useState<string[]>(user?.partnerMotherTongue || []);
+  const [pMaritalStatus, setPMaritalStatus] = useState<string[]>(user?.partnerMaritalStatus || []);
+  const [pCountry, setPCountry] = useState(user?.partnerCountry || "India");
+
+  // ── Re-populate all fields once `user` loads from auth (auth is async) ─────
+  // useState initializers only run once at mount; if user was null at that
+  // point, all fields would be blank. This effect hydrates them on user load.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (!user || hydratedRef.current) return;
+    hydratedRef.current = true;
+
+    // Basic
+    setFirstName(user.name?.split(" ")[0] || "");
+    setLastName(user.name?.split(" ").slice(1).join(" ") || "");
+    setGender(user.gender || "");
+    setDob(user.dob || "");
+    setHeight(user.height || "");
+    setWeight(user.weight || "");
+    setMaritalStatus(user.maritalStatus || "");
+    setMotherTongue(user.motherTongue || "");
+
+    // Religion
+    setReligion(user.religion || "");
+    setCaste(user.caste || "");
+    setSubCaste(user.subcaste || "");
+    setGothram(user.gothram || "");
+    setStar(user.star || "");
+    setRasi(user.rasi || "");
+    setDhosham(user.dhosham || "");
+
+    // Professional
+    setEducation(user.education || "");
+    setCollege(user.college || "");
+    setOccupation(user.occupation || "");
+    setCompany(user.company || "");
+    setEmploymentType(user.employmentType || "");
+    setIncome(user.income || "");
+
+    // Family
+    setFatherOcc(user.fatherOccupation || "");
+    setMotherOcc(user.motherOccupation || "");
+    setFamilyStatus(user.familyStatus || "");
+    setFamilyType(user.familyType || "");
+    setBrothers(String(user.brothers ?? 0));
+    setSisters(String(user.sisters ?? 0));
+
+    // Lifestyle
+    setDiet(user.diet || "");
+    setSmoking(user.smoking || "");
+    setDrinking(user.drinking || "");
+    setDisabilities(user.disabilities || "None");
+    if (user.languages?.length) setLanguages(user.languages);
+    if (user.hobbies?.length) setHobbies(user.hobbies);
+    if (user.interests?.length) setInterests(user.interests);
+
+    // Location
+    setCountry(user.country || "India");
+    setState(user.state || "");
+    setCity(user.city || "");
+    setNativePlace(user.nativePlace || "");
+
+    // About
+    setAbout(user.about || "");
+
+    // Partner Preferences
+    setPAgeMin(String(user.partnerAgeMin || 22));
+    setPAgeMax(String(user.partnerAgeMax || 35));
+    setPReligion(user.partnerReligion || "");
+    setPCaste(user.partnerCaste || "");
+    setPEducation(user.partnerEducation || "");
+    setPOccupation(user.partnerOccupation || "");
+    setPIncome(user.partnerIncome || "");
+    setPHeightMin(user.partnerHeightMin || "152");
+    setPHeightMax(user.partnerHeightMax || "193");
+    if (user.partnerMotherTongue?.length) setPMotherTongue(user.partnerMotherTongue);
+    if (user.partnerMaritalStatus?.length) setPMaritalStatus(user.partnerMaritalStatus);
+    setPCountry(user.partnerCountry || "India");
+
+    // Gallery
+    if (user.photos?.length) setGallery(user.photos);
+  }, [user]);
+  // ─────────────────────────────────────────────────────────────────────────
 
   // Compute profile completion
   const fields = [firstName, gender, dob, religion, caste, education, occupation, city, about, gallery.some(p => p.isPrimary)];
@@ -457,6 +537,14 @@ function EditProfileContent() {
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "1.5rem 1rem 6rem" }}>
 
+          {/* ── Auth loading guard — show spinner while user loads from Supabase ── */}
+          {!user && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "50vh", gap: "1rem" }}>
+              <div style={{ width: "40px", height: "40px", border: "3px solid #f0f0f0", borderTop: "3px solid var(--primary)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+              <p style={{ color: "var(--text-secondary)", fontSize: "0.9375rem" }}>Loading your profile…</p>
+            </div>
+          )}
+          {user && (<>
           {/* ── Page header ── */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: "0.75rem" }}>
             <div>
