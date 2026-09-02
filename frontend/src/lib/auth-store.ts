@@ -636,27 +636,50 @@ export async function upgradeMembership(
   const period = planPeriod ?? (plan === 'Platinum' ? '3 Months' : '1 Month');
   const expiry = new Date();
   expiry.setMonth(expiry.getMonth() + months);
+  const now = new Date().toISOString();
 
+  // Try full update (requires membership columns to exist)
   const { error } = await supabase
     .from('profiles')
     .update({
       is_premium: true,
       membership_plan: plan,
       membership_expiry: expiry.toISOString(),
-      membership_activated: new Date().toISOString(),
+      membership_activated: now,
       membership_price_paid: pricePaid ?? null,
       membership_plan_period: period,
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     })
     .eq('id', userId);
 
   if (error) {
-    console.error('[upgradeMembership] Error updating membership:', error.message);
-    return null;
+    console.error('[upgradeMembership] Full update failed, trying is_premium-only fallback:', error.message);
+    // Fallback: only set is_premium = true (works even if membership columns missing)
+    const { error: fallbackError } = await supabase
+      .from('profiles')
+      .update({ is_premium: true, updated_at: now })
+      .eq('id', userId);
+    if (fallbackError) {
+      console.error('[upgradeMembership] Fallback also failed:', fallbackError.message);
+      return null;
+    }
   }
+
+  // Log transaction (non-fatal if table doesn't exist yet)
+  supabase.from('membership_transactions').insert({
+    profile_id: userId,
+    plan,
+    amount_paid_inr: pricePaid ?? null,
+    plan_period: period,
+    activated_at: now,
+    expires_at: expiry.toISOString(),
+  }).then(({ error: txErr }) => {
+    if (txErr) console.warn('[upgradeMembership] Transaction log failed (non-fatal):', txErr.message);
+  });
 
   return fetchProfile(userId);
 }
+
 
 /**
  * Cancel a user's active membership plan.
