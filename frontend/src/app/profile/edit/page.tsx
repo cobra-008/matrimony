@@ -925,6 +925,7 @@ function EditProfileContent() {
 
             </div>
           </div>
+          </>)}
         </div>
       </main>
 

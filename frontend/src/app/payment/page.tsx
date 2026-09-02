@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { updateProfile } from "@/lib/auth-store";
+import { cacheActivePlan } from "@/hooks/useMembership";
 
 // ── Razorpay window type augmentation ──────────────────────────────────────
 declare global {
@@ -398,10 +399,33 @@ function PaymentForm({ planKey }: { planKey: PlanKey }) {
           });
           const verifyData = await verifyRes.json();
           if (!verifyRes.ok) throw new Error(verifyData.error ?? "Signature verification failed.");
-          if (user) setUser({ ...user, isPremium: true, membershipPlan: planKey, email: verifiedEmail ?? user.email });
+
+          // ── STEP 4: Immediately activate plan client-side ─────────────────
+          // Calculate expiry (Gold/Diamond = 1 month, Platinum = 3 months)
+          const months = planKey === "Platinum" ? 3 : 1;
+          const expiry = new Date();
+          expiry.setMonth(expiry.getMonth() + months);
+          const expiryIso = expiry.toISOString();
+
+          // 1. Write to localStorage cache FIRST (survives refresh() race)
+          if (user?.id) cacheActivePlan(user.id, planKey, expiryIso);
+
+          // 2. Update in-memory user state with full plan info
+          if (user) {
+            setUser({
+              ...user,
+              isPremium: true,
+              membershipPlan: planKey,
+              membershipExpiry: expiryIso,
+              email: verifiedEmail ?? user.email,
+            });
+          }
+
+          // 3. Show success screen immediately — don't wait for DB sync
           setSuccess(true);
-          // Re-fetch the full profile from DB so all fields (membershipExpiry, plan, etc.) are current sitewide
-          refresh().catch(() => {});
+
+          // 4. Background DB refresh (non-blocking — UI already updated above)
+          setTimeout(() => { refresh().catch(() => {}); }, 1500);
         } catch (verifyErr: unknown) {
           const e = verifyErr as Error;
           setError(`Payment received but verification failed: ${e.message}. Contact support@elitetamilmatrimony.com with ID: ${response.razorpay_payment_id}`);

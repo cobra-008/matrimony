@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
+import { useMembership, clearCachedPlan } from "@/hooks/useMembership";
 import {
   Check, Star, Sparkles, Phone, Award, Shield, Zap, Crown, ArrowRight, X,
   AlertTriangle, CalendarClock, Receipt, HelpCircle, MessageSquare, RefreshCw,
@@ -146,13 +148,15 @@ function CellValue({ val }: { val: boolean | string }) {
 // ── Active Plan Dashboard ────────────────────────────────────────────────────
 function ActivePlanDashboard() {
   const { user, setUser, refresh } = useAuth();
+  const { planName: hookPlanName, isPremium: hookIsPremium } = useMembership();
   const router = useRouter();
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelled, setCancelled] = useState(false);
 
-  const plan = user?.membershipPlan;
+  // Use hook-derived plan (authoritative — includes localStorage fallback)
+  const plan = hookIsPremium ? hookPlanName : null;
   const planFeatures = PLANS.find(p => p.name === plan)?.features ?? [];
   const gradient = PLAN_GRADIENT[plan ?? "Gold"];
   const icon = PLAN_ICON[plan ?? "Gold"];
@@ -198,6 +202,8 @@ function ActivePlanDashboard() {
       // Update local state immediately
       if (user) {
         setUser({ ...user, isPremium: false, membershipPlan: null, membershipExpiry: undefined });
+        clearCachedPlan(); // also clear localStorage cache
+
       }
       setCancelled(true);
       await refresh().catch(() => {});
