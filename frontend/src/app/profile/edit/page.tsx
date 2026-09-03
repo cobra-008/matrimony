@@ -95,6 +95,103 @@ function FormSelect({ value, onChange, options, placeholder = "Select" }: {
   );
 }
 
+// ── SEARCHABLE COMBOBOX ───────────────────────────────────────────────
+function SearchableCombobox({ value, onChange, options, placeholder = "Search or type your own..." }: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  placeholder?: string;
+}) {
+  const [query, setQuery] = useState(value);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Sync external value changes back into the input
+  useEffect(() => { setQuery(value); }, [value]);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = options.filter(o => o.toLowerCase().includes(query.toLowerCase())).slice(0, 60);
+
+  const select = (v: string) => {
+    setQuery(v);
+    onChange(v);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <input
+        type="text"
+        value={query}
+        placeholder={placeholder}
+        className="form-input"
+        style={{ fontSize: "0.875rem" }}
+        onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        autoComplete="off"
+      />
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+          background: "#fff", border: "1px solid var(--border-color)",
+          borderRadius: "var(--radius-md)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+          maxHeight: "220px", overflowY: "auto", zIndex: 200,
+        }}>
+          {filtered.length === 0 && (
+            <div
+              style={{ padding: "0.625rem 0.875rem", fontSize: "0.8125rem", color: "var(--text-muted)" }}
+              onMouseDown={() => select(query)}
+            >
+              Use &ldquo;{query}&rdquo; as custom occupation
+            </div>
+          )}
+          {filtered.map(opt => (
+            <div
+              key={opt}
+              onMouseDown={() => select(opt)}
+              style={{
+                padding: "0.5rem 0.875rem",
+                fontSize: "0.875rem",
+                cursor: "pointer",
+                background: opt === value ? "var(--primary-light)" : "transparent",
+                color: opt === value ? "var(--primary)" : "var(--text-dark)",
+                fontWeight: opt === value ? 600 : 400,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#f5f5f5")}
+              onMouseLeave={e => (e.currentTarget.style.background = opt === value ? "var(--primary-light)" : "transparent")}
+            >
+              {opt}
+            </div>
+          ))}
+          {filtered.length > 0 && !filtered.includes(query) && query.trim() && (
+            <div
+              onMouseDown={() => select(query)}
+              style={{
+                padding: "0.5rem 0.875rem",
+                fontSize: "0.8125rem",
+                cursor: "pointer",
+                borderTop: "1px solid var(--border-light)",
+                color: "var(--primary)",
+                fontWeight: 600,
+              }}
+            >
+              + Use &ldquo;{query}&rdquo; as custom entry
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── SECTION CARD ─────────────────────────────────────────────────────
 function SectionCard({ id, title, icon, children }: {
   id: string; title: string; icon: React.ReactNode; children: React.ReactNode;
@@ -554,16 +651,17 @@ function EditProfileContent() {
                   <FormField label="Last Name">
                     <FormInput value={lastName} onChange={setLastName} placeholder="Enter last name" />
                   </FormField>
-                  <FormField label="Gender" required>
-                    <FormSelect
-                      value={gender}
-                      onChange={setGender}
-                      options={[{ value: "male", label: "Male" }, { value: "female", label: "Female" }]}
-                      placeholder="Select gender"
+                  <FormField label="Gender" required hint="Set during registration, cannot be changed">
+                    <input
+                      value={gender === "male" ? "Male" : gender === "female" ? "Female" : ""}
+                      disabled
+                      readOnly
+                      className="form-input"
+                      style={{ fontSize: "0.875rem", background: "#f5f5f5", color: "#888", cursor: "not-allowed" }}
                     />
                   </FormField>
-                  <FormField label="Date of Birth" required>
-                    <FormInput type="date" value={dob} onChange={setDob} />
+                  <FormField label="Date of Birth" required hint="Set during registration, cannot be changed">
+                    <FormInput type="date" value={dob} onChange={() => {}} disabled />
                   </FormField>
                   <FormField label="Height" hint="Used for partner matching">
                     <FormSelect value={height} onChange={setHeight} options={HEIGHT_OPTS} placeholder="Select height" />
@@ -597,13 +695,13 @@ function EditProfileContent() {
                   <FormField label="Gothram">
                     <FormInput value={gothram} onChange={setGothram} placeholder="Enter gothram (optional)" />
                   </FormField>
-                  <FormField label="Star (Natchathiram)">
+                  <FormField label="Star (Natchathiram)" required>
                     <FormSelect value={star} onChange={setStar} options={STARS} placeholder="Select star" />
                   </FormField>
-                  <FormField label="Raasi">
+                  <FormField label="Raasi" required>
                     <FormSelect value={rasi} onChange={setRasi} options={RAASI_LIST} placeholder="Select raasi" />
                   </FormField>
-                  <FormField label="Dhosham">
+                  <FormField label="Dhosham" required>
                     <FormSelect value={dhosham} onChange={setDhosham} options={DHOSHAM_OPTIONS} placeholder="Select" />
                   </FormField>
                   <FormField label="Upload Horoscope" hint="PDF or JPG of your jathagam">
@@ -630,7 +728,12 @@ function EditProfileContent() {
                     <FormInput value={college} onChange={setCollege} placeholder="e.g. IIT Madras" />
                   </FormField>
                   <FormField label="Occupation" required>
-                    <FormSelect value={occupation} onChange={setOccupation} options={OCCUPATIONS} placeholder="Select occupation" />
+                    <SearchableCombobox
+                      value={occupation}
+                      onChange={setOccupation}
+                      options={(OCCUPATIONS as (string | { value: string; label: string })[]).map(o => typeof o === "string" ? o : o.label)}
+                      placeholder="Search or type your occupation..."
+                    />
                   </FormField>
                   <FormField label="Company / Organisation">
                     <FormInput value={company} onChange={setCompany} placeholder="e.g. Infosys" />

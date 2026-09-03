@@ -146,6 +146,8 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     photoUrl: row.photo_url ?? undefined,
     isVerified: row.is_verified ?? false,
     isPremium: row.is_premium ?? false,
+    // Compute age from DOB
+    age: row.dob ? Math.floor((Date.now() - new Date(row.dob).getTime()) / (365.25 * 24 * 3600 * 1000)) : undefined,
     partnerAgeMin: row.partner_age_min ?? 22,
     partnerAgeMax: row.partner_age_max ?? 35,
     partnerReligion: row.partner_religion ?? undefined,

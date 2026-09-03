@@ -330,7 +330,7 @@ function AuthenticatedDashboard() {
   const pct = Math.round(((totalFields - missing.length) / totalFields) * 100);
 
   const profileCode = `ETM${user.id.replace(/-/g, "").slice(0, 7).toUpperCase()}`;
-  const userPhoto = user.photoUrl || (user.gender === "female" ? FEMALE_PHOTOS[0] : MALE_PHOTOS[0]);
+  const userPhoto = user.photoUrl || null;
 
   // Match stat tiles
   const STAT_TILES: { label: string; count: number; href: string; icon: React.ReactNode }[] = [
@@ -387,17 +387,20 @@ function AuthenticatedDashboard() {
         >
           {/* Avatar + name */}
           <div style={{ padding: "1.25rem 1rem 1rem", textAlign: "center", borderBottom: "1px solid #F2E8D6" }}>
-            <div style={{ position: "relative", display: "inline-block", marginBottom: "0.75rem" }}>
-              <img
-                src={userPhoto}
-                alt={user.name}
-                style={{
-                  width: "72px", height: "72px", borderRadius: "50%",
-                  objectFit: "cover", objectPosition: "top",
-                  border: "2px solid #E8D5B7",
-                  display: "block",
-                }}
-              />
+              <div style={{ position: "relative", display: "inline-block", marginBottom: "0.75rem" }}>
+                <div
+                  style={{
+                    width: "72px", height: "72px", borderRadius: "50%",
+                    border: "2px solid #E8D5B7",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    overflow: "hidden", background: userPhoto ? "transparent" : "var(--primary-light)",
+                  }}
+                >
+                  {userPhoto
+                    ? <img src={userPhoto} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                    : <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5" opacity="0.6"><circle cx="12" cy="7" r="5"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8"/></svg>
+                  }
+                </div>
               <Link
                 href="/profile/edit?section=photo"
                 style={{
@@ -554,8 +557,8 @@ function AuthenticatedDashboard() {
             ))}
           </div>
 
-          {/* Complete Your Profile */}
-          {missing.length > 0 && (
+          {/* Complete Your Profile OR 100% Complete banner */}
+          {missing.length > 0 ? (
             <div
               style={{
                 background: "#fff",
@@ -576,10 +579,9 @@ function AuthenticatedDashboard() {
                   </div>
                 </div>
                 <Link href="/profile/edit" style={{ fontSize: "0.75rem", color: "#6B1A2A", fontWeight: 600, textDecoration: "none" }}>
-                  Edit all →
+                  Edit all &rarr;
                 </Link>
               </div>
-
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
                 {missing.map((m) => (
                   <Link
@@ -602,6 +604,42 @@ function AuthenticatedDashboard() {
                   </Link>
                 ))}
               </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                background: "linear-gradient(135deg, #E8F5E9, #F1F8E9)",
+                border: "1.5px solid #A5D6A7",
+                borderRadius: "6px",
+                padding: "1rem 1.25rem",
+                marginBottom: "1rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "1rem",
+              }}
+            >
+              <div style={{
+                width: "44px", height: "44px", borderRadius: "50%",
+                background: "#2E7D32", display: "flex", alignItems: "center",
+                justifyContent: "center", flexShrink: 0,
+              }}>
+                <CheckCircle size={24} color="#fff" fill="#2E7D32" stroke="#fff" />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, color: "#1B5E20", fontSize: "1rem" }}>
+                  🎉 Profile 100% Complete!
+                </div>
+                <div style={{ fontSize: "0.8125rem", color: "#388E3C", marginTop: "2px" }}>
+                  Your profile is fully set up. You&apos;re getting maximum visibility to matches!
+                </div>
+              </div>
+              <Link href={`/profile/${user.id}`} style={{
+                padding: "0.4375rem 1rem", background: "#2E7D32",
+                color: "#fff", borderRadius: "20px", fontWeight: 700,
+                fontSize: "0.8125rem", textDecoration: "none", flexShrink: 0,
+              }}>
+                View Profile
+              </Link>
             </div>
           )}
 

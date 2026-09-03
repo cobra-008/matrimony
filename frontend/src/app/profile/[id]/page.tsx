@@ -424,11 +424,14 @@ export default function ProfileDetailPage({
 
   if (!profile) return null;
 
-  const photo =
-    profile.photoUrl ||
-    (profile.gender === "male"
-      ? "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=600"
-      : "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=600");
+  const photo = profile.photoUrl || null;
+  // Compute age from DOB if age field is missing (dob only exists on RegisteredUser, not ProfileData)
+  const dobStr = "dob" in profile ? (profile as { dob?: string }).dob : undefined;
+  const profileAge = profile.age ||
+    (dobStr ? Math.floor((Date.now() - new Date(dobStr).getTime()) / (365.25 * 24 * 3600 * 1000)) : null);
+  // Safe accessor for RegisteredUser-only fields (not present on mock ProfileData)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const p = profile as any;
 
   const pronoun = profile.gender === "female" ? "her" : "him";
   const isOwnProfile = user?.id === profile.id;
@@ -514,21 +517,27 @@ export default function ProfileDetailPage({
                   textAlign: "center",
                 }}
               >
-                <img
-                  src={photo}
-                  alt={profile.name}
+                <div
                   style={{
                     width: "72px",
                     height: "72px",
                     borderRadius: "50%",
-                    objectFit: "contain",
+                    objectFit: "contain" as const,
                     background: "#F8F0F0",
-                    objectPosition: "top",
                     border: "2px solid var(--primary-light)",
-                    display: "block",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     margin: "0 auto 0.5rem",
+                    overflow: "hidden",
+                    flexShrink: 0,
                   }}
-                />
+                >
+                  {photo
+                    ? <img src={photo} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                    : <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5" opacity="0.5"><circle cx="12" cy="7" r="5"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8"/></svg>
+                  }
+                </div>
                 <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--text-dark)" }}>
                   {profile.name.split(" ")[0]}
                 </div>
@@ -634,21 +643,44 @@ export default function ProfileDetailPage({
                 <div className="profile-info-body" style={{ padding: "1.25rem", display: "flex", gap: "1rem" }}>
                   {/* Photo */}
                   <div className="profile-photo-col" style={{ flexShrink: 0, position: "relative" }}>
-                    <img
-                      src={photo}
-                      alt={profile.name}
-                      className="profile-photo-img"
-                      style={{
-                        width: "130px",
-                        height: "160px",
-                        objectFit: "contain",
-                        background: "#F8F0F0",
-                        objectPosition: "top",
-                        borderRadius: "var(--radius-lg)",
-                        display: "block",
-                        border: "2px solid var(--border-light)",
-                      }}
-                    />
+                    {photo
+                      ? (
+                        <img
+                          src={photo}
+                          alt={profile.name}
+                          className="profile-photo-img"
+                          style={{
+                            width: "130px",
+                            height: "160px",
+                            objectFit: "cover",
+                            background: "#F8F0F0",
+                            objectPosition: "top",
+                            borderRadius: "var(--radius-lg)",
+                            display: "block",
+                            border: "2px solid var(--border-light)",
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="profile-photo-img"
+                          style={{
+                            width: "130px",
+                            height: "160px",
+                            background: "var(--primary-light)",
+                            borderRadius: "var(--radius-lg)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: "2px solid var(--border-light)",
+                          }}
+                        >
+                          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.2" opacity="0.5">
+                            <circle cx="12" cy="7" r="5"/>
+                            <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8"/>
+                          </svg>
+                        </div>
+                      )
+                    }
                     {/* Online dot */}
                     {profile.isOnline && (
                       <span
@@ -741,8 +773,8 @@ export default function ProfileDetailPage({
                       }}
                     >
                       <div>
-                        <strong style={{ fontWeight: 600 }}>{profile.age} Yrs</strong>,{" "}
-                        {profile.height || "5 Ft 4 In"} / 163 Cms
+                        <strong style={{ fontWeight: 600 }}>{profileAge ? `${profileAge} Yrs` : "—"}</strong>,{" "}
+                        {profile.height || "Height not set"}
                       </div>
                       <div>
                         {profile.religion}, {profile.community}
@@ -1103,10 +1135,10 @@ export default function ProfileDetailPage({
                   </h3>
                   <div className="profile-edu-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.25rem 1.5rem", fontSize: "0.8125rem" }}>
                     {[
-                      ["Qualification", profile.education || "B.E Computer Science"],
-                      ["Occupation", profile.occupation || "Software Engineer"],
-                      ["Company", "Infosys"],
-                      ["Annual Income", profile.income || "₹12 - 15 Lakh"],
+                      ["Qualification", profile.education || "—"],
+                      ["Occupation", profile.occupation || "—"],
+                      ["Company", p.company || "—"],
+                      ["Annual Income", profile.income || "—"],
                     ].map(([k, v]) => (
                       <div key={k} style={{ display: "flex", gap: "0.5rem", padding: "0.375rem 0", borderBottom: "1px solid var(--border-light)" }}>
                         <span style={{ color: "#888", minWidth: "100px", flexShrink: 0 }}>{k}</span>
@@ -1126,14 +1158,14 @@ export default function ProfileDetailPage({
               <SectionCard id="section-Lifestyle" title="Religion & Lifestyle Information" onEdit={isOwnProfile ? () => router.push("/profile/edit?section=religion") : undefined}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <tbody>
-                    <InfoRow label="Religion" value={profile.religion || "Hindu"} />
+                    <InfoRow label="Religion" value={profile.religion || "—"} />
                     <InfoRow
                       label="Caste / Sub Caste"
-                      value={profile.community}
+                      value={p.community || (p.caste && p.subcaste ? `${p.caste} / ${p.subcaste}` : p.caste || p.subcaste || undefined)}
                     />
-                    <InfoRow label="Gothra(m)" value="—" />
-                    <InfoRow label="Star / Raasi" value="Hastha / Kanya (Virgo)" />
-                    <InfoRow label="Dosh" value="No" />
+                    <InfoRow label="Gothra(m)" value={p.gothram || undefined} />
+                    <InfoRow label="Star / Raasi" value={(p.star && p.rasi) ? `${p.star} / ${p.rasi}` : (p.star || p.rasi || undefined)} />
+                    <InfoRow label="Dosh" value={p.dhosham || undefined} />
                   </tbody>
                 </table>
               </SectionCard>
@@ -1144,9 +1176,10 @@ export default function ProfileDetailPage({
               <SectionCard id="section-Location" title="Location Details" onEdit={isOwnProfile ? () => router.push("/profile/edit?section=location") : undefined}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <tbody>
-                    <InfoRow label="Country" value="India" />
-                    <InfoRow label="State" value="Tamil Nadu" />
-                    <InfoRow label="City" value={profile.location?.split(",")[0] || "Chennai"} />
+                    <InfoRow label="Country" value={p.country || "India"} />
+                    <InfoRow label="State" value={p.state || undefined} />
+                    <InfoRow label="City" value={p.city || (profile.location?.split(",")[0]) || undefined} />
+                    <InfoRow label="Native Place" value={p.nativePlace || undefined} />
                     <InfoRow label="Residency Status" value="Citizen" />
                   </tbody>
                 </table>
@@ -1158,13 +1191,13 @@ export default function ProfileDetailPage({
               <SectionCard id="section-Family-Details" title="Family Details" onEdit={isOwnProfile ? () => router.push("/profile/edit?section=family") : undefined}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <tbody>
-                    <InfoRow label="Family Values" value="Traditional" />
-                    <InfoRow label="Family Type" value="Nuclear Family" />
-                    <InfoRow label="Family Status" value="Middle Class" />
-                    <InfoRow label="Father's Occupation" value="Business" />
-                    <InfoRow label="Mother's Occupation" value="Homemaker" />
-                    <InfoRow label="No. of Brothers" value="1" />
-                    <InfoRow label="No. of Sisters" value="0" />
+                    <InfoRow label="Family Values" value={p.familyType ? (p.familyType === "Joint Family" ? "Traditional" : "Modern") : undefined} />
+                    <InfoRow label="Family Type" value={p.familyType || undefined} />
+                    <InfoRow label="Family Status" value={p.familyStatus || undefined} />
+                    <InfoRow label="Father's Occupation" value={p.fatherOccupation || undefined} />
+                    <InfoRow label="Mother's Occupation" value={p.motherOccupation || undefined} />
+                    <InfoRow label="No. of Brothers" value={p.brothers !== undefined ? String(p.brothers) : undefined} />
+                    <InfoRow label="No. of Sisters" value={p.sisters !== undefined ? String(p.sisters) : undefined} />
                   </tbody>
                 </table>
               </SectionCard>

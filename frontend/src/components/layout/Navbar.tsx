@@ -492,6 +492,9 @@ export default function Navbar() {
                       minWidth: "220px",
                       zIndex: 300,
                       animation: "slideDown 0.15s ease",
+                      maxHeight: "calc(100vh - 120px)",
+                      overflowY: "auto",
+                      overscrollBehavior: "contain",
                     }}
                     role="menu"
                   >

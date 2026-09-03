@@ -14,124 +14,99 @@ import {
 // ── Plan configuration (single source of truth) ──────────────────────────────
 const PLANS = [
   {
-    name: "Free",
-    price: "₹0",
-    period: "forever",
-    description: "Get started and explore",
-    colorAccent: "var(--text-secondary)",
-    isGradient: false,
+    name: "Gold",
+    label: "Gold – 3 months",
+    price: "₹3,999",
+    originalPrice: "₹5,500",
+    discountPct: "20% OFF!",
+    perMonth: "₹1333 per month",
+    period: "3 months",
+    description: "Valid for 3 months",
+    colorAccent: "#C8973A",
+    isGradient: true,
+    gradientBg: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
     highlight: false,
-    cta: "Start Free",
-    href: "/register",
-    icon: <Shield size={24} />,
+    cta: "Pay Now",
+    href: "/payment?plan=Gold",
+    icon: <Star size={24} />,
     features: [
-      { text: "Browse 25 Lakh+ profiles", included: true },
-      { text: "10 interests per month", included: true },
-      { text: "Basic search filters", included: true },
-      { text: "Send/receive messages after match", included: true },
-      { text: "Contact number reveal", included: false },
-      { text: "AI compatibility scores", included: false },
-      { text: "Priority listing", included: false },
-      { text: "Advanced search filters", included: false },
-      { text: "Human matchmaker", included: false },
+      { text: "Valid for 3 months", included: true },
+      { text: "View 40 Phone Nos", included: true },
+      { text: "Send unlimited messages", included: true },
+      { text: "Unlimited horoscope views", included: true },
+      { text: "View verified profiles with photos", included: false },
     ],
   },
   {
-    name: "Gold",
-    price: "₹999",
-    period: "per month",
-    description: "Most popular — serious seekers",
+    name: "PrimeGold",
+    label: "Prime Gold – 3 months",
+    price: "₹4,999",
+    originalPrice: "₹7,900",
+    discountPct: "32% OFF!",
+    perMonth: "₹1666 per month",
+    period: "3 months",
+    description: "Valid for 3 months",
     colorAccent: "var(--primary)",
     isGradient: true,
     gradientBg: "var(--gradient-hero)",
     highlight: true,
-    cta: "Get Gold",
-    href: "/payment?plan=Gold",
-    icon: <Star size={24} />,
-    features: [
-      { text: "Browse 25 Lakh+ profiles", included: true },
-      { text: "Unlimited interests", included: true },
-      { text: "30 contact reveals per month", included: true },
-      { text: "AI compatibility score for every match", included: true },
-      { text: "Priority profile listing", included: true },
-      { text: "Advanced search (25+ filters)", included: true },
-      { text: "See who viewed your profile", included: true },
-      { text: "Chat with all matched profiles", included: true },
-      { text: "Human matchmaker", included: false },
-    ],
-  },
-  {
-    name: "Diamond",
-    price: "₹1,999",
-    period: "per month",
-    description: "For premium seekers",
-    colorAccent: "hsl(253, 70%, 55%)",
-    isGradient: true,
-    gradientBg: "linear-gradient(135deg, hsl(253,70%,45%) 0%, hsl(217,91%,55%) 100%)",
-    highlight: false,
-    cta: "Go Diamond",
-    href: "/payment?plan=Diamond",
-    icon: <Award size={24} />,
-    features: [
-      { text: "Everything in Gold", included: true },
-      { text: "Unlimited contact reveals", included: true },
-      { text: "Unlimited interests", included: true },
-      { text: "First-page priority placement", included: true },
-      { text: "Verified badge prominence", included: true },
-      { text: "Video call request feature", included: true },
-      { text: "Exclusive Diamond-only matches", included: true },
-      { text: "Dedicated account manager", included: true },
-      { text: "Human matchmaker", included: false },
-    ],
-  },
-  {
-    name: "Platinum",
-    nameSecondLine: "Concierge",
-    price: "₹9,999",
-    period: "3 months",
-    description: "White-glove service",
-    colorAccent: "var(--gold-dark)",
-    isGradient: true,
-    gradientBg: "linear-gradient(135deg, #E69C00 0%, #FFB703 100%)",
-    highlight: false,
-    cta: "Go Platinum",
-    href: "/payment?plan=Platinum",
+    cta: "Pay Now",
+    href: "/payment?plan=PrimeGold",
     icon: <Crown size={24} />,
     features: [
-      { text: "Everything in Diamond", included: true },
-      { text: "Dedicated human matchmaker", included: true },
-      { text: "Hand-curated match recommendations", included: true },
-      { text: "Background verification assistance", included: true },
-      { text: "Profile video introduction (2 mins)", included: true },
-      { text: "Priority 24/7 support", included: true },
-      { text: "Astrology compatibility check", included: true },
-      { text: "Offline meetup coordination", included: true },
-      { text: "Guaranteed 100 curated introductions", included: true },
+      { text: "Valid for 3 months", included: true },
+      { text: "View unlimited Phone Nos*", included: true },
+      { text: "Send unlimited messages", included: true },
+      { text: "Unlimited horoscope views", included: true },
+      { text: "View verified profiles with photos", included: true },
+    ],
+  },
+  {
+    name: "PrimeTillUMarry",
+    label: "Prime – Till U Marry – 12 months",
+    price: "₹8,999",
+    originalPrice: "₹23,700",
+    discountPct: "58% OFF!",
+    perMonth: "₹750 per month",
+    period: "12 months",
+    description: "Longest validity plan",
+    colorAccent: "#6B1A2A",
+    isGradient: true,
+    gradientBg: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)",
+    highlight: false,
+    isBestSeller: true,
+    cta: "Pay Now",
+    href: "/payment?plan=PrimeTillUMarry",
+    icon: <Sparkles size={24} />,
+    features: [
+      { text: "Longest validity plan", included: true },
+      { text: "View unlimited Phone Nos*", included: true },
+      { text: "Send unlimited messages", included: true },
+      { text: "Unlimited horoscope views", included: true },
+      { text: "View verified profiles with photos", included: true },
     ],
   },
 ];
 
 const PLAN_GRADIENT: Record<string, string> = {
   Gold: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
-  Diamond: "linear-gradient(135deg, hsl(253,70%,45%) 0%, hsl(217,91%,55%) 100%)",
-  Platinum: "linear-gradient(135deg, #E69C00 0%, #FFB703 100%)",
+  PrimeGold: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)",
+  PrimeTillUMarry: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)",
 };
 
 const PLAN_ICON: Record<string, React.ReactNode> = {
   Gold: <Star size={28} />,
-  Diamond: <Award size={28} />,
-  Platinum: <Crown size={28} />,
+  PrimeGold: <Crown size={28} />,
+  PrimeTillUMarry: <Sparkles size={28} />,
 };
 
 const COMPARISON_ROWS = [
-  { feature: "Profile browsing", free: "Unlimited", gold: "Unlimited", diamond: "Unlimited", platinum: "Unlimited" },
-  { feature: "Interests per month", free: "10", gold: "Unlimited", diamond: "Unlimited", platinum: "Unlimited" },
-  { feature: "Contact reveals/month", free: "0", gold: "30", diamond: "Unlimited", platinum: "Unlimited" },
-  { feature: "AI match scores", free: false, gold: true, diamond: true, platinum: true },
-  { feature: "Advanced filters", free: false, gold: true, diamond: true, platinum: true },
-  { feature: "Priority listing", free: false, gold: true, diamond: "First page", platinum: "First page" },
-  { feature: "Video call request", free: false, gold: false, diamond: true, platinum: true },
-  { feature: "Human matchmaker", free: false, gold: false, diamond: false, platinum: "Dedicated" },
+  { feature: "Profile browsing", gold: "Unlimited", primeGold: "Unlimited", primeTillUMarry: "Unlimited" },
+  { feature: "Phone No. reveals", gold: "40 numbers", primeGold: "Unlimited*", primeTillUMarry: "Unlimited*" },
+  { feature: "Messages", gold: "Unlimited", primeGold: "Unlimited", primeTillUMarry: "Unlimited" },
+  { feature: "Horoscope views", gold: "Unlimited", primeGold: "Unlimited", primeTillUMarry: "Unlimited" },
+  { feature: "Verified profiles with photos", gold: false, primeGold: true, primeTillUMarry: true },
+  { feature: "Validity", gold: "3 months", primeGold: "3 months", primeTillUMarry: "12 months" },
 ];
 
 function CellValue({ val }: { val: boolean | string }) {
@@ -610,7 +585,21 @@ function PricingGrid() {
                   transition: "transform 0.2s, box-shadow 0.2s",
                 }}
               >
-                {plan.highlight && (
+                {/* Best Seller badge */}
+                {(plan as any).isBestSeller && (
+                  <div style={{
+                    position: "absolute", top: 0, right: 0,
+                    background: "var(--primary)", color: "#fff",
+                    fontSize: "0.6875rem", fontWeight: 800,
+                    padding: "0.3rem 0.875rem",
+                    borderRadius: "0 var(--radius-xl) 0 var(--radius-xl)",
+                  }}>
+                    Best Seller
+                  </div>
+                )}
+                {/* Most Popular badge */}
+                {plan.highlight && !
+                  (plan as any).isBestSeller && (
                   <div style={{
                     background: "var(--gradient-hero)", color: "#fff",
                     fontSize: "0.6875rem", fontWeight: 800,
@@ -621,44 +610,60 @@ function PricingGrid() {
                     <Star size={11} fill="#FFD54F" stroke="#FFD54F" /> Most Popular
                   </div>
                 )}
-                <div style={{
-                  background: plan.isGradient ? plan.gradientBg : "var(--bg-page)",
-                  padding: "1.5rem 1.5rem 1.25rem",
-                }}>
+
+                {/* Card header */}
+                <div style={{ padding: "1.5rem 1.5rem 1rem" }}>
                   <div style={{
-                    width: "48px", height: "48px", borderRadius: "var(--radius-lg)",
-                    background: plan.isGradient ? "rgba(255,255,255,0.2)" : "var(--primary-light)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: plan.isGradient ? "#fff" : plan.colorAccent, marginBottom: "1rem",
+                    fontWeight: 700, fontSize: "1rem",
+                    color: "var(--text-dark)", marginBottom: "0.875rem", textAlign: "center",
                   }}>
-                    {plan.icon}
+                    {(plan as any).label || plan.name}
                   </div>
-                  <div style={{
-                    fontSize: "0.8125rem", fontWeight: 700, letterSpacing: "0.04em",
-                    textTransform: "uppercase",
-                    color: plan.isGradient ? "rgba(255,255,255,0.8)" : "var(--text-secondary)",
-                    marginBottom: "0.25rem",
-                  }}>
-                    {plan.name}{plan.nameSecondLine ? ` ${plan.nameSecondLine}` : ""}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "0.375rem", marginBottom: "0.25rem" }}>
+
+                  {/* Discount badge + original price */}
+                  {(plan as any).originalPrice && (
+                    <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
+                      <span style={{
+                        fontSize: "0.75rem", fontWeight: 700, color: "#2BA745",
+                      }}>
+                        {(plan as any).discountPct} Valid for today
+                      </span>
+                      <div style={{ fontSize: "0.8125rem", color: "#888", marginTop: "2px" }}>
+                        <span style={{ textDecoration: "line-through" }}>{(plan as any).originalPrice}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Main price */}
+                  <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
                     <span style={{
                       fontSize: "2rem", fontWeight: 800,
                       fontFamily: "var(--font-serif)",
-                      color: plan.isGradient ? "#fff" : "var(--text-dark)", lineHeight: 1,
+                      color: "var(--text-dark)", lineHeight: 1,
                     }}>
                       {plan.price}
                     </span>
-                    <span style={{ fontSize: "0.75rem", color: plan.isGradient ? "rgba(255,255,255,0.65)" : "var(--text-muted)" }}>
-                      / {plan.period}
-                    </span>
                   </div>
-                  <p style={{ fontSize: "0.8125rem", color: plan.isGradient ? "rgba(255,255,255,0.7)" : "var(--text-secondary)", margin: 0 }}>
-                    {plan.description}
-                  </p>
+
+                  {/* Per month */}
+                  {(plan as any).perMonth && (
+                    <div style={{ textAlign: "center", marginBottom: "0.75rem" }}>
+                      <span style={{
+                        display: "inline-block",
+                        fontSize: "0.75rem", color: "#555",
+                        border: "1px solid #ddd",
+                        borderRadius: "var(--radius-full)",
+                        padding: "2px 10px",
+                      }}>
+                        {(plan as any).perMonth}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div style={{ padding: "1.25rem 1.5rem", flex: 1 }}>
-                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+
+                {/* Features list */}
+                <div style={{ padding: "0 1.5rem", flex: 1 }}>
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "0.625rem" }}>
                     {plan.features.map((feat) => (
                       <li key={feat.text} style={{ display: "flex", alignItems: "flex-start", gap: "0.625rem" }}>
                         <div style={{
@@ -682,23 +687,27 @@ function PricingGrid() {
                     ))}
                   </ul>
                 </div>
-                <div style={{ padding: "0 1.5rem 1.5rem" }}>
+
+                {/* CTA button */}
+                <div style={{ padding: "1.25rem 1.5rem 1.5rem" }}>
                   <button
                     onClick={() => router.push(plan.href)}
                     className="btn"
                     style={{
                       display: "flex", width: "100%", justifyContent: "center", gap: "0.375rem",
-                      fontSize: "0.875rem", fontWeight: 700,
+                      fontSize: "0.9375rem", fontWeight: 700,
                       background: plan.highlight
                         ? "var(--gradient-hero)"
-                        : plan.isGradient ? plan.gradientBg : "#fff",
-                      color: plan.highlight || plan.isGradient ? "#fff" : "var(--text-secondary)",
-                      border: !plan.isGradient ? "1.5px solid var(--border-color)" : "none",
-                      boxShadow: plan.highlight ? "var(--shadow-pink)" : "none",
+                        : "linear-gradient(135deg, #E8401A 0%, #FF6B35 100%)",
+                      color: "#fff",
+                      border: "none",
+                      boxShadow: "0 4px 12px rgba(232,64,26,0.35)",
+                      borderRadius: "var(--radius-full)",
                       cursor: "pointer", fontFamily: "var(--font-sans)",
+                      padding: "0.75rem",
                     }}
                   >
-                    {plan.cta}<ArrowRight size={14} />
+                    {plan.cta}
                   </button>
                 </div>
               </div>
@@ -722,15 +731,15 @@ function PricingGrid() {
             </p>
           </div>
           <div style={{ overflowX: "auto", borderRadius: "var(--radius-xl)", border: "1px solid var(--border-light)" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "560px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "460px" }}>
               <thead>
                 <tr style={{ background: "var(--bg-page)", borderBottom: "2px solid var(--border-color)" }}>
                   <th style={{ textAlign: "left", padding: "1rem 1.25rem", fontWeight: 700, color: "var(--text-dark)", fontSize: "0.875rem" }}>Feature</th>
-                  {["Free", "Gold", "Diamond", "Platinum"].map((p) => (
+                  {["Gold", "Prime Gold", "Prime – Till U Marry"].map((p) => (
                     <th key={p} style={{
                       padding: "1rem 0.75rem", textAlign: "center", fontWeight: 700,
                       fontSize: "0.875rem",
-                      color: p === "Gold" ? "var(--primary)" : "var(--text-dark)",
+                      color: p === "Prime Gold" ? "var(--primary)" : "var(--text-dark)",
                     }}>
                       {p}
                     </th>
@@ -744,10 +753,9 @@ function PricingGrid() {
                     background: i % 2 === 0 ? "#fff" : "var(--bg-page)",
                   }}>
                     <td style={{ padding: "0.875rem 1.25rem", fontWeight: 600, color: "var(--text-secondary)", fontSize: "0.875rem" }}>{row.feature}</td>
-                    <td style={{ padding: "0.875rem 0.75rem", textAlign: "center", fontSize: "0.875rem", color: "var(--text-secondary)" }}><CellValue val={row.free} /></td>
-                    <td style={{ padding: "0.875rem 0.75rem", textAlign: "center", fontSize: "0.875rem", fontWeight: 600, color: "var(--primary)" }}><CellValue val={row.gold} /></td>
-                    <td style={{ padding: "0.875rem 0.75rem", textAlign: "center", fontSize: "0.875rem", color: "var(--text-secondary)" }}><CellValue val={row.diamond} /></td>
-                    <td style={{ padding: "0.875rem 0.75rem", textAlign: "center", fontSize: "0.875rem", color: "var(--text-secondary)" }}><CellValue val={row.platinum} /></td>
+                    <td style={{ padding: "0.875rem 0.75rem", textAlign: "center", fontSize: "0.875rem", color: "var(--text-secondary)" }}><CellValue val={(row as any).gold} /></td>
+                    <td style={{ padding: "0.875rem 0.75rem", textAlign: "center", fontSize: "0.875rem", fontWeight: 600, color: "var(--primary)" }}><CellValue val={(row as any).primeGold} /></td>
+                    <td style={{ padding: "0.875rem 0.75rem", textAlign: "center", fontSize: "0.875rem", color: "var(--text-secondary)" }}><CellValue val={(row as any).primeTillUMarry} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -894,14 +902,11 @@ export default function MembershipPage() {
       <style>{`
         .plans-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(3, 1fr);
           gap: 1.25rem;
           padding-top: 2.5rem;
         }
-        @media (max-width: 1024px) {
-          .plans-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 600px) {
+        @media (max-width: 900px) {
           .plans-grid { grid-template-columns: 1fr; }
         }
       `}</style>
