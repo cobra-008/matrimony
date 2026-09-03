@@ -16,11 +16,6 @@ import BottomNav from "./BottomNav";
 // ── Guest Center Navigation ────────────────────────────────────────────────────
 const GUEST_NAV = [
   { label: "Home", href: "/" },
-  { label: "Search Profiles", href: "/search" },
-  { label: "Matches", href: "/matches" },
-  { label: "Membership", href: "/membership" },
-  { label: "Success Stories", href: "/success-stories" },
-  { label: "Help", href: "/faq" },
 ];
 
 // ── SVG Icon Components ───────────────────────────────────────────────────────

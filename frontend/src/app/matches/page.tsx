@@ -373,42 +373,6 @@ function ProfileCard({
               {profileCode} | Last seen few hour ago
             </div>
           </div>
-
-          {/* Phone + WhatsApp */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              flexShrink: 0,
-              paddingTop: "2px",
-            }}
-          >
-            <button
-              onClick={() => toast("Upgrade to call this member")}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "3px",
-              }}
-              title="Call"
-            >
-              <PhoneIcon />
-            </button>
-            <button
-              onClick={() => toast("Upgrade to WhatsApp this member")}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "3px",
-              }}
-              title="WhatsApp"
-            >
-              <WhatsAppIcon />
-            </button>
-          </div>
         </div>
 
         {/* Attributes line */}

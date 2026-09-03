@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PlanTabs from "@/components/ui/PlanTabs";
+
 import { useAuth } from "@/context/AuthContext";
 import {
   getInterestsReceived,
@@ -23,22 +24,33 @@ type ReceivedFilter = "all" | "pending" | "accepted" | "declined";
 type SentFilter = "all" | "pending" | "accepted" | "declined";
 type ActiveSection = "received" | "sent";
 
-// ── Photo helpers ─────────────────────────────────────────────────────
-const MALE_PHOTOS = [
-  "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=300",
-  "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=300",
-  "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=300",
-];
-const FEMALE_PHOTOS = [
-  "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=300",
-  "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=300",
-  "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=300",
-];
-
-function getPhoto(gender?: string, idx = 0): string {
-  return gender === "female"
-    ? FEMALE_PHOTOS[idx % 3]
-    : MALE_PHOTOS[idx % 3];
+// ── SVG Avatar (no stock photos) ─────────────────────────────────────
+function GenderAvatar({ gender, size = 200 }: { gender?: string; size?: number }) {
+  const isFemale = gender === "female";
+  return (
+    <div style={{
+      width: "148px", height: `${size}px`,
+      background: isFemale ? "#F5E6E9" : "#EAF0FA",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      flexShrink: 0,
+    }}>
+      {isFemale ? (
+        <svg width="72" height="72" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/>
+          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#6B1A2A" opacity="0.3"/>
+          <circle cx="12" cy="7" r="4.5" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/>
+          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/>
+        </svg>
+      ) : (
+        <svg width="72" height="72" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/>
+          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#1A3A6B" opacity="0.2"/>
+          <circle cx="12" cy="7" r="4.5" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/>
+          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/>
+        </svg>
+      )}
+    </div>
+  );
 }
 
 // ── Format date ───────────────────────────────────────────────────────
@@ -110,7 +122,7 @@ function ReceivedCard({
   const age = p.dob
     ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
     : 0;
-  const photo = p.photoUrl || getPhoto(p.gender, idx);
+  const photo = p.photoUrl || null;
   const profileCode = `M${p.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
 
   const attrs = [
@@ -140,11 +152,9 @@ function ReceivedCard({
     >
       {/* Photo */}
       <Link href={`/profile/${p.id}`} style={{ display: "block", flexShrink: 0, width: "148px" }}>
-        <img
-          src={photo}
-          alt={p.name}
-          style={{ width: "148px", height: "200px", objectFit: "cover", objectPosition: "top", display: "block" }}
-        />
+        {photo
+          ? <img src={photo} alt={p.name} style={{ width: "148px", height: "200px", objectFit: "cover", objectPosition: "top", display: "block" }} />
+          : <GenderAvatar gender={p.gender} size={200} />}
       </Link>
 
       {/* Content */}
@@ -292,7 +302,7 @@ function SentCard({
   const age = p.dob
     ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
     : 0;
-  const photo = p.photoUrl || getPhoto(p.gender, idx);
+  const photo = p.photoUrl || null;
   const profileCode = `M${p.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
 
   const attrs = [
@@ -320,11 +330,9 @@ function SentCard({
     >
       {/* Photo */}
       <Link href={`/profile/${p.id}`} style={{ display: "block", flexShrink: 0, width: "148px" }}>
-        <img
-          src={photo}
-          alt={p.name}
-          style={{ width: "148px", height: "200px", objectFit: "cover", objectPosition: "top", display: "block" }}
-        />
+        {photo
+          ? <img src={photo} alt={p.name} style={{ width: "148px", height: "200px", objectFit: "cover", objectPosition: "top", display: "block" }} />
+          : <GenderAvatar gender={p.gender} size={200} />}
       </Link>
 
       {/* Content */}
@@ -636,7 +644,7 @@ export default function InterestsPage() {
   return (
     <>
       <Navbar />
-      <PlanTabs activeTab="regular" />
+      <PlanTabs />
 
       {/* Responsive styles */}
       <style>{`

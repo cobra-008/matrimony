@@ -30,25 +30,32 @@ function useCountdown() {
   return timeLeft;
 }
 
-// ── Placeholder photos ────────────────────────────────────────────────
-const MALE_PHOTOS = [
-  "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=400",
-];
-const FEMALE_PHOTOS = [
-  "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=400",
-  "https://images.pexels.com/photos/1138903/pexels-photo-1138903.jpeg?auto=compress&cs=tinysrgb&w=400",
-];
-
-function getPhoto(p: RegisteredUser, idx: number): string {
-  if (p.photoUrl) return p.photoUrl;
-  return p.gender === "female" ? FEMALE_PHOTOS[idx % 5] : MALE_PHOTOS[idx % 5];
+// SVG Avatar — no stock photos
+function GenderAvatar({ gender }: { gender?: string }) {
+  const isFemale = gender === "female";
+  return (
+    <div style={{
+      width: "100%", height: "100%",
+      background: isFemale ? "#F5E6E9" : "#EAF0FA",
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      {isFemale ? (
+        <svg width="72" height="72" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/>
+          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#6B1A2A" opacity="0.3"/>
+          <circle cx="12" cy="7" r="4.5" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/>
+          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/>
+        </svg>
+      ) : (
+        <svg width="72" height="72" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/>
+          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#1A3A6B" opacity="0.2"/>
+          <circle cx="12" cy="7" r="4.5" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/>
+          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/>
+        </svg>
+      )}
+    </div>
+  );
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────
@@ -108,7 +115,7 @@ export default function DailyRecsPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--bg-page)" }}>
       <Navbar />
-      <PlanTabs activeTab="regular" />
+      <PlanTabs />
       <style>{`
         @media (max-width: 599px) {
           .daily-rec-card { flex-direction: column !important; min-height: unset !important; }
@@ -173,11 +180,9 @@ export default function DailyRecsPage() {
                       position: "relative"
                     }}
                   >
-                    <img 
-                      src={getPhoto(p, idx)} 
-                      alt={p.name} 
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-                    />
+                    {p.photoUrl
+                      ? <img src={p.photoUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : <GenderAvatar gender={p.gender} />}
                     {selectedIndex !== idx && (
                       <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.3)" }} />
                     )}
@@ -202,11 +207,9 @@ export default function DailyRecsPage() {
                 >
                   {/* Left Side: Large Photo */}
                   <div className="daily-rec-photo-col" style={{ width: "380px", flexShrink: 0, position: "relative" }}>
-                    <img 
-                      src={getPhoto(activeProfile, selectedIndex)} 
-                      alt={activeProfile.name} 
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-                    />
+                    {activeProfile.photoUrl
+                      ? <img src={activeProfile.photoUrl} alt={activeProfile.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : <GenderAvatar gender={activeProfile.gender} />}
                     <div style={{ 
                       position: "absolute", 
                       bottom: "1.5rem", 

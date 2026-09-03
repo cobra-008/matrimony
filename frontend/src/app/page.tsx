@@ -92,8 +92,8 @@ const SUCCESS_STORIES = [
     married: "March 2024",
     community: "Vellalar",
     text: "We connected through Elite Tamil Matrimony and knew immediately we were meant for each other. The matching was spot on — same values, similar family backgrounds.",
-    brideImg: "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=400",
-    groomImg: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400",
+    brideImg: null,
+    groomImg: null,
   },
   {
     id: "s2",
@@ -103,8 +103,8 @@ const SUCCESS_STORIES = [
     married: "January 2024",
     community: "Mudaliar",
     text: "As an NRI settled in Singapore, finding a Tamil match was challenging. Verified profiles made it easy. We got married within 6 months of connecting.",
-    brideImg: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
-    groomImg: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400",
+    brideImg: null,
+    groomImg: null,
   },
   {
     id: "s3",
@@ -114,8 +114,8 @@ const SUCCESS_STORIES = [
     married: "June 2024",
     community: "Thevar",
     text: "My parents created my profile. Within two weeks we found the perfect match in every way. The horoscope compatibility feature helped my parents feel confident.",
-    brideImg: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400",
-    groomImg: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400",
+    brideImg: null,
+    groomImg: null,
   },
   {
     id: "s4",
@@ -125,8 +125,8 @@ const SUCCESS_STORIES = [
     married: "August 2024",
     community: "Gounder",
     text: "I had tried other platforms but felt they lacked the Tamil community focus. Elite Tamil Matrimony felt like home. We matched on horoscope and values both.",
-    brideImg: "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=400",
-    groomImg: "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=400",
+    brideImg: null,
+    groomImg: null,
   },
   {
     id: "s5",
@@ -136,8 +136,8 @@ const SUCCESS_STORIES = [
     married: "October 2024",
     community: "Pillai",
     text: "We both belong to the same community and were matched by the smart compatibility algorithm. The first call lasted 4 hours — we knew it was right!",
-    brideImg: "https://images.pexels.com/photos/1138903/pexels-photo-1138903.jpeg?auto=compress&cs=tinysrgb&w=400",
-    groomImg: "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=400",
+    brideImg: null,
+    groomImg: null,
   },
   {
     id: "s6",
@@ -147,8 +147,8 @@ const SUCCESS_STORIES = [
     married: "December 2024",
     community: "Brahmin",
     text: "Living in the UK, I wanted a partner who shared Tamil traditions. ETM's NRI section was perfect. We met in Chennai for our wedding three months later!",
-    brideImg: "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400",
-    groomImg: "https://images.pexels.com/photos/1043473/pexels-photo-1043473.jpeg?auto=compress&cs=tinysrgb&w=400",
+    brideImg: null,
+    groomImg: null,
   },
 ];
 
@@ -1263,16 +1263,16 @@ export default function HomePage() {
                 >
                   {/* Photos */}
                   <div style={{ display: "flex", height: "140px" }}>
-                    <img
-                      src={story.brideImg}
-                      alt={story.bride}
-                      style={{ width: "50%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-                    />
-                    <img
-                      src={story.groomImg}
-                      alt={story.groom}
-                      style={{ width: "50%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-                    />
+                    {story.brideImg
+                      ? <img src={story.brideImg} alt={story.bride} style={{ width: "50%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                      : <div style={{ width: "50%", height: "100%", background: "#F5E6E9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#6B1A2A" opacity="0.3"/><circle cx="12" cy="7" r="4.5" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/></svg>
+                        </div>}
+                    {story.groomImg
+                      ? <img src={story.groomImg} alt={story.groom} style={{ width: "50%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                      : <div style={{ width: "50%", height: "100%", background: "#EAF0FA", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#1A3A6B" opacity="0.2"/><circle cx="12" cy="7" r="4.5" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/></svg>
+                        </div>}
                   </div>
                   {/* Content */}
                   <div style={{ padding: "1rem" }}>

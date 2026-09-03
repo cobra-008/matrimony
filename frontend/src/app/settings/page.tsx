@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 
 // ── TYPES ─────────────────────────────────────────────────────────────
 type Section =
-  | "account" | "privacy" | "notifications" | "preferences"
+  | "account" | "privacy" | "notifications"
   | "security" | "subscription" | "help";
 
 // ── SIDEBAR NAV ───────────────────────────────────────────────────────
@@ -27,7 +27,6 @@ const NAV_SECTIONS: { id: Section; label: string; icon: React.ReactNode; badge?:
   { id: "account", label: "Account", icon: <Key size={16} /> },
   { id: "privacy", label: "Privacy", icon: <Shield size={16} /> },
   { id: "notifications", label: "Notifications", icon: <Bell size={16} /> },
-  { id: "preferences", label: "Preferences", icon: <Star size={16} /> },
   { id: "security", label: "Security", icon: <Lock size={16} /> },
   { id: "subscription", label: "Subscription", icon: <CreditCard size={16} />, badge: "Free" },
   { id: "help", label: "Help & Support", icon: <HelpCircle size={16} /> },
@@ -176,18 +175,10 @@ function SettingsContent() {
   const [horoscopeAlerts, setHoroscopeAlerts] = useState(false);
   const [marketing, setMarketing] = useState(false);
 
-  // Preferences
+  // Display preferences only
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState("English");
   const [distanceUnit, setDistanceUnit] = useState("Kilometers");
-  const [prefReligion, setPrefReligion] = useState("Any");
-  const [prefAgeMin, setPrefAgeMin] = useState("22");
-  const [prefAgeMax, setPrefAgeMax] = useState("35");
-  const [prefEducation, setPrefEducation] = useState("Any");
-  const [prefOccupation, setPrefOccupation] = useState("Any");
-  const [prefIncome, setPrefIncome] = useState("Any");
-  const [prefHeightMin, setPrefHeightMin] = useState("5'0\"");
-  const [prefHeightMax, setPrefHeightMax] = useState("6'2\"");
 
   // Security
   const [twoFactor, setTwoFactor] = useState(false);
@@ -233,16 +224,7 @@ function SettingsContent() {
     setConfirmPassword("");
   };
 
-  const handleSavePreferences = () => {
-    if (user) {
-      updateProfile(user.id, {
-        partnerAgeMin: parseInt(prefAgeMin),
-        partnerAgeMax: parseInt(prefAgeMax),
-        partnerReligion: prefReligion === "Any" ? undefined : prefReligion,
-      });
-    }
-    toast.success("Preferences saved!");
-  };
+  // Partner preferences moved to /profile/edit?section=partner
 
   const handleDeleteAccount = () => {
     toast.error("Account deletion request submitted. Our team will contact you.");
@@ -361,55 +343,6 @@ function SettingsContent() {
             Save Notification Settings
           </button>
         </div>
-      </>
-    ),
-
-    // ── PREFERENCES ───────────────────────────────────────────────────
-    preferences: (
-      <>
-        <SettingsCard title="Display">
-          <ToggleRow label="Dark Mode" sublabel="Switch to dark theme" value={darkMode} onChange={(v) => { setDarkMode(v); toast(v ? "Dark mode coming soon!" : "Light mode active"); }} />
-          <SelectRow label="Language" value={language} options={["English", "Tamil", "Hindi", "Telugu", "Malayalam"]} onChange={setLanguage} />
-          <SelectRow label="Distance Unit" value={distanceUnit} options={["Kilometers", "Miles"]} onChange={setDistanceUnit} />
-        </SettingsCard>
-
-        <SettingsCard title="Partner Preferences" subtitle="Set what you're looking for in a match">
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-            <div style={{ padding: "0.75rem 0", borderBottom: "1px solid var(--border-light)" }}>
-              <div style={{ fontSize: "0.8125rem", color: "#888", marginBottom: "0.5rem" }}>Age Range</div>
-              <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                <select className="form-select" value={prefAgeMin} onChange={e => setPrefAgeMin(e.target.value)} style={{ flex: 1, fontSize: "0.8125rem" }}>
-                  {Array.from({ length: 43 }, (_, i) => i + 18).map(a => <option key={a} value={a}>{a} yrs</option>)}
-                </select>
-                <span style={{ color: "#aaa", fontSize: "0.8125rem" }}>to</span>
-                <select className="form-select" value={prefAgeMax} onChange={e => setPrefAgeMax(e.target.value)} style={{ flex: 1, fontSize: "0.8125rem" }}>
-                  {Array.from({ length: 43 }, (_, i) => i + 18).map(a => <option key={a} value={a}>{a} yrs</option>)}
-                </select>
-              </div>
-            </div>
-            <SelectRow label="Religion Preference" value={prefReligion} options={["Any", "Hindu", "Christian", "Muslim", "Jain", "Sikh", "Buddhist", "Other"]} onChange={setPrefReligion} />
-            <SelectRow label="Education Preference" value={prefEducation} options={["Any", "High School", "Diploma", "B.E/B.Tech", "B.Sc", "MBBS", "M.Tech", "MBA", "CA", "Ph.D"]} onChange={setPrefEducation} />
-            <SelectRow label="Occupation Preference" value={prefOccupation} options={["Any", "Software Engineer", "Doctor", "Engineer", "Teacher", "Business Owner", "Government Employee"]} onChange={setPrefOccupation} />
-            <SelectRow label="Income Preference" value={prefIncome} options={["Any", "Below 2L", "2-5L", "5-10L", "10-20L", "20-50L", "50L+"]} onChange={setPrefIncome} />
-            <div style={{ padding: "0.75rem 0", borderBottom: "1px solid var(--border-light)" }}>
-              <div style={{ fontSize: "0.8125rem", color: "#888", marginBottom: "0.5rem" }}>Height Range</div>
-              <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                <select className="form-select" value={prefHeightMin} onChange={e => setPrefHeightMin(e.target.value)} style={{ flex: 1, fontSize: "0.8125rem" }}>
-                  {["4'6\"", "4'8\"", "4'10\"", "5'0\"", "5'1\"", "5'2\"", "5'3\"", "5'4\"", "5'5\"", "5'6\"", "5'7\"", "5'8\"", "5'9\"", "5'10\"", "5'11\"", "6'0\"", "6'1\"", "6'2\""].map(h => <option key={h} value={h}>{h}</option>)}
-                </select>
-                <span style={{ color: "#aaa", fontSize: "0.8125rem" }}>to</span>
-                <select className="form-select" value={prefHeightMax} onChange={e => setPrefHeightMax(e.target.value)} style={{ flex: 1, fontSize: "0.8125rem" }}>
-                  {["4'6\"", "4'8\"", "4'10\"", "5'0\"", "5'1\"", "5'2\"", "5'3\"", "5'4\"", "5'5\"", "5'6\"", "5'7\"", "5'8\"", "5'9\"", "5'10\"", "5'11\"", "6'0\"", "6'1\"", "6'2\""].map(h => <option key={h} value={h}>{h}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
-          <div style={{ marginTop: "1.25rem" }}>
-            <button onClick={handleSavePreferences} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
-              Save Partner Preferences
-            </button>
-          </div>
-        </SettingsCard>
       </>
     ),
 
