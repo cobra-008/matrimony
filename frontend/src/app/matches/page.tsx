@@ -150,35 +150,7 @@ function ProfileCard({
     ? Math.floor((Date.now() - new Date(profile.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
     : 0;
 
-  // Placeholder photos by gender (used when no photo uploaded)
-  // Use more photos and a stable ID-based hash to avoid same photo on consecutive profiles
-  const MALE_PHOTOS = [
-    "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/1043473/pexels-photo-1043473.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/834863/pexels-photo-834863.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?auto=compress&cs=tinysrgb&w=400",
-  ];
-  const FEMALE_PHOTOS = [
-    "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/1138903/pexels-photo-1138903.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=400",
-    "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400",
-  ];
-  // Stable hash from profile ID (UUID chars) so same profile always gets same photo
-  const idHash = profile.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  const photo = profile.photoUrl
-    ? profile.photoUrl
-    : profile.gender === "male"
-    ? MALE_PHOTOS[idHash % MALE_PHOTOS.length]
-    : FEMALE_PHOTOS[idHash % FEMALE_PHOTOS.length];
+  const photo = profile.photoUrl || null;
 
   const profileCode = `ETM${String(index + 1).padStart(3, "0")}`;
   const location = [profile.city, profile.state].filter(Boolean).join(", ") || profile.country || "India";
@@ -211,20 +183,41 @@ function ProfileCard({
     >
       {/* LEFT — Photo column */}
       <div style={{ width: "100%", flexShrink: 0, position: "relative" }} className="match-card-photo-wrap">
-        <Link href={`/profile/${profile.id}`} style={{ display: "block", lineHeight: 0 }}>
-          <img
-            src={photo}
-            alt={profile.name}
-            className="match-card-photo"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: "top",
-              display: "block",
-              maxHeight: "340px",
-            }}
-          />
+        <Link href={`/profile/${profile.id}`} style={{ display: "block", lineHeight: 0, height: "100%" }}>
+          {photo ? (
+            <img
+              src={photo}
+              alt={profile.name}
+              className="match-card-photo"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "top",
+                display: "block",
+                maxHeight: "340px",
+              }}
+            />
+          ) : (
+            <div
+              className="match-card-photo"
+              style={{
+                width: "100%",
+                height: "100%",
+                minHeight: "220px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "var(--primary-light)",
+                borderRight: "1px solid #e8e8e8",
+              }}
+            >
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.2" opacity="0.5">
+                <circle cx="12" cy="7" r="5" />
+                <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" />
+              </svg>
+            </div>
+          )}
         </Link>
 
         {/* Shortlist badge — top left */}

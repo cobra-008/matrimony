@@ -87,7 +87,7 @@ export interface RegisteredUser {
   community?: string;
   compatibilityScore?: number;
   matchReasons?: string[];
-  membershipPlan?: 'Gold' | 'Diamond' | 'Platinum' | null;  // active plan name
+  membershipPlan?: 'Free' | 'Gold' | 'PrimeGold' | 'PrimeTillUMarry' | 'Diamond' | 'Platinum' | null;  // active plan name
   membershipExpiry?: string;  // ISO datetime
   membershipActivated?: string;
   membershipPricePaid?: number;  // INR paid (after GST)
@@ -996,8 +996,9 @@ export async function fetchMatchProfiles(
     currentUserId = currentUserIdOrUser as string | undefined;
   }
 
-  const oppositeGender = currentUserGender === 'male' ? 'female'
-    : currentUserGender === 'female' ? 'male'
+  const normalizedGender = currentUserGender?.toLowerCase();
+  const oppositeGender = normalizedGender === 'male' ? 'female'
+    : normalizedGender === 'female' ? 'male'
     : null;
 
   let query = supabase
@@ -1007,7 +1008,12 @@ export async function fetchMatchProfiles(
     .limit(100);
 
   if (currentUserId) query = query.neq('id', currentUserId);
-  if (oppositeGender) query = query.eq('gender', oppositeGender);
+  if (oppositeGender) {
+    query = query.eq('gender', oppositeGender);
+  } else {
+    // If we don't know the gender, default to returning an empty list to avoid showing both
+    return [];
+  }
 
   const { data, error } = await query;
   if (error) return [];

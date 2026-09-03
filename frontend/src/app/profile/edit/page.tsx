@@ -21,6 +21,7 @@ import {
   STARS, RAASI_LIST, DHOSHAM_OPTIONS, HEIGHTS,
   RELIGION_TO_CASTES, CASTE_TO_SUBCASTE,
 } from "@/data/matrimony-data";
+import citiesData from "@/data/cities.json";
 
 // ── SECTION META ─────────────────────────────────────────────────────
 const SECTIONS = [
@@ -118,7 +119,9 @@ function SearchableCombobox({ value, onChange, options, placeholder = "Search or
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const filtered = options.filter(o => o.toLowerCase().includes(query.toLowerCase())).slice(0, 60);
+  const filtered = query === value
+    ? options.slice(0, 60)
+    : options.filter(o => o.toLowerCase().includes(query.toLowerCase())).slice(0, 60);
 
   const select = (v: string) => {
     setQuery(v);
@@ -315,6 +318,12 @@ function EditProfileContent() {
 
   const [saving, setSaving] = useState(false);
   const [gallery, setGallery] = useState<ProfilePhoto[]>(user?.photos || []);
+
+  useEffect(() => {
+    if (user?.photos) {
+      setGallery(user.photos);
+    }
+  }, [user?.photos]);
   const [uploadingGallery, setUploadingGallery] = useState(false);
 
   // § Basic
@@ -484,6 +493,8 @@ function EditProfileContent() {
   const HOBBIES_LIST = ["Reading", "Music", "Dance", "Travel", "Cooking", "Movies", "Sports", "Art", "Yoga", "Photography", "Gaming", "Trekking"];
   const INTERESTS_LIST = ["Carnatic Music", "Classical Dance", "Temple Visits", "Spirituality", "Volunteering", "Gardening", "Coding", "Fashion", "Food Blog", "Fitness"];
   const LANG_LIST = ["Tamil", "English", "Hindi", "Telugu", "Malayalam", "Kannada", "Sanskrit"];
+  
+  const ALL_CITIES = Array.from(new Set(citiesData.map(c => c.city))).sort();
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -497,7 +508,7 @@ function EditProfileContent() {
     const toastId = toast.loading("Uploading photo...");
     try {
       const url = await uploadProfilePhoto(user.id, file);
-      const isPrimary = gallery.length === 0;
+      const isPrimary = gallery.length === 0 || !user.photoUrl;
       const newPhoto = await addProfilePhoto(user.id, url, isPrimary, gallery.length);
       if (newPhoto) {
         setGallery([...gallery, newPhoto]);
@@ -911,7 +922,16 @@ function EditProfileContent() {
                     <FormSelect value={state} onChange={setState} options={INDIAN_STATES} placeholder="Select state" />
                   </FormField>
                   <FormField label="City" required>
-                    <FormInput value={city} onChange={setCity} placeholder="e.g. Chennai" />
+                    <SearchableCombobox
+                      value={city}
+                      onChange={v => {
+                        setCity(v);
+                        const match = citiesData.find(c => c.city === v);
+                        if (match && match.state && !state) setState(match.state);
+                      }}
+                      options={ALL_CITIES}
+                      placeholder="Search or type your city..."
+                    />
                   </FormField>
                   <FormField label="Native Place">
                     <FormInput value={nativePlace} onChange={setNativePlace} placeholder="e.g. Madurai" />

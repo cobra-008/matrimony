@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronDown, ChevronLeft, Phone, Upload, X, Check, AlertCircle, Mail } from "lucide-react";
 import toast from "react-hot-toast";
@@ -171,6 +171,108 @@ function FloatSelect({ label, value, onChange, options, placeholder }: {
         <span style={{ position: "absolute", top: "0.3125rem", left: "0.875rem", fontSize: "0.6875rem", color: "var(--primary)", fontWeight: 700, pointerEvents: "none", letterSpacing: "0.02em" }}>
           {label}
         </span>
+      )}
+    </div>
+  );
+}
+
+// ---- Floated label searchable combobox (supports custom entry) ----
+function FloatSearchableCombobox({ label, value, onChange, options, placeholder = "Search or type..." }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  placeholder?: string;
+}) {
+  const [query, setQuery] = useState(value);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setQuery(value); }, [value]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = query === value
+    ? options.slice(0, 60)
+    : options.filter(o => o.toLowerCase().includes(query.toLowerCase())).slice(0, 60);
+
+  const select = (v: string) => {
+    setQuery(v);
+    onChange(v);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={ref} style={{ position: "relative", marginBottom: "1rem" }}>
+      <input
+        type="text"
+        value={query}
+        placeholder={placeholder || `Select ${label}`}
+        className="form-input"
+        style={{ 
+          paddingTop: query ? "1.375rem" : "0.75rem", 
+          paddingBottom: query ? "0.375rem" : "0.75rem",
+          fontSize: "0.875rem",
+        }}
+        onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        autoComplete="off"
+        aria-label={label}
+      />
+      {query && (
+        <span style={{ position: "absolute", top: "0.3125rem", left: "0.875rem", fontSize: "0.6875rem", color: "var(--primary)", fontWeight: 700, pointerEvents: "none", letterSpacing: "0.02em" }}>
+          {label}
+        </span>
+      )}
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+          background: "#fff", border: "1px solid var(--border-color)",
+          borderRadius: "var(--radius-md)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+          maxHeight: "220px", overflowY: "auto", zIndex: 200,
+        }}>
+          {filtered.length === 0 && (
+            <div
+              style={{ padding: "0.625rem 0.875rem", fontSize: "0.8125rem", color: "var(--text-muted)" }}
+              onMouseDown={() => select(query)}
+            >
+              Use &ldquo;{query}&rdquo; as custom {label.toLowerCase()}
+            </div>
+          )}
+          {filtered.map(opt => (
+            <div
+              key={opt}
+              onMouseDown={() => select(opt)}
+              style={{
+                padding: "0.5rem 0.875rem", fontSize: "0.875rem", cursor: "pointer",
+                background: opt === value ? "var(--primary-light)" : "transparent",
+                color: opt === value ? "var(--primary)" : "var(--text-dark)",
+                fontWeight: opt === value ? 600 : 400,
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#f5f5f5")}
+              onMouseLeave={e => (e.currentTarget.style.background = opt === value ? "var(--primary-light)" : "transparent")}
+            >
+              {opt}
+            </div>
+          ))}
+          {filtered.length > 0 && !filtered.includes(query) && query.trim() && (
+            <div
+              onMouseDown={() => select(query)}
+              style={{
+                padding: "0.5rem 0.875rem", fontSize: "0.8125rem", cursor: "pointer",
+                borderTop: "1px solid var(--border-light)", color: "var(--primary)", fontWeight: 600,
+              }}
+            >
+              + Use &ldquo;{query}&rdquo; as custom entry
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -581,8 +683,8 @@ function RegisterWizard() {
       if (photoFile && newUser.id) {
         try {
           const photoUrl = await uploadProfilePhoto(newUser.id, photoFile);
-          const { updateProfile } = await import("@/lib/auth-store");
-          await updateProfile(newUser.id, { photoUrl });
+          const { addProfilePhoto } = await import("@/lib/auth-store");
+          await addProfilePhoto(newUser.id, photoUrl, true, 0);
         } catch (photoErr) {
           console.warn("Photo upload failed:", photoErr);
           // Non-fatal — user can add photo later
@@ -1247,7 +1349,7 @@ function RegisterWizard() {
                 options={EDUCATION_LEVELS}
               />
               <FieldError msg={fieldErrors.education} />
-              <FloatSelect
+              <FloatSearchableCombobox
                 label="Occupation"
                 value={form.occupation}
                 onChange={(v) => {
@@ -1256,6 +1358,7 @@ function RegisterWizard() {
                   else setFieldError("occupation", "Please select your occupation.");
                 }}
                 options={OCCUPATIONS}
+                placeholder="Search or type your occupation..."
               />
               <FieldError msg={fieldErrors.occupation} />
               <FloatSelect label="Annual Income (Rs.)" value={form.income} onChange={(v) => set("income", v)} options={INCOME_OPTIONS} />

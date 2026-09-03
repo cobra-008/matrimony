@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export type PlanLevel = 0 | 1 | 2 | 3; // Free=0, Gold=1, Diamond=2, Platinum=3
-export type PlanName = "Free" | "Gold" | "Diamond" | "Platinum";
+export type PlanName = "Free" | "Gold" | "PrimeGold" | "PrimeTillUMarry" | "Diamond" | "Platinum";
 
 export type Feature =
   | "messages"        // Gold+
@@ -39,6 +39,8 @@ const PLAN_LEVEL: Record<string, PlanLevel> = {
   "":        0,
   Free:      0,
   Gold:      1,
+  PrimeGold: 2,
+  PrimeTillUMarry: 3,
   Diamond:   2,
   Platinum:  3,
 };
@@ -70,14 +72,24 @@ export const PLAN_FEATURES: Record<PlanName, string[]> = {
     "View profile details",
   ],
   Gold: [
-    "Browse 25 Lakh+ profiles",
-    "Unlimited interests",
-    "30 contact reveals per month",
-    "AI compatibility score for every match",
-    "Priority profile listing",
-    "Advanced search (25+ filters)",
-    "See who viewed your profile",
-    "Chat with all matched profiles",
+    "Valid for 3 months",
+    "View 40 Phone Nos",
+    "Send unlimited messages",
+    "Unlimited horoscope views",
+  ],
+  PrimeGold: [
+    "Valid for 3 months",
+    "View unlimited Phone Nos*",
+    "Send unlimited messages",
+    "Unlimited horoscope views",
+    "View verified profiles with photos",
+  ],
+  PrimeTillUMarry: [
+    "Longest validity plan",
+    "View unlimited Phone Nos*",
+    "Send unlimited messages",
+    "Unlimited horoscope views",
+    "View verified profiles with photos",
   ],
   Diamond: [
     "Everything in Gold",

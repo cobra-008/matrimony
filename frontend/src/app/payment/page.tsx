@@ -6,7 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import {
   Check, Lock, Shield, Star, Award, Crown, ChevronLeft,
-  AlertCircle, X, Mail,
+  AlertCircle, X, Mail, Sparkles
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { updateProfile } from "@/lib/auth-store";
@@ -24,57 +24,46 @@ declare global {
 const PLAN_CONFIG = {
   Gold: {
     name: "Gold",
-    price: 999,
-    period: "per month",
-    description: "Most popular — for serious match seekers",
-    gradient: "var(--gradient-hero)",
+    price: 3999,
+    period: "3 months",
+    description: "Valid for 3 months",
+    gradient: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
     icon: <Star size={22} />,
     features: [
-      "Browse 25 Lakh+ profiles",
-      "Unlimited interests",
-      "30 contact reveals per month",
-      "AI compatibility score for every match",
-      "Priority profile listing",
-      "Advanced search (25+ filters)",
-      "See who viewed your profile",
-      "Chat with all matched profiles",
+      "Valid for 3 months",
+      "View 40 Phone Nos",
+      "Send unlimited messages",
+      "Unlimited horoscope views",
     ],
   },
-  Diamond: {
-    name: "Diamond",
-    price: 1999,
-    period: "per month",
-    description: "For premium match seekers",
-    gradient: "linear-gradient(135deg, hsl(253,70%,45%) 0%, hsl(217,91%,55%) 100%)",
-    icon: <Award size={22} />,
-    features: [
-      "Everything in Gold",
-      "Unlimited contact reveals",
-      "Unlimited interests",
-      "First-page priority placement",
-      "Verified badge prominence",
-      "Video call request feature",
-      "Exclusive Diamond-only matches",
-      "Dedicated account manager",
-    ],
-  },
-  Platinum: {
-    name: "Platinum Concierge",
-    price: 9999,
+  PrimeGold: {
+    name: "Prime Gold",
+    price: 4999,
     period: "3 months",
-    description: "White-glove matchmaking service",
-    gradient: "linear-gradient(135deg, #E69C00 0%, #FFB703 100%)",
+    description: "Valid for 3 months",
+    gradient: "var(--gradient-hero)",
     icon: <Crown size={22} />,
     features: [
-      "Everything in Diamond",
-      "Dedicated human matchmaker",
-      "Hand-curated match recommendations",
-      "Background verification assistance",
-      "Profile video introduction (2 mins)",
-      "Priority 24/7 support",
-      "Astrology compatibility check",
-      "Offline meetup coordination",
-      "Guaranteed 100 curated introductions",
+      "Valid for 3 months",
+      "View unlimited Phone Nos*",
+      "Send unlimited messages",
+      "Unlimited horoscope views",
+      "View verified profiles with photos",
+    ],
+  },
+  PrimeTillUMarry: {
+    name: "Prime Till U Marry",
+    price: 8999,
+    period: "12 months",
+    description: "Longest validity plan",
+    gradient: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)",
+    icon: <Sparkles size={22} />,
+    features: [
+      "Longest validity plan",
+      "View unlimited Phone Nos*",
+      "Send unlimited messages",
+      "Unlimited horoscope views",
+      "View verified profiles with photos",
     ],
   },
 } as const;
@@ -401,8 +390,8 @@ function PaymentForm({ planKey }: { planKey: PlanKey }) {
           if (!verifyRes.ok) throw new Error(verifyData.error ?? "Signature verification failed.");
 
           // ── STEP 4: Immediately activate plan client-side ─────────────────
-          // Calculate expiry (Gold/Diamond = 1 month, Platinum = 3 months)
-          const months = planKey === "Platinum" ? 3 : 1;
+          // Calculate expiry
+          const months = planKey === "PrimeTillUMarry" ? 12 : 3;
           const expiry = new Date();
           expiry.setMonth(expiry.getMonth() + months);
           const expiryIso = expiry.toISOString();
