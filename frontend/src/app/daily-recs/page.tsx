@@ -87,6 +87,7 @@ export default function DailyRecsPage() {
   const handleSkip = () => {
     if (selectedIndex < profiles.length - 1) {
       setSelectedIndex(selectedIndex + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       toast.success("You've viewed all daily recommendations!");
     }

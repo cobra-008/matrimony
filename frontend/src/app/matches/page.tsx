@@ -31,6 +31,7 @@ import {
   getNRIMatches,
   getStarMatches,
   getHoroscopeMatches,
+  getInterestsSent,
   type RegisteredUser,
 } from "@/lib/auth-store";
 
@@ -131,6 +132,7 @@ function ProfileCard({
   onHide,
   onSendInterest,
   shortlisted,
+  interestSent = false,
   canMessage = false,
   canViewContact = false,
 }: {
@@ -140,6 +142,7 @@ function ProfileCard({
   onHide: () => void;
   onSendInterest: () => void;
   shortlisted?: boolean;
+  interestSent?: boolean;
   canMessage?: boolean;
   canViewContact?: boolean;
 }) {
@@ -148,21 +151,34 @@ function ProfileCard({
     : 0;
 
   // Placeholder photos by gender (used when no photo uploaded)
+  // Use more photos and a stable ID-based hash to avoid same photo on consecutive profiles
   const MALE_PHOTOS = [
     "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400",
     "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400",
     "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1043473/pexels-photo-1043473.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/834863/pexels-photo-834863.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?auto=compress&cs=tinysrgb&w=400",
   ];
   const FEMALE_PHOTOS = [
     "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=400",
     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
     "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1138903/pexels-photo-1138903.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400",
   ];
+  // Stable hash from profile ID (UUID chars) so same profile always gets same photo
+  const idHash = profile.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const photo = profile.photoUrl
     ? profile.photoUrl
     : profile.gender === "male"
-    ? MALE_PHOTOS[index % 3]
-    : FEMALE_PHOTOS[index % 3];
+    ? MALE_PHOTOS[idHash % MALE_PHOTOS.length]
+    : FEMALE_PHOTOS[idHash % FEMALE_PHOTOS.length];
 
   const profileCode = `ETM${String(index + 1).padStart(3, "0")}`;
   const location = [profile.city, profile.state].filter(Boolean).join(", ") || profile.country || "India";
@@ -183,12 +199,13 @@ function ProfileCard({
       style={{
         background: "#fff",
         border: "1px solid #e8e8e8",
-        borderRadius: "6px",
+        borderRadius: "8px",
         overflow: "visible",
         display: "flex",
         flexDirection: "column",
-        marginBottom: "10px",
+        marginBottom: "14px",
         position: "relative",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
       }}
       className="match-card-horizontal"
     >
@@ -282,7 +299,7 @@ function ProfileCard({
       <div
         style={{
           flex: 1,
-          padding: "0.875rem 1rem 0.875rem 1rem",
+          padding: "1rem 1.125rem 1rem 1.125rem",
           display: "flex",
           flexDirection: "column",
           minWidth: 0,
@@ -523,7 +540,7 @@ function ProfileCard({
             </button>
           )}
 
-          {/* Send Interest — dark maroon */}
+          {/* Send Interest — dark maroon / Interest Sent state */}
           <button
             onClick={onSendInterest}
             style={{
@@ -531,20 +548,22 @@ function ProfileCard({
               alignItems: "center",
               gap: "5px",
               padding: "0.4375rem 1.125rem",
-              border: "none",
+              border: interestSent ? "1.5px solid #6B1A2A" : "none",
               borderRadius: "20px",
-              background: "#6B1A2A",
-              color: "#fff",
+              background: interestSent ? "#FEF0F0" : "#6B1A2A",
+              color: interestSent ? "#6B1A2A" : "#fff",
               fontSize: "0.8125rem",
               fontWeight: 700,
               cursor: "pointer",
               fontFamily: "var(--font-sans)",
+              transition: "all 0.2s",
             }}
+            title={interestSent ? "Interest already sent" : "Send Interest"}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill={interestSent ? "#6B1A2A" : "white"}>
               <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
             </svg>
-            Send Interest
+            {interestSent ? "Interest Sent ✓" : "Send Interest"}
           </button>
 
           {/* View Contact — Gold+ */}
@@ -598,19 +617,44 @@ function ProfileCard({
             </Link>
           )}
 
-          {/* Message — Gold+ */}
-          {canMessage && (
+          {/* Message — always visible, quick action */}
+          <Link
+            href={`/messages?partnerId=${profile.id}`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              padding: "0.4375rem 1rem",
+              border: "1.5px solid #1565C0",
+              borderRadius: "20px",
+              background: "#fff",
+              color: "#1565C0",
+              fontSize: "0.8125rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "var(--font-sans)",
+              textDecoration: "none",
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1565C0" strokeWidth="2">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+            Message
+          </Link>
+
+          {/* View Contact — Gold+ */}
+          {canViewContact ? (
             <Link
-              href={`/messages?partnerId=${profile.id}`}
+              href={`/profile/${profile.id}`}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "5px",
                 padding: "0.4375rem 1rem",
-                border: "1.5px solid #6B1A2A",
+                border: "1.5px solid #E8401A",
                 borderRadius: "20px",
                 background: "#fff",
-                color: "#6B1A2A",
+                color: "#E8401A",
                 fontSize: "0.8125rem",
                 fontWeight: 600,
                 cursor: "pointer",
@@ -618,12 +662,11 @@ function ProfileCard({
                 textDecoration: "none",
               }}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-              </svg>
-              Message
+              <PhoneIcon />
+              View Contact
             </Link>
-          )}
+          ) : null}
+
         </div>
       </div>
     </div>
@@ -665,7 +708,14 @@ function MatchesContent() {
   const canViewContact = can("contacts");
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab");
-  const [activeSection, setActiveSection] = useState(tab || "your_matches");
+  const [activeSection, setActiveSection] = useState(() => {
+    // Restore the last-visited section from sessionStorage on back-navigation
+    if (typeof window !== "undefined") {
+      const saved = sessionStorage.getItem("matches_section");
+      if (saved) return saved;
+    }
+    return tab || "your_matches";
+  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -674,6 +724,11 @@ function MatchesContent() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
+
+  // Keep sessionStorage in sync whenever the user changes section
+  useEffect(() => {
+    sessionStorage.setItem("matches_section", activeSection);
+  }, [activeSection]);
   const [profiles, setProfiles] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeChips, setActiveChips] = useState<string[]>([]);
@@ -682,6 +737,10 @@ function MatchesContent() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(new Set());
+  const [sentInterestIds, setSentInterestIds] = useState<Set<string>>(new Set());
+  const [nameSearch, setNameSearch] = useState("");
+  const chipRowRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
   // Track last user ID to detect account switches
   const lastUserIdRef = useRef<string | null>(null);
 
@@ -695,7 +754,12 @@ function MatchesContent() {
     try {
       switch (sectionId) {
         case "your_matches":         result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined); break;
-        case "shortlisted_by_you":   result = await getShortlistedProfiles(currentUser.id); break;
+        case "shortlisted_by_you":   {
+          const all = await getShortlistedProfiles(currentUser.id);
+          const og = currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null;
+          result = og ? all.filter(p => p.gender === og) : all;
+          break;
+        }
         case "viewed_you":           result = await getViewedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "shortlisted_you":      result = await getShortlistedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "viewed_by_you":        result = await getViewedByMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
@@ -721,6 +785,15 @@ function MatchesContent() {
     setLoading(false);
   }, []);
 
+  // Load sent interest IDs on mount
+  useEffect(() => {
+    if (!user) return;
+    getInterestsSent(user.id).then(rows => {
+      setSentInterestIds(new Set(rows.map(r => r.receiverId)));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   // Reload data whenever the user changes (account switch) or active section changes
   useEffect(() => {
     if (!user) {
@@ -738,9 +811,29 @@ function MatchesContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id]);
 
-  // Client-side chip filtering + hide
+  // Restore scroll position of the right panel when navigating back from a profile
+  useEffect(() => {
+    if (loading) return; // wait until profiles have loaded and rendered
+    const saved = sessionStorage.getItem("matches_scroll");
+    if (saved) {
+      const scrollTop = parseInt(saved, 10);
+      sessionStorage.removeItem("matches_scroll");
+      // Double RAF: first RAF waits for paint, second waits for layout
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (rightPanelRef.current) {
+            rightPanelRef.current.scrollTop = scrollTop;
+          }
+        });
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  // Client-side chip filtering + hide + name search
   const displayed = profiles.filter((p) => {
     if (hiddenIds.has(p.id)) return false;
+    if (nameSearch.trim() && !p.name.toLowerCase().includes(nameSearch.toLowerCase())) return false;
     if (activeChips.includes("Profiles with photo") && !p.photoUrl) return false;
     if (activeChips.includes("Matches with horoscope") && !p.star && !p.rasi) return false;
     if (activeChips.includes("Newly joined")) {
@@ -774,7 +867,12 @@ function MatchesContent() {
 
   const handleSendInterest = async (profileId: string, name: string) => {
     if (!user) { toast.error("Please login"); return; }
+    if (sentInterestIds.has(profileId)) {
+      toast("Interest already sent to " + name);
+      return;
+    }
     await sendInterestWithNotification(user.id, profileId, user.name);
+    setSentInterestIds(prev => new Set([...prev, profileId]));
     toast.success(`Interest sent to ${name}!`);
   };
 
@@ -807,15 +905,18 @@ function MatchesContent() {
   return (
     <>
       <Navbar />
-      <main style={{ background: "#f2f2f2", minHeight: "100vh" }}>
+      <main style={{ background: "#f2f2f2", height: "calc(100vh - 64px)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <div
           style={{
             maxWidth: "1100px",
+            width: "100%",
             margin: "0 auto",
             padding: "0.75rem",
             display: "flex",
             gap: "1rem",
-            alignItems: "flex-start",
+            alignItems: "stretch",
+            flex: 1,
+            overflow: "hidden",
           }}
         >
 
@@ -834,15 +935,17 @@ function MatchesContent() {
           <aside
             className="matches-sidebar-panel"
             style={{
-              width: "252px",
+              width: "268px",
               flexShrink: 0,
               background: "#fff",
               border: "1px solid #e0e0e0",
               borderRadius: "6px",
               overflow: "hidden",
+              alignSelf: "flex-start",
               position: "sticky",
-              top: "72px",
-              maxHeight: "calc(100vh - 80px)",
+              top: 0,
+              height: "100%",
+              maxHeight: "100%",
               overflowY: "auto",
             }}
           >
@@ -946,7 +1049,9 @@ function MatchesContent() {
           </aside>
 
           {/* ── MAIN ────────────────────────────────────────────────────── */}
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            ref={rightPanelRef}
+            style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px" }}>
             {/* Mobile: Section select button */}
             <div className="matches-mobile-header" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
               <button
@@ -978,8 +1083,52 @@ function MatchesContent() {
               </h1>
             </div>
 
+            {/* Name Search Bar */}
+            <div style={{ marginBottom: "0.75rem", position: "relative" }}>
+              <svg
+                width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"
+                style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
+              >
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search profiles by name…"
+                value={nameSearch}
+                onChange={(e) => setNameSearch(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "0.5rem 0.75rem 0.5rem 2rem",
+                  border: nameSearch ? "1.5px solid #6B1A2A" : "1.5px solid #ddd",
+                  borderRadius: "20px",
+                  fontSize: "0.875rem",
+                  fontFamily: "var(--font-sans)",
+                  color: "#222",
+                  background: "#fff",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  transition: "border-color 0.2s",
+                }}
+              />
+              {nameSearch && (
+                <button
+                  onClick={() => setNameSearch("")}
+                  style={{
+                    position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", cursor: "pointer", color: "#aaa",
+                    padding: "2px", lineHeight: 1,
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
             {/* Filter / Sort / Chips row */}
             <div
+              ref={chipRowRef}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -992,7 +1141,7 @@ function MatchesContent() {
                 paddingBottom: "4px",
               }}
             >
-                {/* Filter button */}
+                {/* Filter button with active-count badge */}
               <button
                 onClick={() => setFilterOpen((v) => !v)}
                 style={{
@@ -1000,22 +1149,39 @@ function MatchesContent() {
                   alignItems: "center",
                   gap: "5px",
                   padding: "0.3125rem 0.75rem",
-                  border: "1.5px solid #ccc",
+                  border: filterOpen || activeChips.length > 0 ? "1.5px solid #6B1A2A" : "1.5px solid #ccc",
                   borderRadius: "20px",
-                  background: filterOpen ? "#f5f5f5" : "#fff",
+                  background: filterOpen ? "#FEF0F0" : "#fff",
                   fontWeight: 600,
                   fontSize: "0.8125rem",
                   cursor: "pointer",
                   fontFamily: "var(--font-sans)",
-                  color: "#333",
+                  color: filterOpen || activeChips.length > 0 ? "#6B1A2A" : "#333",
                   whiteSpace: "nowrap",
                   flexShrink: 0,
+                  position: "relative",
                 }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
                 </svg>
                 Filter
+                {activeChips.length > 0 && (
+                  <span style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "50%",
+                    background: "#E8401A",
+                    color: "#fff",
+                    fontSize: "0.625rem",
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    flexShrink: 0,
+                  }}>{activeChips.length}</span>
+                )}
               </button>
 
               {/* Sort by */}
@@ -1089,6 +1255,9 @@ function MatchesContent() {
                   key={chip}
                   onClick={() => toggleChip(chip)}
                   style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
                     padding: "0.3125rem 0.75rem",
                     border: activeChips.includes(chip)
                       ? "1.5px solid #6B1A2A"
@@ -1102,14 +1271,21 @@ function MatchesContent() {
                     color: activeChips.includes(chip) ? "#6B1A2A" : "#333",
                     whiteSpace: "nowrap",
                     flexShrink: 0,
+                    transition: "all 0.15s",
                   }}
                 >
                   {chip}
+                  {activeChips.includes(chip) && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  )}
                 </button>
               ))}
 
-              {/* Scroll arrow */}
+              {/* Scroll arrows — scroll chip row left/right */}
               <button
+                onClick={() => chipRowRef.current?.scrollBy({ left: -200, behavior: "smooth" })}
                 style={{
                   width: "26px",
                   height: "26px",
@@ -1122,6 +1298,27 @@ function MatchesContent() {
                   justifyContent: "center",
                   flexShrink: 0,
                 }}
+                title="Scroll left"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+              <button
+                onClick={() => chipRowRef.current?.scrollBy({ left: 200, behavior: "smooth" })}
+                style={{
+                  width: "26px",
+                  height: "26px",
+                  borderRadius: "50%",
+                  border: "1.5px solid #ccc",
+                  background: "#fff",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+                title="Scroll right"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5">
                   <polyline points="9 18 15 12 9 6" />
@@ -1233,17 +1430,28 @@ function MatchesContent() {
                 </div>
               )
               : displayed.map((profile, idx) => (
-                <ProfileCard
+                <div
                   key={profile.id}
-                  profile={profile}
-                  index={idx}
-                  onShortlist={() => handleShortlist(profile.id, profile.name)}
-                  onHide={() => handleHide(profile.id)}
-                  onSendInterest={() => handleSendInterest(profile.id, profile.name)}
-                  shortlisted={shortlistedIds.has(profile.id)}
-                  canMessage={canMessage}
-                  canViewContact={canViewContact}
-                />
+                  onClick={() => {
+                    // Save the right-panel scroll + active section before navigating into profile detail
+                    if (rightPanelRef.current) {
+                      sessionStorage.setItem("matches_scroll", String(rightPanelRef.current.scrollTop));
+                    }
+                    sessionStorage.setItem("matches_section", activeSection);
+                  }}
+                >
+                  <ProfileCard
+                    profile={profile}
+                    index={idx}
+                    onShortlist={() => handleShortlist(profile.id, profile.name)}
+                    onHide={() => handleHide(profile.id)}
+                    onSendInterest={() => handleSendInterest(profile.id, profile.name)}
+                    shortlisted={shortlistedIds.has(profile.id)}
+                    interestSent={sentInterestIds.has(profile.id)}
+                    canMessage={canMessage}
+                    canViewContact={canViewContact}
+                  />
+                </div>
               ))
             }
 
@@ -1309,7 +1517,7 @@ function MatchesContent() {
           .match-card-photo-wrap {
             width: 100% !important;
             aspect-ratio: 4/5 !important;
-            max-height: 320px !important;
+            max-height: 340px !important;
             overflow: hidden !important;
           }
           .match-card-photo {
@@ -1317,28 +1525,33 @@ function MatchesContent() {
             height: 100% !important;
             object-fit: cover !important;
             object-position: top center !important;
-            max-height: 320px !important;
+            max-height: 340px !important;
           }
         }
         /* Medium phones: side-by-side */
         @media (min-width: 480px) {
           .match-card-horizontal { flex-direction: row !important; }
           .match-card-photo-wrap {
-            width: 140px !important;
+            width: 165px !important;
             aspect-ratio: unset !important;
-            min-height: 190px !important;
+            min-height: 210px !important;
           }
           .match-card-photo {
             height: 100% !important;
-            min-height: 190px !important;
-            max-height: 280px !important;
+            min-height: 210px !important;
+            max-height: 300px !important;
           }
         }
         @media (min-width: 768px) {
-          .match-card-photo-wrap { width: 160px !important; min-height: 200px !important; }
-          .match-card-photo { min-height: 200px !important; max-height: 300px !important; }
+          .match-card-photo-wrap { width: 190px !important; min-height: 230px !important; }
+          .match-card-photo { min-height: 230px !important; max-height: 340px !important; }
         }
         .match-card-actions::-webkit-scrollbar { display: none; }
+        /* Right scroll panel custom scrollbar */
+        .matches-right-scroll::-webkit-scrollbar { width: 4px; }
+        .matches-right-scroll::-webkit-scrollbar-track { background: transparent; }
+        .matches-right-scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+        .matches-right-scroll::-webkit-scrollbar-thumb:hover { background: #bbb; }
       `}</style>
     </>
   );

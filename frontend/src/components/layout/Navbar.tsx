@@ -198,7 +198,7 @@ export default function Navbar() {
   };
 
   const otherProfiles = storedProfiles.filter((p) => p.id !== user?.id && p.mobile === user?.mobile);
-  const { can } = useMembership();
+  const { can, isPremium, planName } = useMembership();
 
   // ── LOGGED-IN NAVBAR ──────────────────────────────────────────────────────
   if (user) {
@@ -271,8 +271,10 @@ export default function Navbar() {
                         color: active ? "var(--primary)" : isLocked ? "#8B6070" : "#2D1018",
                         textDecoration: "none",
                         fontSize: "0.8rem",
-                        fontWeight: active ? 700 : 600,
-                        borderBottom: active ? "2px solid var(--primary)" : "2px solid transparent",
+                        fontWeight: active ? 800 : 600,
+                        borderBottom: active ? "3px solid var(--primary)" : "3px solid transparent",
+                        background: active ? "#FEF0F0" : "transparent",
+                        borderRadius: active ? "6px 6px 0 0" : undefined,
                         position: "relative",
                         whiteSpace: "nowrap",
                       }}
@@ -358,17 +360,17 @@ export default function Navbar() {
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
               {/* Plan badge — always visible for logged-in users */}
               <div className="hide-mobile" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                {user.isPremium ? (
+                {isPremium ? (
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: "5px",
-                      background: {
+                      background: ({
                         Gold: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
                         Diamond: "linear-gradient(135deg, hsl(253,70%,45%) 0%, hsl(217,91%,55%) 100%)",
                         Platinum: "linear-gradient(135deg, #E69C00 0%, #FFB703 100%)",
-                      }[user.membershipPlan ?? "Gold"] ?? "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
+                      } as Record<string, string>)[planName] ?? "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
                       border: "none",
                       borderRadius: "20px",
                       padding: "0.3rem 0.875rem",
@@ -380,7 +382,7 @@ export default function Navbar() {
                     }}
                   >
                     <Crown size={12} fill="#fff" strokeWidth={0} />
-                    {user.membershipPlan ?? "Premium"}
+                    {planName ?? "Premium"}
                   </div>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
@@ -513,15 +515,19 @@ export default function Navbar() {
                       </div>
                       {/* Show plan badge in dropdown on mobile */}
                       <div className="show-mobile" style={{ marginTop: "6px" }}>
-                        {user.isPremium ? (
+                        {isPremium ? (
                           <span style={{
                             display: "inline-flex", alignItems: "center", gap: "4px",
-                            background: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
+                            background: ({
+                              Gold: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
+                              Diamond: "linear-gradient(135deg, hsl(253,70%,45%) 0%, hsl(217,91%,55%) 100%)",
+                              Platinum: "linear-gradient(135deg, #E69C00 0%, #FFB703 100%)",
+                            } as Record<string, string>)[planName] ?? "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
                             color: "#fff", fontSize: "0.6875rem", fontWeight: 700,
                             padding: "2px 8px", borderRadius: "10px",
                           }}>
                             <Crown size={10} fill="#fff" strokeWidth={0} />
-                            {user.membershipPlan ?? "Premium"}
+                            {planName} Plan
                           </span>
                         ) : (
                           <button

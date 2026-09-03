@@ -82,7 +82,7 @@ const STATS = [
   },
 ];
 
-// Success stories
+// DEMO_DATA — replace with real couple data from DB once available
 const SUCCESS_STORIES = [
   {
     id: "s1",
@@ -102,7 +102,7 @@ const SUCCESS_STORIES = [
     city: "Singapore",
     married: "January 2024",
     community: "Mudaliar",
-    text: "As an NRI settled in Singapore, finding a Tamil match was challenging. Verified profiles made it easy. We got married within 6 months.",
+    text: "As an NRI settled in Singapore, finding a Tamil match was challenging. Verified profiles made it easy. We got married within 6 months of connecting.",
     brideImg: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
     groomImg: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400",
   },
@@ -113,9 +113,42 @@ const SUCCESS_STORIES = [
     city: "Madurai",
     married: "June 2024",
     community: "Thevar",
-    text: "My parents created my profile. Within two weeks we found the perfect match in every way. The horoscope feature helped my parents feel confident.",
+    text: "My parents created my profile. Within two weeks we found the perfect match in every way. The horoscope compatibility feature helped my parents feel confident.",
     brideImg: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400",
     groomImg: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400",
+  },
+  {
+    id: "s4",
+    bride: "Anitha",
+    groom: "Rajan",
+    city: "Coimbatore",
+    married: "August 2024",
+    community: "Gounder",
+    text: "I had tried other platforms but felt they lacked the Tamil community focus. Elite Tamil Matrimony felt like home. We matched on horoscope and values both.",
+    brideImg: "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=400",
+    groomImg: "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=400",
+  },
+  {
+    id: "s5",
+    bride: "Meena",
+    groom: "Vijay",
+    city: "Tiruchirappalli",
+    married: "October 2024",
+    community: "Pillai",
+    text: "We both belong to the same community and were matched by the smart compatibility algorithm. The first call lasted 4 hours — we knew it was right!",
+    brideImg: "https://images.pexels.com/photos/1138903/pexels-photo-1138903.jpeg?auto=compress&cs=tinysrgb&w=400",
+    groomImg: "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=400",
+  },
+  {
+    id: "s6",
+    bride: "Saranya",
+    groom: "Praveen",
+    city: "London",
+    married: "December 2024",
+    community: "Brahmin",
+    text: "Living in the UK, I wanted a partner who shared Tamil traditions. ETM's NRI section was perfect. We met in Chennai for our wedding three months later!",
+    brideImg: "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400",
+    groomImg: "https://images.pexels.com/photos/1043473/pexels-photo-1043473.jpeg?auto=compress&cs=tinysrgb&w=400",
   },
 ];
 
@@ -342,9 +375,51 @@ function AuthenticatedDashboard() {
     { label: "Shortlisted By You", count: matchCounts.shortlistedByYou, href: "/shortlisted", icon: <Heart size={20} color="#6B1A2A" /> },
   ];
 
+  // Profile completion banner (shown once after registration if profile < 80%)
+  const showCompletionBanner = pct < 80;
+
   return (
     <div style={{ background: "#FFF8F0", minHeight: "100vh" }}>
       <Navbar />
+
+      {/* Profile Completion Banner */}
+      {showCompletionBanner && (
+        <div style={{
+          background: "linear-gradient(90deg, #6B1A2A 0%, #9B2D42 100%)",
+          color: "#fff",
+          padding: "0.75rem 1rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "1rem",
+          flexWrap: "wrap",
+          textAlign: "center",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ fontSize: "0.875rem", fontWeight: 700 }}>
+              ✨ Your profile is {pct}% complete.
+            </span>
+            <span style={{ fontSize: "0.8125rem", opacity: 0.9 }}>
+              Complete your profile to get better matches!
+            </span>
+          </div>
+          <a
+            href="/profile/edit"
+            style={{
+              background: "#fff",
+              color: "#6B1A2A",
+              padding: "0.375rem 1rem",
+              borderRadius: "20px",
+              fontWeight: 700,
+              fontSize: "0.8125rem",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Complete Profile →
+          </a>
+        </div>
+      )}
 
       <style>{`
         @media (max-width: 899px) {

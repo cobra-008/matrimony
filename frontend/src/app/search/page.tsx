@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Search, RotateCcw } from "lucide-react";
 import toast from "react-hot-toast";
 
-type SearchTab = "criteria" | "profileid" | "saved";
+type SearchTab = "criteria" | "profileid" | "byname" | "saved";
 
 // ── COLLAPSIBLE SECTION ────────────────────────────────────────────────
 function Section({
@@ -276,6 +276,9 @@ function SearchContent() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<SearchTab>("criteria");
   const [profileIdInput, setProfileIdInput] = useState("");
+  const [nameInput, setNameInput] = useState("");
+  const [nameResults, setNameResults] = useState<Array<{id:string;name:string;gender?:string;dob?:string;city?:string;state?:string;occupation?:string}>>([]);
+  const [nameLoading, setNameLoading] = useState(false);
 
   // Basic
   const [ageFrom, setAgeFrom] = useState("22");
@@ -347,9 +350,35 @@ function SearchContent() {
     router.push(`/search/regular?${params.toString()}`);
   };
 
+  const handleNameSearch = async () => {
+    const q = nameInput.trim();
+    if (!q) { toast.error("Enter a name to search"); return; }
+    setNameLoading(true);
+    setNameResults([]);
+    try {
+      const { createClient } = await import("@supabase/supabase-js");
+      const supa = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data } = await supa
+        .from("profiles")
+        .select("id, name, gender, dob, city, state, occupation")
+        .ilike("name", `%${q}%`)
+        .limit(20);
+      setNameResults(data || []);
+      if (!data?.length) toast("No profiles found for that name");
+    } catch {
+      toast.error("Search failed, try again");
+    } finally {
+      setNameLoading(false);
+    }
+  };
+
   const tabs: { id: SearchTab; label: string }[] = [
     { id: "criteria", label: "By Criteria" },
     { id: "profileid", label: "By Profile ID" },
+    { id: "byname", label: "By Name" },
     { id: "saved", label: "Saved Search" },
   ];
 
@@ -657,6 +686,88 @@ function SearchContent() {
                 <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.625rem" }}>
                   Profile IDs start with ETM followed by numbers (e.g., ETM10001).
                 </p>
+              </div>
+            )}
+
+            {/* ── BY NAME ──────────────────────────────────────── */}
+            {activeTab === "byname" && (
+              <div style={{ padding: "2rem" }}>
+                <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: "1.25rem" }}>
+                  Search profiles by entering a first or full name.
+                </p>
+                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", maxWidth: "420px", marginBottom: "1.5rem" }}>
+                  <input
+                    type="text"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleNameSearch(); }}
+                    placeholder="Enter name (e.g., Priya, Karthik…)"
+                    className="form-input"
+                    style={{ flex: 1 }}
+                  />
+                  <button
+                    onClick={handleNameSearch}
+                    disabled={nameLoading}
+                    className="btn btn-primary"
+                    style={{ flexShrink: 0 }}
+                  >
+                    <Search size={15} />
+                    {nameLoading ? "Searching…" : "Search"}
+                  </button>
+                </div>
+
+                {/* Results */}
+                {nameResults.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                    <p style={{ fontSize: "0.8125rem", color: "var(--text-medium)", margin: "0 0 0.5rem" }}>
+                      Found {nameResults.length} profile{nameResults.length !== 1 ? "s" : ""}
+                    </p>
+                    {nameResults.map((p) => {
+                      const age = p.dob ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : 0;
+                      const location = [p.city, p.state].filter(Boolean).join(", ") || "India";
+                      return (
+                        <div
+                          key={p.id}
+                          style={{
+                            display: "flex", alignItems: "center", gap: "0.75rem",
+                            padding: "0.75rem 1rem",
+                            background: "#fff",
+                            border: "1px solid var(--border-color)",
+                            borderRadius: "var(--radius-md)",
+                            cursor: "pointer",
+                            transition: "box-shadow 0.15s",
+                          }}
+                          onClick={() => router.push(`/profile/${p.id}`)}
+                        >
+                          {/* Avatar */}
+                          <div style={{
+                            width: "44px", height: "44px", borderRadius: "50%",
+                            background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            flexShrink: 0,
+                            fontSize: "1.125rem", fontWeight: 700, color: "#fff",
+                          }}>
+                            {p.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)" }}>
+                              {p.name}
+                            </div>
+                            <div style={{ fontSize: "0.8125rem", color: "var(--text-medium)", marginTop: "2px" }}>
+                              {age > 0 ? `${age} yrs` : ""}{age > 0 && p.occupation ? " • " : ""}{p.occupation || ""}
+                            </div>
+                            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "1px" }}>
+                              {location}
+                            </div>
+                          </div>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
