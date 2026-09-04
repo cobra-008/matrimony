@@ -385,6 +385,17 @@ function SearchContent() {
   return (
     <>
       <Navbar />
+      <style>{`
+        @media (max-width: 640px) {
+          .search-tab-btn {
+            padding: 0.625rem 0.75rem !important;
+            font-size: 0.8125rem !important;
+          }
+        }
+        .search-tabs-container::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
         {/* Hero strip */}
         <div
@@ -423,16 +434,21 @@ function SearchContent() {
           >
             {/* Tabs */}
             <div
+              className="search-tabs-container"
               style={{
                 display: "flex",
                 borderBottom: "2px solid var(--border-light)",
                 background: "#fff",
+                overflowX: "auto",
+                scrollbarWidth: "none",
+                WebkitOverflowScrolling: "touch",
               }}
             >
               {tabs.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
+                  className="search-tab-btn"
                   style={{
                     padding: "0.75rem 1rem",
                     border: "none",
@@ -447,6 +463,8 @@ function SearchContent() {
                     position: "relative",
                     transition: "color 0.15s",
                     minHeight: "44px",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
                   }}
                 >
                   {t.label}

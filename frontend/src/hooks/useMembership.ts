@@ -47,7 +47,7 @@ const PLAN_LEVEL: Record<string, PlanLevel> = {
 
 const FEATURE_MIN_LEVEL: Record<Feature, PlanLevel> = {
   messages:           1,
-  contacts:           1,
+  contacts:           0, // Free users can access up to limit
   interests:          0,  // free to send, but capped at 10/mo
   who_viewed:         1,
   ai_score:           1,
@@ -200,8 +200,8 @@ export function useMembership() {
   /** Returns true if current plan supports the feature */
   const can = (feature: Feature): boolean => planLevel >= FEATURE_MIN_LEVEL[feature];
 
-  /** Monthly contact reveals: Gold=30, Diamond/Platinum=unlimited */
-  const contactLimit = planLevel >= 2 ? Infinity : planLevel === 1 ? 30 : 0;
+  /** Monthly contact reveals: Free=40, Gold+=unlimited */
+  const contactLimit = planLevel >= 1 ? Infinity : 40;
 
   /** Monthly interest limit: Free=10, Gold+=unlimited */
   const interestLimit = planLevel >= 1 ? Infinity : 10;

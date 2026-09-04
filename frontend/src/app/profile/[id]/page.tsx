@@ -12,6 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useMembership } from "@/hooks/useMembership";
 import { ProfileViewSkeleton } from "@/components/ui/Skeleton";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 const ALL_PROFILES = [...MOCK_PROFILES, ...MOCK_GROOM_PROFILES];
 
@@ -330,12 +331,13 @@ function OwnProfileFallback({ id }: { id: string }) {
 
 // ── SIDEBAR ITEMS ─────────────────────────────────────────────────────
 const SIDEBAR_ITEMS = [
-  "Basic Information",
-  "Family Details",
-  "Lifestyle",
-  "Partner Preference",
-  "Gallery",
-  "Horoscope",
+  { label: "Basic Information", id: "section-Basic-Information" },
+  { label: "Photo Gallery", id: "section-Photo-Gallery" },
+  { label: "Religion & Lifestyle", id: "section-Lifestyle" },
+  { label: "Location Details", id: "section-Location" },
+  { label: "Family Details", id: "section-Family-Details" },
+  { label: "Horoscope Details", id: "section-Horoscope" },
+  { label: "Partner Preferences", id: "section-Partner-Preferences" },
 ];
 
 export default function ProfileDetailPage({
@@ -345,7 +347,7 @@ export default function ProfileDetailPage({
 }) {
   const { id } = use(params);
   const { user } = useAuth();
-  const { can } = useMembership();
+  const { can, contactLimit } = useMembership();
   const canMessage     = can("messages");
   const canViewContact = can("contacts");
   const canHoroscope   = can("horoscope_view");
@@ -371,8 +373,75 @@ export default function ProfileDetailPage({
   const [interested, setInterested] = useState(false);
   const [shortlisted, setShortlisted] = useState(false);
   const [activeSection, setActiveSection] = useState("Basic Information");
+  
+  const [hasRevealedContact, setHasRevealedContact] = useState(false);
+  const [revealsUsed, setRevealsUsed] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const userId = user.id;
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+    async function fetchReveals() {
+      try {
+        const { count, data, error } = await supabase
+          .from('contact_reveals')
+          .select('target_id', { count: 'exact' })
+          .eq('viewer_id', userId)
+          .gte('revealed_at', startOfMonth);
+
+        if (!error && count !== null) {
+          setRevealsUsed(count || 0);
+          if (data?.some((d: { target_id: string }) => d.target_id === id)) {
+            setHasRevealedContact(true);
+          }
+        } else {
+          const stored = JSON.parse(localStorage.getItem(`reveals_${userId}`) || "[]");
+          setRevealsUsed(stored.length);
+          if (stored.includes(id)) setHasRevealedContact(true);
+        }
+      } catch {
+        try {
+          const stored = JSON.parse(localStorage.getItem(`reveals_${userId}`) || "[]");
+          setRevealsUsed(stored.length);
+          if (stored.includes(id)) setHasRevealedContact(true);
+        } catch {}
+      }
+    }
+    fetchReveals();
+  }, [user, id]);
 
   const viewRecorded = useRef(false);
+
+  const handleRevealContact = async () => {
+    if (!user) {
+      toast.error("Please login to view contact numbers");
+      return;
+    }
+    if (revealsUsed >= contactLimit && contactLimit !== Infinity) {
+      toast.error("Monthly contact reveal limit (40) reached! Upgrade your plan for unlimited views.");
+      return;
+    }
+    try {
+      const { error } = await supabase.from('contact_reveals').insert({ viewer_id: user.id, target_id: id });
+      if (!error || error.code === '23505') {
+        setHasRevealedContact(true);
+        if (!error) setRevealsUsed((r) => r + 1);
+        toast.success(`Contact revealed! (${revealsUsed + 1}/${contactLimit === Infinity ? "Unlimited" : contactLimit} used)`);
+      } else {
+        const key = `reveals_${user.id}`;
+        const stored: string[] = JSON.parse(localStorage.getItem(key) || "[]");
+        if (!stored.includes(id)) {
+          stored.push(id);
+          localStorage.setItem(key, JSON.stringify(stored));
+          setRevealsUsed(stored.length);
+        }
+        setHasRevealedContact(true);
+        toast.success(`Contact revealed! (${revealsUsed + 1}/${contactLimit === Infinity ? "Unlimited" : contactLimit} used)`);
+      }
+    } catch {
+      setHasRevealedContact(true);
+    }
+  };
 
   const handleSendInterest = async () => {
     if (!user) { toast.error("Please login"); return; }
@@ -441,20 +510,16 @@ export default function ProfileDetailPage({
       <Navbar />
       <style>{`
         @media (max-width: 899px) {
+          .profile-layout-row { flex-direction: column !important; }
           .profile-sidebar { display: none !important; }
-          .profile-info-body { flex-direction: column !important; }
-          .profile-photo-col { width: 100% !important; }
-          .profile-photo-img { width: 100% !important; height: 220px !important; border-radius: var(--radius-lg) !important; }
-          .profile-actions-col { flex-direction: row !important; flex-wrap: wrap !important; align-items: center !important; width: 100% !important; margin-top: 0.75rem !important; }
+          .profile-right-panel { width: 100% !important; margin-top: 1.5rem !important; }
+          .profile-info-body { flex-direction: column !important; align-items: center !important; text-align: center !important; padding: 1rem !important; }
+          .profile-photo-col { width: 140px !important; margin: 0 auto 0.75rem !important; }
+          .profile-photo-img { width: 140px !important; height: 175px !important; border-radius: var(--radius-lg) !important; margin: 0 auto !important; }
+          .profile-actions-col { flex-direction: row !important; flex-wrap: wrap !important; justify-content: center !important; width: 100% !important; margin-top: 0.75rem !important; gap: 0.5rem !important; }
           .profile-attr-grid { grid-template-columns: 1fr !important; }
           .profile-edu-grid { grid-template-columns: 1fr !important; }
           .profile-main-wrap { padding: 0.75rem 0.75rem 5rem !important; }
-        }
-        @media (min-width: 480px) and (max-width: 899px) {
-          .profile-info-body { flex-direction: row !important; }
-          .profile-photo-col { width: 130px !important; flex-shrink: 0 !important; }
-          .profile-photo-img { width: 130px !important; height: 170px !important; }
-          .profile-actions-col { width: 130px !important; margin-top: 0 !important; }
         }
       `}</style>
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
@@ -495,7 +560,7 @@ export default function ProfileDetailPage({
             <span>{profile.name}</span>
           </div>
 
-          <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
+          <div className="profile-layout-row" style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
             {/* ── LEFT SIDEBAR — desktop only ── */}
             <aside
               className="profile-sidebar"
@@ -549,11 +614,10 @@ export default function ProfileDetailPage({
               {/* Nav items */}
               {SIDEBAR_ITEMS.map((item) => (
                 <button
-                  key={item}
+                  key={item.id}
                   onClick={() => {
-                    setActiveSection(item);
-                    const sectionId = item.replace(/\s+/g, '-');
-                    const element = document.getElementById(`section-${sectionId}`);
+                    setActiveSection(item.label);
+                    const element = document.getElementById(item.id);
                     if (element) {
                       element.scrollIntoView({ behavior: "smooth", block: "start" });
                     }
@@ -566,20 +630,20 @@ export default function ProfileDetailPage({
                     padding: "0.625rem 1rem",
                     border: "none",
                     borderLeft:
-                      activeSection === item
+                      activeSection === item.label
                         ? "3px solid var(--primary)"
                         : "3px solid transparent",
                     background:
-                      activeSection === item ? "var(--primary-light)" : "transparent",
+                      activeSection === item.label ? "var(--primary-light)" : "transparent",
                     cursor: "pointer",
                     textAlign: "left",
                     fontSize: "0.8125rem",
-                    fontWeight: activeSection === item ? 700 : 400,
-                    color: activeSection === item ? "var(--primary)" : "var(--text-dark)",
+                    fontWeight: activeSection === item.label ? 700 : 400,
+                    color: activeSection === item.label ? "var(--primary)" : "var(--text-dark)",
                     fontFamily: "var(--font-sans)",
                   }}
                 >
-                  {item}
+                  {item.label}
                   <ChevronRight size={12} style={{ color: "#ccc", flexShrink: 0 }} />
                 </button>
               ))}
@@ -786,7 +850,7 @@ export default function ProfileDetailPage({
                           ? "Not working"
                           : profile.occupation}
                       </div>
-                      {/* Phone (blurred) — only show Edit/Verify to own profile */}
+                      {/* Phone — only show to own profile at the top */}
                       {isOwnProfile && (
                         <div
                           style={{
@@ -799,14 +863,12 @@ export default function ProfileDetailPage({
                           <Phone size={13} style={{ color: "var(--primary)" }} />
                           <span
                             style={{
-                              filter: "blur(4px)",
-                              userSelect: "none",
                               fontSize: "0.8125rem",
                               color: "var(--text-dark)",
                               fontWeight: 600,
                             }}
                           >
-                            +91-9342024748
+                            +91 {profile.mobile || "98765 43210"}
                           </span>
                           <a
                             href="/membership"
@@ -1215,65 +1277,79 @@ export default function ProfileDetailPage({
                       <InfoRow label="Country of Birth" value="India" />
                     </tbody>
                   </table>
-                  <div
-                    style={{
-                      flex: 1,
-                      minWidth: "160px",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "var(--radius-lg)",
-                      padding: "1rem",
-                      textAlign: "center",
-                      background: "var(--primary-light)",
-                    }}
-                  >
-                    <p style={{ fontSize: "0.8125rem", color: "var(--primary)", fontWeight: 600, marginBottom: "0.625rem", display: "flex", alignItems: "center", gap: "5px", justifyContent: "center" }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                      Horoscope chart
-                    </p>
-                    {canHoroscope ? (
-                      <button
-                        onClick={() => toast("Horoscope chart will open here.")}
-                        style={{
-                          background: "var(--primary)",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "var(--radius-full)",
-                          padding: "0.375rem 1rem",
-                          fontWeight: 700,
-                          fontSize: "0.75rem",
-                          cursor: "pointer",
-                          fontFamily: "var(--font-sans)",
-                        }}
-                      >
-                        View Horoscope
-                      </button>
-                    ) : (
-                      <Link
-                        href="/membership"
-                        style={{
-                          background: "var(--primary)",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "var(--radius-full)",
-                          padding: "0.375rem 1rem",
-                          fontWeight: 700,
-                          fontSize: "0.75rem",
-                          cursor: "pointer",
-                          fontFamily: "var(--font-sans)",
-                          textDecoration: "none",
-                          display: "inline-block",
-                        }}
-                      >
-                        Upgrade to View
-                      </Link>
-                    )}
-                  </div>
                 </div>
               </SectionCard>
 
               {/* ══════════════════════════════════════════════════
-                  8. CONTACT DETAILS (locked)
+                  7b. PARTNER PREFERENCES
                   ══════════════════════════════════════════════════ */}
+              <SectionCard
+                id="section-Partner-Preferences"
+                title="Partner Preferences"
+                onEdit={isOwnProfile ? () => router.push("/profile/edit?section=partner") : undefined}
+              >
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <tbody>
+                    <InfoRow
+                      label="Age Preference"
+                      value={
+                        p.partnerAgeMin || p.partnerAgeMax
+                          ? `${p.partnerAgeMin || 21} to ${p.partnerAgeMax || 35} Years`
+                          : "21 to 35 Years"
+                      }
+                    />
+                    <InfoRow
+                      label="Height"
+                      value={
+                        p.partnerHeightMin || p.partnerHeightMax
+                          ? `${p.partnerHeightMin ? p.partnerHeightMin + " cm" : "5'0\""} - ${p.partnerHeightMax ? p.partnerHeightMax + " cm" : "6'0\""}`
+                          : "5'0\" - 6'0\""
+                      }
+                    />
+                    <InfoRow
+                      label="Marital Status"
+                      value={
+                        Array.isArray(p.partnerMaritalStatus) && p.partnerMaritalStatus.length > 0
+                          ? p.partnerMaritalStatus.join(", ")
+                          : typeof p.partnerMaritalStatus === "string"
+                          ? p.partnerMaritalStatus
+                          : "Never Married"
+                      }
+                    />
+                    <InfoRow
+                      label="Religion / Community"
+                      value={`${p.partnerReligion || profile.religion || "Hindu"} / ${p.partnerCaste || profile.community || "Any Caste"}`}
+                    />
+                    <InfoRow
+                      label="Mother Tongue"
+                      value={
+                        Array.isArray(p.partnerMotherTongue) && p.partnerMotherTongue.length > 0
+                          ? p.partnerMotherTongue.join(", ")
+                          : typeof p.partnerMotherTongue === "string"
+                          ? p.partnerMotherTongue
+                          : "Tamil"
+                      }
+                    />
+                    <InfoRow
+                      label="Education"
+                      value={p.partnerEducation || "Graduate / Any Professional Degree"}
+                    />
+                    <InfoRow
+                      label="Occupation"
+                      value={p.partnerOccupation || "Any / Private or Govt Sector"}
+                    />
+                    <InfoRow
+                      label="Country of Residence"
+                      value={p.partnerCountry || "India"}
+                    />
+                  </tbody>
+                </table>
+              </SectionCard>
+
+              {/* ══════════════════════════════════════════════════
+                  8. CONTACT DETAILS (locked for others)
+                  ══════════════════════════════════════════════════ */}
+              {!isOwnProfile && (
               <SectionCard id="section-Contact-Details" title="Contact Details">
                 <div style={{ textAlign: "center", padding: "0.75rem 0" }}>
                   <div
@@ -1281,14 +1357,14 @@ export default function ProfileDetailPage({
                       fontSize: "0.9375rem",
                       color: "var(--text-dark)",
                       marginBottom: "0.75rem",
-                      filter: canViewContact ? "none" : "blur(4px)",
-                      userSelect: canViewContact ? "auto" : "none",
+                      filter: hasRevealedContact ? "none" : "blur(4px)",
+                      userSelect: hasRevealedContact ? "auto" : "none",
                       fontWeight: 600,
                     }}
                   >
                     +91 {profile.mobile || "98765 43210"}
                   </div>
-                  {canViewContact ? (
+                  {hasRevealedContact ? (
                     <a
                       href={`tel:+91${profile.mobile || "9876543210"}`}
                       style={{
@@ -1309,8 +1385,8 @@ export default function ProfileDetailPage({
                       Call Now
                     </a>
                   ) : (
-                    <Link
-                      href="/membership"
+                    <button
+                      onClick={handleRevealContact}
                       style={{
                         background: "var(--primary)",
                         color: "#fff",
@@ -1322,20 +1398,25 @@ export default function ProfileDetailPage({
                         cursor: "pointer",
                         fontFamily: "var(--font-sans)",
                         boxShadow: "var(--shadow-pink)",
-                        textDecoration: "none",
-                        display: "inline-block",
                       }}
                     >
-                      Upgrade to View Contact
-                    </Link>
+                      Reveal Contact
+                    </button>
                   )}
+                  <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.625rem" }}>
+                    {contactLimit !== Infinity
+                      ? `${revealsUsed} of ${contactLimit} monthly views used`
+                      : "Unlimited contact views with your plan"}
+                  </p>
                 </div>
               </SectionCard>
+              )}
             </div>
 
             {/* ── RIGHT PANEL — Partner Preferences etc. ── */}
             {isOwnProfile && (
               <aside
+                className="profile-right-panel"
                 style={{
                   width: "220px",
                   flexShrink: 0,

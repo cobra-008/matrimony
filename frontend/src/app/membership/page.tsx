@@ -264,36 +264,36 @@ function ActivePlanDashboard() {
         boxShadow: "0 8px 40px rgba(107,26,42,0.18)", marginBottom: "1.75rem",
       }}>
         {/* Gradient header */}
-        <div style={{ background: gradient, padding: "2rem 2rem 1.75rem", color: "#fff" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
+        <div className="active-plan-card-header" style={{ background: gradient, padding: "2rem 2rem 1.75rem", color: "#fff" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.875rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
             <div style={{
-              width: "56px", height: "56px", borderRadius: "var(--radius-lg)",
+              width: "52px", height: "52px", borderRadius: "var(--radius-lg)",
               background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center",
               justifyContent: "center", flexShrink: 0,
             }}>
               {icon}
             </div>
-            <div>
-              <div style={{ fontSize: "0.75rem", fontWeight: 700, opacity: 0.75, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontSize: "0.75rem", fontWeight: 700, opacity: 0.85, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "2px" }}>
                 Active Plan
               </div>
-              <div style={{ fontSize: "1.5rem", fontWeight: 900, lineHeight: 1.1 }}>
+              <div className="active-plan-title" style={{ fontSize: "1.375rem", fontWeight: 900, lineHeight: 1.2, whiteSpace: "nowrap" }}>
                 {plan} Member
               </div>
             </div>
-            <div style={{
+            <div className="active-plan-badge" style={{
               marginLeft: "auto", background: "rgba(255,255,255,0.25)", borderRadius: "var(--radius-full)",
-              padding: "0.375rem 1rem", fontSize: "0.8125rem", fontWeight: 700,
+              padding: "0.35rem 0.875rem", fontSize: "0.8125rem", fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0,
             }}>
               Active ✓
             </div>
           </div>
 
           {/* Key details row */}
-          <div style={{
-            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-            gap: "1rem", background: "rgba(0,0,0,0.15)", borderRadius: "var(--radius-lg)",
-            padding: "1.125rem 1.25rem",
+          <div className="active-plan-grid" style={{
+            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+            gap: "0.875rem", background: "rgba(0,0,0,0.15)", borderRadius: "var(--radius-lg)",
+            padding: "1rem 1.25rem",
           }}>
             {activatedDate && (
               <div>
@@ -914,6 +914,12 @@ export default function MembershipPage() {
         }
         @media (max-width: 900px) {
           .plans-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
+          .active-plan-card-header { padding: 1.25rem 1rem 1rem !important; }
+          .active-plan-title { font-size: 1.125rem !important; }
+          .active-plan-badge { padding: 0.25rem 0.625rem !important; font-size: 0.75rem !important; }
+          .active-plan-grid { grid-template-columns: 1fr 1fr !important; padding: 0.875rem !important; gap: 0.75rem !important; }
         }
       `}</style>
     </>

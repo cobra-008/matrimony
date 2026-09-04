@@ -122,6 +122,7 @@ export default function Navbar() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [storedProfiles, setStoredProfiles] = useState<StoredProfile[]>([]);
   const [scrolled, setScrolled] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // Sticky scroll shrink
@@ -181,10 +182,15 @@ export default function Navbar() {
   }, [mobileOpen]);
 
   const handleLogout = () => {
-    logout();
-    router.push("/");
     setProfileMenuOpen(false);
     setMobileOpen(false);
+    setLogoutConfirmOpen(true);
+  };
+
+  const confirmLogout = () => {
+    logout();
+    router.push("/");
+    setLogoutConfirmOpen(false);
   };
 
   const isActive = (href: string) => {
@@ -380,50 +386,29 @@ export default function Navbar() {
                     {planName ?? "Premium"}
                   </div>
                 ) : (
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
-                    {/* FREE badge */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        background: "rgba(0,0,0,0.06)",
-                        border: "1.5px solid rgba(0,0,0,0.12)",
-                        borderRadius: "20px",
-                        padding: "0.275rem 0.75rem",
-                        fontSize: "0.6875rem",
-                        fontWeight: 700,
-                        color: "var(--text-medium)",
-                        letterSpacing: "0.04em",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Free Plan
-                    </div>
-                    <button
-                      onClick={() => router.push("/membership")}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        background: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
-                        border: "none",
-                        borderRadius: "20px",
-                        padding: "0.3rem 0.75rem",
-                        fontSize: "0.6875rem",
-                        fontWeight: 700,
-                        color: "#fff",
-                        cursor: "pointer",
-                        fontFamily: "var(--font-sans)",
-                        whiteSpace: "nowrap",
-                        boxShadow: "0 2px 6px rgba(200,151,58,0.35)",
-                        letterSpacing: "0.02em",
-                      }}
-                    >
-                      <Sparkles size={11} />
-                      Upgrade
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => router.push("/membership")}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      background: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
+                      border: "none",
+                      borderRadius: "20px",
+                      padding: "0.3rem 0.875rem",
+                      fontSize: "0.6875rem",
+                      fontWeight: 700,
+                      color: "#fff",
+                      cursor: "pointer",
+                      fontFamily: "var(--font-sans)",
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 2px 6px rgba(200,151,58,0.35)",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    <Sparkles size={11} />
+                    Upgrade
+                  </button>
                 )}
               </div>
 
@@ -688,6 +673,68 @@ export default function Navbar() {
             to   { opacity: 1; transform: translateY(0); }
           }
         `}</style>
+
+        {/* Logout confirmation modal */}
+        {logoutConfirmOpen && (
+          <div
+            style={{
+              position: "fixed", inset: 0, zIndex: 9999,
+              background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "1rem",
+            }}
+            onClick={() => setLogoutConfirmOpen(false)}
+          >
+            <div
+              style={{
+                background: "#fff", borderRadius: "16px",
+                padding: "2rem 1.75rem", maxWidth: "360px", width: "100%",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+                textAlign: "center",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{
+                width: "56px", height: "56px", borderRadius: "50%",
+                background: "#FFF0F0", display: "flex", alignItems: "center",
+                justifyContent: "center", margin: "0 auto 1rem",
+              }}>
+                <LogOut size={24} style={{ color: "var(--primary)" }} />
+              </div>
+              <h3 style={{ fontWeight: 700, fontSize: "1.125rem", color: "var(--text-dark)", marginBottom: "0.5rem" }}>
+                Log out?
+              </h3>
+              <p style={{ fontSize: "0.875rem", color: "#888", marginBottom: "1.5rem", lineHeight: 1.5 }}>
+                Are you sure you want to log out of Elite Tamil Matrimony?
+              </p>
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <button
+                  onClick={() => setLogoutConfirmOpen(false)}
+                  style={{
+                    flex: 1, padding: "0.625rem", border: "1.5px solid var(--border-color)",
+                    borderRadius: "var(--radius-full)", background: "#fff",
+                    color: "var(--text-dark)", fontWeight: 600, fontSize: "0.875rem",
+                    cursor: "pointer", fontFamily: "var(--font-sans)",
+                  }}
+                >
+                  No, stay here
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  style={{
+                    flex: 1, padding: "0.625rem", border: "none",
+                    borderRadius: "var(--radius-full)",
+                    background: "var(--primary)", color: "#fff",
+                    fontWeight: 700, fontSize: "0.875rem",
+                    cursor: "pointer", fontFamily: "var(--font-sans)",
+                  }}
+                >
+                  Yes, log out
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </>
     );
   }

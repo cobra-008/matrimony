@@ -446,11 +446,24 @@ DROP POLICY IF EXISTS "Public success stories photos read" ON storage.objects;
 CREATE POLICY "Public success stories photos read" ON storage.objects FOR SELECT USING (bucket_id IN ('success stories', 'success-stories'));
 
 
--- ── 15. VERIFY SCHEMA ────────────────────────────────────────────────
+-- ── 15. CONTACT REVEALS ───────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.contact_reveals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  viewer_id TEXT NOT NULL,
+  target_id TEXT NOT NULL,
+  revealed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(viewer_id, target_id)
+);
+CREATE INDEX IF NOT EXISTS idx_contact_reveals_viewer ON public.contact_reveals(viewer_id);
+ALTER TABLE public.contact_reveals ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public access reveals" ON public.contact_reveals;
+CREATE POLICY "Public access reveals" ON public.contact_reveals FOR ALL USING (true) WITH CHECK (true);
+
+-- ── 16. VERIFY SCHEMA ────────────────────────────────────────────────
 SELECT table_name FROM information_schema.tables
 WHERE table_schema = 'public'
   AND table_name IN ('profiles','profile_photos','otp_store','profile_views',
                      'shortlists','interests','interests_sent','messages','horoscopes',
                      'verification_requests','notifications','compatibility_answers',
-                     'success_stories','membership_transactions')
+                     'success_stories','membership_transactions', 'contact_reveals')
 ORDER BY table_name;
