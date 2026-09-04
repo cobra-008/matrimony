@@ -757,119 +757,111 @@ export default function Navbar() {
         transition: "box-shadow 0.2s ease, background 0.2s ease",
       }}
     >
-      <div style={{ background: "transparent" }}>
-        {/* Top row: Logo + Auth buttons */}
-        <div
-          style={{
-            maxWidth: "1140px",
-            margin: "0 auto",
-            padding: "0 1rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "1rem",
-            minHeight: scrolled ? "56px" : "64px",
-            transition: "min-height 0.2s ease",
-          }}
-        >
-          {/* Logo — transparent icon + brand text */}
-          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
-            <img
-              src="/logo-transparent.png"
-              alt="Elite Tamil Matrimony"
-              style={{ height: "42px", width: "auto", display: "block" }}
-            />
-            <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
-              <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.9375rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite Tamil</span>
-              <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.6875rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Matrimony</span>
-            </div>
+      <div
+        style={{
+          maxWidth: "1140px",
+          margin: "0 auto",
+          padding: "0 1rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.5rem",
+          height: scrolled ? "56px" : "64px",
+          transition: "height 0.2s ease",
+        }}
+      >
+        {/* Logo */}
+        <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+          <img
+            src="/logo-transparent.png"
+            alt="Elite Tamil Matrimony"
+            style={{ height: "38px", width: "auto", display: "block" }}
+          />
+          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
+            <span style={{ fontFamily: "\'Lato\', sans-serif", fontWeight: 700, fontSize: "0.875rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite Tamil</span>
+            <span style={{ fontFamily: "\'Lato\', sans-serif", fontWeight: 700, fontSize: "0.625rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Matrimony</span>
+          </div>
+        </Link>
+
+        {/* Right side: always-visible auth buttons + hamburger for extra links */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+          {/* "Already a member?" — hidden on very small screens */}
+          <span className="guest-already-text" style={{ fontSize: "0.8125rem", color: "#777", whiteSpace: "nowrap" }}>
+            Already a member?
+          </span>
+
+          {/* Login — ALWAYS visible */}
+          <Link
+            href="/login"
+            style={{
+              border: "1.5px solid var(--primary)",
+              color: "var(--primary)",
+              padding: "0.375rem 0.75rem",
+              borderRadius: "4px",
+              fontWeight: 700,
+              fontSize: "0.8125rem",
+              textDecoration: "none",
+              textTransform: "uppercase",
+              letterSpacing: "0.03em",
+              whiteSpace: "nowrap",
+              transition: "background 0.15s, color 0.15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--primary)"; e.currentTarget.style.color = "#fff"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--primary)"; }}
+          >
+            Login
           </Link>
 
-          {/* Desktop right actions */}
-          <div className="desktop-nav" style={{ alignItems: "center", gap: "1rem" }}>
-            <span style={{ fontSize: "0.9rem", color: "#777" }}>Already a member?</span>
-            <Link
-              href="/login"
-              style={{
-                border: "1.5px solid var(--primary)",
-                color: "var(--primary)",
-                padding: "0.375rem 1.125rem",
-                borderRadius: "4px",
-                fontWeight: 700,
-                fontSize: "0.875rem",
-                textDecoration: "none",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                transition: "background 0.15s, color 0.15s",
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--primary)"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--primary)"; }}
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              style={{
-                background: "var(--primary)",
-                color: "#fff",
-                padding: "0.375rem 1.25rem",
-                borderRadius: "4px",
-                fontWeight: 700,
-                fontSize: "0.875rem",
-                textDecoration: "none",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                transition: "background 0.15s",
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--primary-dark)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
-            >
-              Register Free
-            </Link>
-            <a
-              href="/faq"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                color: "#777",
-                textDecoration: "none",
-                fontSize: "0.8125rem",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <HelpCircle size={15} />
-              Help
-            </a>
-          </div>
+          {/* Register Free — ALWAYS visible */}
+          <Link
+            href="/register"
+            style={{
+              background: "var(--primary)",
+              color: "#fff",
+              padding: "0.375rem 0.75rem",
+              borderRadius: "4px",
+              fontWeight: 700,
+              fontSize: "0.8125rem",
+              textDecoration: "none",
+              textTransform: "uppercase",
+              letterSpacing: "0.03em",
+              whiteSpace: "nowrap",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--primary-dark)")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
+          >
+            Register Free
+          </Link>
 
-          {/* Mobile hamburger */}
+          {/* Hamburger for extra links */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="mobile-menu-btn"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
             style={{
               background: "none",
               border: "none",
               cursor: "pointer",
-              padding: "8px",
-              color: "#333",
+              padding: "6px",
+              color: "#555",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              minWidth: "44px",
-              minHeight: "44px",
+              minWidth: "36px",
+              minHeight: "36px",
+              borderRadius: "4px",
+              transition: "background 0.15s",
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
           >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu overlay */}
+      {/* Slide-in drawer for extra links */}
       {mobileOpen && (
         <>
           <div
@@ -878,7 +870,7 @@ export default function Navbar() {
               position: "fixed",
               inset: 0,
               background: "rgba(0,0,0,0.4)",
-              zIndex: 90,
+              zIndex: 990,
               animation: "fadeIn 0.2s ease",
             }}
           />
@@ -887,46 +879,44 @@ export default function Navbar() {
               position: "fixed",
               top: 0,
               right: 0,
-              width: "280px",
+              width: "260px",
               height: "100vh",
               background: "#fff",
-              zIndex: 95,
+              zIndex: 995,
               boxShadow: "-4px 0 20px rgba(0,0,0,0.15)",
               padding: "1rem",
               animation: "slideInRight 0.25s ease",
               overflowY: "auto",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <img src="/logo-transparent.png" alt="Elite Tamil Matrimony" style={{ height: "40px", width: "auto" }} />
-                <div style={{ lineHeight: 1.2 }}>
-                  <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.9375rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite Tamil</div>
-                  <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.6875rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Matrimony</div>
+            {/* Drawer header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <img src="/logo-transparent.png" alt="Elite Tamil Matrimony" style={{ height: "34px", width: "auto" }} />
+                <div>
+                  <div style={{ fontFamily: "\'Lato\', sans-serif", fontWeight: 700, fontSize: "0.875rem", color: "#6B1A2A", textTransform: "uppercase", letterSpacing: "0.04em" }}>Elite Tamil</div>
+                  <div style={{ fontFamily: "\'Lato\', sans-serif", fontWeight: 700, fontSize: "0.625rem", color: "#C8973A", textTransform: "uppercase", letterSpacing: "0.08em" }}>Matrimony</div>
                 </div>
               </div>
               <button
                 onClick={() => setMobileOpen(false)}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: "8px", color: "#333" }}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: "6px", color: "#333", borderRadius: "4px" }}
                 aria-label="Close menu"
               >
-                <X size={22} />
+                <X size={20} />
               </button>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+
+            {/* CTA buttons in drawer */}
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem" }}>
               <Link
                 href="/login"
                 onClick={() => setMobileOpen(false)}
                 style={{
-                  padding: "0.75rem 1rem",
-                  border: "1.5px solid var(--primary)",
-                  color: "var(--primary)",
-                  borderRadius: "4px",
-                  fontSize: "0.9375rem",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                  textAlign: "center",
-                  display: "block",
+                  flex: 1, padding: "0.625rem 0.5rem",
+                  border: "1.5px solid var(--primary)", color: "var(--primary)",
+                  borderRadius: "4px", fontSize: "0.875rem", fontWeight: 700,
+                  textDecoration: "none", textAlign: "center", display: "block",
                 }}
               >
                 Login
@@ -935,56 +925,41 @@ export default function Navbar() {
                 href="/register"
                 onClick={() => setMobileOpen(false)}
                 style={{
-                  padding: "0.75rem 1rem",
-                  background: "var(--primary)",
-                  color: "#fff",
-                  borderRadius: "4px",
-                  fontSize: "0.9375rem",
-                  fontWeight: 700,
-                  textDecoration: "none",
-                  textAlign: "center",
-                  display: "block",
+                  flex: 1, padding: "0.625rem 0.5rem",
+                  background: "var(--primary)", color: "#fff",
+                  borderRadius: "4px", fontSize: "0.875rem", fontWeight: 700,
+                  textDecoration: "none", textAlign: "center", display: "block",
                 }}
               >
                 Register Free
               </Link>
-              <Link
-                href="/faq"
-                onClick={() => setMobileOpen(false)}
-                style={{
-                  padding: "0.75rem 0",
-                  color: "#777",
-                  fontSize: "0.9375rem",
-                  textDecoration: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <HelpCircle size={18} />
-                Help & FAQ
-              </Link>
-              <Link
-                href="/success-stories"
-                onClick={() => setMobileOpen(false)}
-                style={{ padding: "0.75rem 0", color: "#777", fontSize: "0.9375rem", textDecoration: "none", display: "block" }}
-              >
-                Success Stories
-              </Link>
-              <Link
-                href="/membership"
-                onClick={() => setMobileOpen(false)}
-                style={{ padding: "0.75rem 0", color: "#777", fontSize: "0.9375rem", textDecoration: "none", display: "block" }}
-              >
-                Membership Plans
-              </Link>
-              <Link
-                href="/contact"
-                onClick={() => setMobileOpen(false)}
-                style={{ padding: "0.75rem 0", color: "#777", fontSize: "0.9375rem", textDecoration: "none", display: "block" }}
-              >
-                Contact Us
-              </Link>
+            </div>
+
+            {/* Extra nav links */}
+            <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: "1rem", display: "flex", flexDirection: "column" }}>
+              {[
+                { href: "/faq", label: "Help & FAQ" },
+                { href: "/success-stories", label: "Success Stories" },
+                { href: "/membership", label: "Membership Plans" },
+                { href: "/contact", label: "Contact Us" },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    padding: "0.75rem 0",
+                    color: "#555",
+                    fontSize: "0.9375rem",
+                    textDecoration: "none",
+                    display: "block",
+                    borderBottom: "1px solid #f5f5f5",
+                    fontWeight: 500,
+                  }}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
         </>
@@ -999,8 +974,8 @@ export default function Navbar() {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
-        .guest-nav-link:hover {
-          color: var(--primary) !important;
+        @media (max-width: 480px) {
+          .guest-already-text { display: none !important; }
         }
       `}</style>
     </header>
