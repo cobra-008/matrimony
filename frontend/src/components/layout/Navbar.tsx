@@ -820,46 +820,6 @@ export default function Navbar() {
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
-
-        {/* Center navigation — desktop only */}
-        <nav
-          className="desktop-nav"
-          aria-label="Main navigation"
-          style={{
-            borderTop: "1px solid #f5f5f5",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 0,
-            maxWidth: "1140px",
-            margin: "0 auto",
-            padding: "0 1rem",
-          }}
-        >
-          {GUEST_NAV.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{
-                  padding: "0.5rem 0.875rem",
-                  fontSize: "0.9rem",
-                  fontWeight: active ? 700 : 500,
-                  color: active ? "var(--primary)" : "#555",
-                  textDecoration: "none",
-                  borderBottom: active ? "2px solid var(--primary)" : "2px solid transparent",
-                  whiteSpace: "nowrap",
-                  transition: "color 0.15s, border-color 0.15s",
-                }}
-                onMouseEnter={(e) => { if (!active) e.currentTarget.style.color = "var(--primary)"; }}
-                onMouseLeave={(e) => { if (!active) e.currentTarget.style.color = "#555"; }}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
       </div>
 
       {/* Mobile menu overlay */}

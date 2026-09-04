@@ -1,7 +1,7 @@
 -- ============================================================
--- ELITE TAMIL MATRIMONY — Complete Supabase Schema (v2)
--- Safe to re-run: all statements use IF NOT EXISTS / OR REPLACE
--- Run in Supabase SQL Editor in the order shown.
+-- ELITE TAMIL MATRIMONY — Consolidated Supabase Schema & Migration
+-- Complete, safe to re-run (all statements use IF NOT EXISTS / OR REPLACE)
+-- Paste & Run in: Supabase Dashboard -> SQL Editor
 -- ============================================================
 
 
@@ -71,6 +71,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   partner_country        TEXT DEFAULT 'India',
   partner_marital_status TEXT[] DEFAULT '{}',
   partner_mother_tongue  TEXT[] DEFAULT '{}',
+  is_banned              BOOLEAN NOT NULL DEFAULT false,
+  ban_reason             TEXT,
+  verification_status    TEXT DEFAULT 'unsubmitted' CHECK (verification_status IN ('unsubmitted','pending','approved','rejected')),
+  verification_document  TEXT,
+  admin_notes            TEXT,
   created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   last_active            TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -85,16 +90,24 @@ ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS membership_activated   TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS membership_price_paid  NUMERIC(10, 2),
   ADD COLUMN IF NOT EXISTS membership_plan_period TEXT,
+  ADD COLUMN IF NOT EXISTS is_banned              BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS ban_reason             TEXT,
+  ADD COLUMN IF NOT EXISTS verification_status    TEXT DEFAULT 'unsubmitted',
+  ADD COLUMN IF NOT EXISTS verification_document  TEXT,
+  ADD COLUMN IF NOT EXISTS admin_notes            TEXT,
   ADD COLUMN IF NOT EXISTS updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   ADD COLUMN IF NOT EXISTS last_active            TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
-CREATE INDEX IF NOT EXISTS profiles_gender_idx      ON public.profiles(gender);
-CREATE INDEX IF NOT EXISTS profiles_religion_idx    ON public.profiles(religion);
-CREATE INDEX IF NOT EXISTS profiles_caste_idx       ON public.profiles(caste);
-CREATE INDEX IF NOT EXISTS profiles_city_idx        ON public.profiles(city);
-CREATE INDEX IF NOT EXISTS profiles_last_active_idx ON public.profiles(last_active DESC);
-CREATE INDEX IF NOT EXISTS profiles_mobile_idx      ON public.profiles(mobile);
-CREATE INDEX IF NOT EXISTS profiles_is_premium_idx  ON public.profiles(is_premium);
+CREATE INDEX IF NOT EXISTS profiles_gender_idx              ON public.profiles(gender);
+CREATE INDEX IF NOT EXISTS profiles_religion_idx            ON public.profiles(religion);
+CREATE INDEX IF NOT EXISTS profiles_caste_idx               ON public.profiles(caste);
+CREATE INDEX IF NOT EXISTS profiles_city_idx                ON public.profiles(city);
+CREATE INDEX IF NOT EXISTS profiles_last_active_idx         ON public.profiles(last_active DESC);
+CREATE INDEX IF NOT EXISTS profiles_mobile_idx              ON public.profiles(mobile);
+CREATE INDEX IF NOT EXISTS profiles_is_premium_idx          ON public.profiles(is_premium);
+CREATE INDEX IF NOT EXISTS idx_profiles_is_banned          ON public.profiles(is_banned);
+CREATE INDEX IF NOT EXISTS idx_profiles_verification_status ON public.profiles(verification_status);
+CREATE INDEX IF NOT EXISTS idx_profiles_membership_plan    ON public.profiles(membership_plan);
 
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
@@ -116,13 +129,25 @@ CREATE POLICY "Users can insert own profile"   ON public.profiles FOR INSERT WIT
 CREATE POLICY "Users can update own profile"   ON public.profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can delete own profile"   ON public.profiles FOR DELETE USING (auth.uid() = id);
 
+-- Auto-create profile on sign-up
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  INSERT INTO public.profiles (id, name, email, auth_email, created_at, updated_at, last_active)
-  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'name', SPLIT_PART(NEW.email,'@',1)),
-          NEW.email, NEW.email, NOW(), NOW(), NOW())
-  ON CONFLICT (id) DO NOTHING;
+  INSERT INTO public.profiles (id, name, mobile, email, auth_email, profile_for, created_at, updated_at, last_active)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'name', 'Member'),
+    NEW.raw_user_meta_data->>'mobile',
+    CASE WHEN NEW.email NOT LIKE '%@etm.app' THEN NEW.email ELSE NULL END,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'profile_for', 'Myself'),
+    NOW(), NOW(), NOW()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    name        = EXCLUDED.name,
+    mobile      = COALESCE(EXCLUDED.mobile, public.profiles.mobile),
+    profile_for = COALESCE(EXCLUDED.profile_for, public.profiles.profile_for),
+    updated_at  = NOW();
   RETURN NEW;
 END;
 $$;
@@ -157,7 +182,7 @@ CREATE POLICY "Users manage own photos"        ON public.profile_photos FOR ALL 
 
 
 -- ── 3. OTP STORE ─────────────────────────────────────────────────────
--- Accessed only via server-side API routes → RLS disabled.
+-- Accessed only via server-side API routes -> RLS disabled.
 CREATE TABLE IF NOT EXISTS public.otp_store (
   identifier TEXT PRIMARY KEY,
   otp        TEXT NOT NULL,
@@ -202,28 +227,55 @@ CREATE POLICY "Users manage own shortlists"        ON public.shortlists FOR ALL 
 CREATE POLICY "Users can see who shortlisted them" ON public.shortlists FOR SELECT USING (auth.uid() = target_id);
 
 
--- ── 6. INTERESTS SENT ────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS public.interests_sent (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  sender_id   UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  receiver_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  status      TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','accepted','declined')),
-  message     TEXT,
-  sent_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+-- ── 6. INTERESTS & INTERESTS_SENT ────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.interests (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id    UUID NOT NULL CONSTRAINT interests_sender_id_fkey REFERENCES public.profiles(id) ON DELETE CASCADE,
+  receiver_id  UUID NOT NULL CONSTRAINT interests_receiver_id_fkey REFERENCES public.profiles(id) ON DELETE CASCADE,
+  status       TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','accepted','declined')),
+  message      TEXT,
+  sent_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  responded_at TIMESTAMPTZ,
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(sender_id, receiver_id)
 );
-CREATE INDEX IF NOT EXISTS interests_sender_idx   ON public.interests_sent(sender_id);
-CREATE INDEX IF NOT EXISTS interests_receiver_idx ON public.interests_sent(receiver_id);
+CREATE INDEX IF NOT EXISTS interests_sender_idx   ON public.interests(sender_id);
+CREATE INDEX IF NOT EXISTS interests_receiver_idx ON public.interests(receiver_id);
+ALTER TABLE public.interests ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Sender can insert interest"           ON public.interests;
+DROP POLICY IF EXISTS "Sender or receiver can view interest" ON public.interests;
+DROP POLICY IF EXISTS "Receiver can update interest"         ON public.interests;
+DROP POLICY IF EXISTS "Sender can delete interest"           ON public.interests;
+DROP POLICY IF EXISTS "Users manage own interests"           ON public.interests;
+CREATE POLICY "Sender can insert interest"           ON public.interests FOR INSERT WITH CHECK (auth.uid() = sender_id);
+CREATE POLICY "Sender or receiver can view interest" ON public.interests FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+CREATE POLICY "Receiver can update interest"         ON public.interests FOR UPDATE USING (auth.uid() = receiver_id) WITH CHECK (auth.uid() = receiver_id);
+CREATE POLICY "Sender can delete interest"           ON public.interests FOR DELETE USING (auth.uid() = sender_id);
+
+CREATE TABLE IF NOT EXISTS public.interests_sent (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id    UUID NOT NULL CONSTRAINT interests_sent_sender_id_fkey REFERENCES public.profiles(id) ON DELETE CASCADE,
+  receiver_id  UUID NOT NULL CONSTRAINT interests_sent_receiver_id_fkey REFERENCES public.profiles(id) ON DELETE CASCADE,
+  status       TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','accepted','declined')),
+  message      TEXT,
+  sent_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  responded_at TIMESTAMPTZ,
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(sender_id, receiver_id)
+);
+CREATE INDEX IF NOT EXISTS interests_sent_sender_idx   ON public.interests_sent(sender_id);
+CREATE INDEX IF NOT EXISTS interests_sent_receiver_idx ON public.interests_sent(receiver_id);
 ALTER TABLE public.interests_sent ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Sender can insert interest"             ON public.interests_sent;
-DROP POLICY IF EXISTS "Sender or receiver can view interest"   ON public.interests_sent;
-DROP POLICY IF EXISTS "Receiver can update (accept/decline)"   ON public.interests_sent;
-DROP POLICY IF EXISTS "Sender can delete interest"             ON public.interests_sent;
-CREATE POLICY "Sender can insert interest"           ON public.interests_sent FOR INSERT WITH CHECK (auth.uid() = sender_id);
-CREATE POLICY "Sender or receiver can view interest" ON public.interests_sent FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
-CREATE POLICY "Receiver can update (accept/decline)" ON public.interests_sent FOR UPDATE USING (auth.uid() = receiver_id) WITH CHECK (auth.uid() = receiver_id);
-CREATE POLICY "Sender can delete interest"           ON public.interests_sent FOR DELETE USING (auth.uid() = sender_id);
+DROP POLICY IF EXISTS "Sender can insert interest_sent"           ON public.interests_sent;
+DROP POLICY IF EXISTS "Sender or receiver can view interest_sent" ON public.interests_sent;
+DROP POLICY IF EXISTS "Receiver can update interest_sent"         ON public.interests_sent;
+DROP POLICY IF EXISTS "Sender can delete interest_sent"           ON public.interests_sent;
+CREATE POLICY "Sender can insert interest_sent"           ON public.interests_sent FOR INSERT WITH CHECK (auth.uid() = sender_id);
+CREATE POLICY "Sender or receiver can view interest_sent" ON public.interests_sent FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+CREATE POLICY "Receiver can update interest_sent"         ON public.interests_sent FOR UPDATE USING (auth.uid() = receiver_id) WITH CHECK (auth.uid() = receiver_id);
+CREATE POLICY "Sender can delete interest_sent"           ON public.interests_sent FOR DELETE USING (auth.uid() = sender_id);
 
 
 -- ── 7. MESSAGES ──────────────────────────────────────────────────────
@@ -279,29 +331,44 @@ CREATE POLICY "Owner manages own verification requests" ON public.verification_r
 CREATE TABLE IF NOT EXISTS public.notifications (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id    UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  type       TEXT NOT NULL CHECK (type IN ('interest','view','shortlist','message','match','system')),
+  type       TEXT NOT NULL,
   title      TEXT NOT NULL,
   body       TEXT NOT NULL,
   href       TEXT,
   read       BOOLEAN NOT NULL DEFAULT false,
+  is_read    BOOLEAN NOT NULL DEFAULT false,
+  read_at    TIMESTAMPTZ,
   data       JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE public.notifications
+  ADD COLUMN IF NOT EXISTS is_read BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS href TEXT,
+  ADD COLUMN IF NOT EXISTS data JSONB DEFAULT '{}';
+
 CREATE INDEX IF NOT EXISTS notifications_user_idx       ON public.notifications(user_id);
 CREATE INDEX IF NOT EXISTS notifications_created_at_idx ON public.notifications(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_is_read    ON public.notifications(user_id, is_read);
+
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Users manage own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users manage own notifications"        ON public.notifications;
+DROP POLICY IF EXISTS "Users see own notifications"           ON public.notifications;
+DROP POLICY IF EXISTS "Users mark notifications read"          ON public.notifications;
+DROP POLICY IF EXISTS "Service role can insert notifications" ON public.notifications;
+
+CREATE POLICY "Users see own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users mark notifications read" ON public.notifications FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users manage own notifications" ON public.notifications FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Service role can insert notifications" ON public.notifications FOR INSERT WITH CHECK (true);
 
 
 -- ── 11. COMPATIBILITY ANSWERS ────────────────────────────────────────
--- Stores 22-question questionnaire responses from registration.
--- Used to compute answer-based compatibility scores between profiles.
 CREATE TABLE IF NOT EXISTS public.compatibility_answers (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   profile_id  UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  question_id TEXT NOT NULL,   -- e.g. 'lifestyle_1', 'family_2'
-  answer      TEXT NOT NULL,   -- e.g. 'home_family', 'flexible'
+  question_id TEXT NOT NULL,
+  answer      TEXT NOT NULL,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(profile_id, question_id)
 );
@@ -313,12 +380,56 @@ CREATE POLICY "compat_answers_owner_all"          ON public.compatibility_answer
 CREATE POLICY "compat_answers_read_authenticated" ON public.compatibility_answers FOR SELECT USING (auth.role() = 'authenticated');
 
 
--- ── 12. STORAGE BUCKETS ──────────────────────────────────────────────
+-- ── 12. SUCCESS STORIES ──────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.success_stories (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name       TEXT NOT NULL,
+  city       TEXT,
+  married    TEXT,
+  story      TEXT NOT NULL,
+  photo_url  TEXT,
+  is_visible BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE public.success_stories ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can view success stories"         ON public.success_stories;
+DROP POLICY IF EXISTS "Service role manages success stories"    ON public.success_stories;
+CREATE POLICY "Public can view success stories"      ON public.success_stories FOR SELECT USING (is_visible = TRUE);
+CREATE POLICY "Service role manages success stories" ON public.success_stories FOR ALL WITH CHECK (TRUE);
+
+DROP TRIGGER IF EXISTS set_success_stories_updated_at ON public.success_stories;
+CREATE TRIGGER set_success_stories_updated_at
+  BEFORE UPDATE ON public.success_stories
+  FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+
+-- ── 13. MEMBERSHIP TRANSACTIONS ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.membership_transactions (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id          UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  plan                TEXT NOT NULL,
+  razorpay_payment_id TEXT,
+  amount_paid_inr     NUMERIC(10, 2),
+  plan_period         TEXT,
+  activated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at          TIMESTAMPTZ NOT NULL,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_membership_tx_profile ON public.membership_transactions(profile_id);
+ALTER TABLE public.membership_transactions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users view own transactions"     ON public.membership_transactions;
+DROP POLICY IF EXISTS "Service role inserts transactions" ON public.membership_transactions;
+CREATE POLICY "Users view own transactions"     ON public.membership_transactions FOR SELECT USING (profile_id = auth.uid());
+CREATE POLICY "Service role inserts transactions" ON public.membership_transactions FOR INSERT WITH CHECK (TRUE);
+
+
+-- ── 14. STORAGE BUCKETS & POLICIES ───────────────────────────────────
 INSERT INTO storage.buckets (id, name, public) VALUES ('profile-photos', 'profile-photos', true) ON CONFLICT (id) DO NOTHING;
-DROP POLICY IF EXISTS "Public profile photo reads"            ON storage.objects;
-DROP POLICY IF EXISTS "Auth users upload own profile photos"  ON storage.objects;
-DROP POLICY IF EXISTS "Auth users update own profile photos"  ON storage.objects;
-DROP POLICY IF EXISTS "Auth users delete own profile photos"  ON storage.objects;
+DROP POLICY IF EXISTS "Public profile photo reads"           ON storage.objects;
+DROP POLICY IF EXISTS "Auth users upload own profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Auth users update own profile photos" ON storage.objects;
+DROP POLICY IF EXISTS "Auth users delete own profile photos" ON storage.objects;
 CREATE POLICY "Public profile photo reads"           ON storage.objects FOR SELECT USING (bucket_id = 'profile-photos');
 CREATE POLICY "Auth users upload own profile photos" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'profile-photos' AND auth.uid()::TEXT = (storage.foldername(name))[1]);
 CREATE POLICY "Auth users update own profile photos" ON storage.objects FOR UPDATE USING (bucket_id = 'profile-photos' AND auth.uid()::TEXT = (storage.foldername(name))[1]);
@@ -328,19 +439,18 @@ INSERT INTO storage.buckets (id, name, public) VALUES ('verification-documents',
 DROP POLICY IF EXISTS "Owners access own verification docs" ON storage.objects;
 CREATE POLICY "Owners access own verification docs" ON storage.objects FOR ALL USING (bucket_id = 'verification-documents' AND auth.uid()::TEXT = (storage.foldername(name))[1]) WITH CHECK (bucket_id = 'verification-documents' AND auth.uid()::TEXT = (storage.foldername(name))[1]);
 
+-- Success Stories Buckets (public read, service role / admin write)
+INSERT INTO storage.buckets (id, name, public) VALUES ('success stories', 'success stories', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('success-stories', 'success-stories', true) ON CONFLICT (id) DO NOTHING;
+DROP POLICY IF EXISTS "Public success stories photos read" ON storage.objects;
+CREATE POLICY "Public success stories photos read" ON storage.objects FOR SELECT USING (bucket_id IN ('success stories', 'success-stories'));
 
--- ── 13. VERIFY ───────────────────────────────────────────────────────
+
+-- ── 15. VERIFY SCHEMA ────────────────────────────────────────────────
 SELECT table_name FROM information_schema.tables
 WHERE table_schema = 'public'
   AND table_name IN ('profiles','profile_photos','otp_store','profile_views',
-                     'shortlists','interests_sent','messages','horoscopes',
-                     'verification_requests','notifications','compatibility_answers')
+                     'shortlists','interests','interests_sent','messages','horoscopes',
+                     'verification_requests','notifications','compatibility_answers',
+                     'success_stories','membership_transactions')
 ORDER BY table_name;
-
-SELECT column_name, data_type FROM information_schema.columns
-WHERE table_name = 'profiles'
-  AND column_name IN ('is_premium','membership_plan','membership_expiry',
-                      'membership_activated','membership_price_paid',
-                      'membership_plan_period','updated_at','auth_email')
-ORDER BY column_name;
-

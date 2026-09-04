@@ -1010,9 +1010,6 @@ export async function fetchMatchProfiles(
   if (currentUserId) query = query.neq('id', currentUserId);
   if (oppositeGender) {
     query = query.eq('gender', oppositeGender);
-  } else {
-    // If we don't know the gender, default to returning an empty list to avoid showing both
-    return [];
   }
 
   const { data, error } = await query;
@@ -1042,6 +1039,26 @@ export async function fetchMatchProfiles(
   }
 
   return profiles.slice(0, 50);
+}
+
+/**
+ * Fetch latest registered profiles from Supabase for public / guest display.
+ */
+export async function fetchLatestProfiles(limit = 12): Promise<RegisteredUser[]> {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*, photos:profile_photos(*)')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error || !data) {
+      return [];
+    }
+    return data.map(dbToUser);
+  } catch {
+    return [];
+  }
 }
 
 /**

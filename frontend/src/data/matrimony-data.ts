@@ -2237,35 +2237,18 @@ export const HOBBIES_INTERESTS = [
 ];
 
 // ── MOCK DATA ────────────────────────────────────────────────────────
-export const SUCCESS_STORIES = [
-  {
-    id: '1',
-    name: 'Priya & Karthik',
-    city: 'Chennai',
-    married: 'March 2024',
-    story: 'We connected through Elite Tamil Matrimony and knew immediately we were meant for each other. The AI matching was spot on — same values, similar family backgrounds, and we both love Carnatic music.',
-    photoUrl: '/images/couple-1.jpg',
-    community: 'Vellalar',
-  },
-  {
-    id: '2',
-    name: 'Deepa & Arun',
-    city: 'Coimbatore',
-    married: 'January 2024',
-    story: "As an NRI settled in Singapore, finding a Tamil match was challenging. Elite Tamil Matrimony's verified profiles and video call feature made it easy. We got married within 6 months of connecting!",
-    photoUrl: '/images/couple-2.jpg',
-    community: 'Mudaliar',
-  },
-  {
-    id: '3',
-    name: 'Kavitha & Suresh',
-    city: 'Madurai',
-    married: 'June 2024',
-    story: 'My parents created my profile. Within two weeks, we found Suresh — a perfect match in every way. The horoscope compatibility feature helped my parents feel confident.',
-    photoUrl: '/images/couple-3.jpg',
-    community: 'Thevar',
-  },
-];
+export interface SuccessStoryItem {
+  id: string;
+  name: string;
+  city?: string;
+  married?: string;
+  story: string;
+  photoUrl?: string;
+  photo_url?: string;
+  community?: string;
+}
+
+export const SUCCESS_STORIES: SuccessStoryItem[] = [];
 
 export const TRUST_STATS = [
   { value: '25 Lakh+', label: 'Tamil Profiles' },

@@ -194,9 +194,40 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      case "upload_story_photo": {
+        const { fileBase64, fileName, contentType } = body;
+        if (!fileBase64 || !fileName) {
+          return NextResponse.json({ error: "Missing file data" }, { status: 400 });
+        }
+        const buffer = Buffer.from(fileBase64.replace(/^data:image\/\w+;base64,/, ""), "base64");
+        const cleanName = `${Date.now()}_${fileName.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+
+        // Try 'success stories' bucket first, fallback to 'success-stories'
+        let bucketName = "success stories";
+        let uploadRes = await supabase.storage.from(bucketName).upload(cleanName, buffer, {
+          contentType: contentType || "image/jpeg",
+          upsert: true,
+        });
+
+        if (uploadRes.error) {
+          bucketName = "success-stories";
+          uploadRes = await supabase.storage.from(bucketName).upload(cleanName, buffer, {
+            contentType: contentType || "image/jpeg",
+            upsert: true,
+          });
+        }
+
+        if (uploadRes.error) {
+          return NextResponse.json({ error: uploadRes.error.message }, { status: 400 });
+        }
+
+        const { data: urlData } = supabase.storage.from(bucketName).getPublicUrl(cleanName);
+        return NextResponse.json({ ok: true, url: urlData.publicUrl });
+      }
+
       case "add_success_story": {
-        const { name, city, married, story } = body;
-        await supabase.from("success_stories").insert({ name, city, married, story });
+        const { name, city, married, story, photo_url } = body;
+        await supabase.from("success_stories").insert({ name, city, married, story, photo_url: photo_url || null });
         return NextResponse.json({ ok: true });
       }
 

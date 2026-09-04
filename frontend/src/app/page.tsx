@@ -13,7 +13,8 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import ProfileCard from "@/components/ui/ProfileCard";
 import { PROFILE_FOR_OPTIONS } from "@/data/matrimony-data";
-import { fetchMatchProfiles, type RegisteredUser } from "@/lib/auth-store";
+import { fetchMatchProfiles, fetchLatestProfiles, type RegisteredUser } from "@/lib/auth-store";
+import { supabase } from "@/lib/supabase";
 
 // Helper: compute age from dob
 function calcAge(dob?: string): number {
@@ -82,78 +83,8 @@ const STATS = [
   },
 ];
 
-// DEMO_DATA — replace with real couple data from DB once available
-const SUCCESS_STORIES = [
-  {
-    id: "s1",
-    bride: "Priya",
-    groom: "Karthik",
-    city: "Chennai",
-    married: "March 2024",
-    community: "Vellalar",
-    text: "We connected through Elite Tamil Matrimony and knew immediately we were meant for each other. The matching was spot on — same values, similar family backgrounds.",
-    brideImg: null,
-    groomImg: null,
-  },
-  {
-    id: "s2",
-    bride: "Deepa",
-    groom: "Arun",
-    city: "Singapore",
-    married: "January 2024",
-    community: "Mudaliar",
-    text: "As an NRI settled in Singapore, finding a Tamil match was challenging. Verified profiles made it easy. We got married within 6 months of connecting.",
-    brideImg: null,
-    groomImg: null,
-  },
-  {
-    id: "s3",
-    bride: "Kavitha",
-    groom: "Suresh",
-    city: "Madurai",
-    married: "June 2024",
-    community: "Thevar",
-    text: "My parents created my profile. Within two weeks we found the perfect match in every way. The horoscope compatibility feature helped my parents feel confident.",
-    brideImg: null,
-    groomImg: null,
-  },
-  {
-    id: "s4",
-    bride: "Anitha",
-    groom: "Rajan",
-    city: "Coimbatore",
-    married: "August 2024",
-    community: "Gounder",
-    text: "I had tried other platforms but felt they lacked the Tamil community focus. Elite Tamil Matrimony felt like home. We matched on horoscope and values both.",
-    brideImg: null,
-    groomImg: null,
-  },
-  {
-    id: "s5",
-    bride: "Meena",
-    groom: "Vijay",
-    city: "Tiruchirappalli",
-    married: "October 2024",
-    community: "Pillai",
-    text: "We both belong to the same community and were matched by the smart compatibility algorithm. The first call lasted 4 hours — we knew it was right!",
-    brideImg: null,
-    groomImg: null,
-  },
-  {
-    id: "s6",
-    bride: "Saranya",
-    groom: "Praveen",
-    city: "London",
-    married: "December 2024",
-    community: "Brahmin",
-    text: "Living in the UK, I wanted a partner who shared Tamil traditions. ETM's NRI section was perfect. We met in Chennai for our wedding three months later!",
-    brideImg: null,
-    groomImg: null,
-  },
-];
-
-// Profile matches preview — loaded from DB, not mocks
-const PREVIEW_PROFILES: RegisteredUser[] = []; // placeholder; filled by GuestLatestProfiles component
+// Profile matches preview — loaded dynamically from DB
+const PREVIEW_PROFILES: RegisteredUser[] = [];
 
 function RegisterForm() {
   const [profileFor, setProfileFor] = useState("");
@@ -861,9 +792,9 @@ function GuestLatestProfiles() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load a mix of recent profiles for public preview
-    fetchMatchProfiles(undefined, undefined)
-      .then((data) => setProfiles(data.slice(0, 6)))
+    // Load recent registered profiles from DB
+    fetchLatestProfiles(12)
+      .then((data) => setProfiles(data || []))
       .catch(() => setProfiles([]))
       .finally(() => setLoading(false));
   }, []);
@@ -976,9 +907,122 @@ function GuestLatestProfiles() {
                 );
               })}
             </div>
-            <style>{`.guest-profiles-scroll::-webkit-scrollbar{display:none}`}</style>
+            <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+              <Link href="/register" className="btn btn-primary" style={{ display: "inline-flex" }}>
+                View All {profiles.length}+ Profiles <ArrowRight size={14} />
+              </Link>
+            </div>
           </>
         )}
+      </div>
+    </section>
+  );
+}
+
+// ── Guest Success Stories (DB-backed, shown only if stories exist) ─────────────
+function GuestSuccessStories() {
+  const [stories, setStories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadStories() {
+      try {
+        const { data, error } = await supabase
+          .from("success_stories")
+          .select("*")
+          .eq("is_visible", true)
+          .order("created_at", { ascending: false });
+        if (!error && data) {
+          setStories(data);
+        } else {
+          setStories([]);
+        }
+      } catch {
+        setStories([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadStories();
+  }, []);
+
+  if (loading || stories.length === 0) return null;
+
+  return (
+    <section style={{ background: "#fff", borderTop: "1px solid var(--border-light)", padding: "3rem 0" }}>
+      <div className="container">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+          <div>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--text-dark)", margin: 0 }}>
+              Success Stories
+            </h2>
+            <p style={{ fontSize: "0.8125rem", color: "var(--text-medium)", marginTop: "2px" }}>
+              Real Tamil couples who found their match
+            </p>
+          </div>
+          <Link
+            href="/success-stories"
+            style={{ fontSize: "0.875rem", color: "var(--primary)", fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: "4px" }}
+          >
+            View All <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        <div
+          className="success-stories-scroll"
+          style={{
+            display: "flex",
+            gap: "1.25rem",
+            overflowX: "auto",
+            paddingBottom: "0.5rem",
+            scrollSnapType: "x mandatory",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          {stories.map((story) => (
+            <div
+              key={story.id}
+              style={{
+                background: "#fff",
+                border: "1px solid var(--border-color)",
+                borderRadius: "var(--radius-xl)",
+                overflow: "hidden",
+                minWidth: "280px",
+                maxWidth: "340px",
+                flex: "0 0 auto",
+                scrollSnapAlign: "start",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              {story.photo_url ? (
+                <div style={{ height: "160px", width: "100%", overflow: "hidden", background: "#f0f0f0" }}>
+                  <img src={story.photo_url} alt={story.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              ) : (
+                <div style={{ height: "100px", background: "var(--gradient-hero)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Heart size={32} className="fill-white text-white opacity-80" />
+                </div>
+              )}
+              <div style={{ padding: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.375rem" }}>
+                  <div style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)" }}>
+                    {story.name}
+                  </div>
+                  {story.married && <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{story.married}</div>}
+                </div>
+                {story.city && (
+                  <div style={{ fontSize: "0.75rem", color: "var(--primary)", fontWeight: 600, marginBottom: "0.5rem" }}>
+                    {story.city}
+                  </div>
+                )}
+                <p style={{ fontSize: "0.8125rem", color: "var(--text-medium)", lineHeight: 1.55 }}>
+                  &ldquo;{story.story}&rdquo;
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <style>{`.success-stories-scroll::-webkit-scrollbar{display:none}`}</style>
       </div>
     </section>
   );
@@ -1010,10 +1054,10 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--bg-page)" }}>
+      <main style={{ background: "var(--bg-page)", paddingTop: "72px" }}>
 
         {/* =================== HERO =================== */}
-        <section style={{ background: "var(--bg-page)", padding: "1.5rem 0" }}>
+        <section style={{ background: "var(--bg-page)", padding: "2rem 0 1.5rem" }}>
           <div className="container">
             <div className="hero-inner">
               {/* Left Column: Text + Image (Desktop only for image) */}
@@ -1216,85 +1260,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* =================== SUCCESS STORIES =================== */}
-        <section style={{ background: "#fff", borderTop: "1px solid var(--border-light)", padding: "3rem 0" }}>
-          <div className="container">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
-              <div>
-                <h2 style={{ fontSize: "1.25rem", fontWeight: 900, color: "var(--text-dark)", margin: 0 }}>
-                  Success Stories
-                </h2>
-                <p style={{ fontSize: "0.8125rem", color: "var(--text-medium)", marginTop: "2px" }}>
-                  Real Tamil couples who found their match
-                </p>
-              </div>
-              <Link
-                href="/success-stories"
-                style={{ fontSize: "0.875rem", color: "var(--primary)", fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", gap: "4px" }}
-              >
-                View All <ArrowRight size={14} />
-              </Link>
-            </div>
-
-            <div
-              className="success-stories-scroll"
-              style={{
-                display: "flex",
-                gap: "1.25rem",
-                overflowX: "auto",
-                paddingBottom: "0.5rem",
-                scrollSnapType: "x mandatory",
-                WebkitOverflowScrolling: "touch",
-              }}
-            >
-              {SUCCESS_STORIES.map((story) => (
-                <div
-                  key={story.id}
-                  style={{
-                    background: "#fff",
-                    border: "1px solid var(--border-color)",
-                    borderRadius: "var(--radius-xl)",
-                    overflow: "hidden",
-                    minWidth: "280px",
-                    maxWidth: "340px",
-                    flex: "0 0 auto",
-                    scrollSnapAlign: "start",
-                  }}
-                >
-                  {/* Photos */}
-                  <div style={{ display: "flex", height: "140px" }}>
-                    {story.brideImg
-                      ? <img src={story.brideImg} alt={story.bride} style={{ width: "50%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
-                      : <div style={{ width: "50%", height: "100%", background: "#F5E6E9", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#6B1A2A" opacity="0.3"/><circle cx="12" cy="7" r="4.5" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/></svg>
-                        </div>}
-                    {story.groomImg
-                      ? <img src={story.groomImg} alt={story.groom} style={{ width: "50%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
-                      : <div style={{ width: "50%", height: "100%", background: "#EAF0FA", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#1A3A6B" opacity="0.2"/><circle cx="12" cy="7" r="4.5" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/></svg>
-                        </div>}
-                  </div>
-                  {/* Content */}
-                  <div style={{ padding: "1rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.375rem" }}>
-                      <div style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)" }}>
-                        {story.bride} &amp; {story.groom}
-                      </div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{story.married}</div>
-                    </div>
-                    <div style={{ fontSize: "0.75rem", color: "var(--primary)", fontWeight: 600, marginBottom: "0.5rem" }}>
-                      {story.community} • {story.city}
-                    </div>
-                    <p style={{ fontSize: "0.8125rem", color: "var(--text-medium)", lineHeight: 1.55 }}>
-                      &ldquo;{story.text}&rdquo;
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <style>{`.success-stories-scroll::-webkit-scrollbar{display:none}`}</style>
-          </div>
-        </section>
+        {/* =================== SUCCESS STORIES (DB-backed) =================== */}
+        <GuestSuccessStories />
 
         {/* =================== MEMBERSHIP CTA =================== */}
         <section
