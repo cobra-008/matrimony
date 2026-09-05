@@ -201,6 +201,220 @@ function RegisterForm() {
   );
 }
 
+// ── Hero Auth Card (Login / Register tabs shown on homepage) ─────────────────
+function HeroAuthCard() {
+  const [tab, setTab] = useState<"login" | "register">("register");
+
+  // OTP login inline state
+  const [otpId, setOtpId] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+
+  // Register form state
+  const [profileFor, setProfileFor] = useState("");
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+
+  const detectType = (v: string): "email" | "phone" | "unknown" => {
+    if (v.includes("@")) return "email";
+    if (v.replace(/\D/g, "").length >= 10) return "phone";
+    return "unknown";
+  };
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = otpId.trim();
+    const type = detectType(val);
+    if (type === "unknown") { toast.error("Enter a valid email or 10-digit mobile number"); return; }
+    setSendingOtp(true);
+    try {
+      if (type === "email") {
+        const res = await fetch("/api/send-email-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: val }) });
+        const data = await res.json();
+        if (!res.ok) { toast.error(data.error || "Failed to send OTP"); setSendingOtp(false); return; }
+        toast.success(`OTP sent to ${val}`);
+      } else {
+        const digits = val.replace(/\D/g, "");
+        toast.success(`OTP sent to +91 ${digits}`);
+        // Redirect to full login page for phone OTP (MSG91 widget required)
+        window.location.href = `/login?mobile=${digits}`;
+        return;
+      }
+    } catch { toast.error("Network error. Please try again."); setSendingOtp(false); return; }
+    setSendingOtp(false);
+    setOtpSent(true);
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otp.length !== 6) { toast.error("Enter the 6-digit OTP"); return; }
+    setSendingOtp(true);
+    try {
+      const res = await fetch("/api/verify-email-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: otpId.trim(), otp }) });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || "OTP verification failed"); setSendingOtp(false); return; }
+      // OTP verified — use server-side login to get token
+      const profilesRes = await fetch(`/api/otp-login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: otpId.trim() }) });
+      if (profilesRes.ok) {
+        toast.success("Login successful!");
+        window.location.href = "/matches";
+      } else {
+        toast.error("Account not found. Please register first.");
+        setTab("register");
+      }
+    } catch { toast.error("Network error. Please try again."); }
+    setSendingOtp(false);
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profileFor) { toast.error("Please select who this profile is for"); return; }
+    if (!name.trim()) { toast.error("Please enter the name"); return; }
+    if (!mobile || mobile.length < 10) { toast.error("Please enter a valid 10-digit mobile number"); return; }
+    const params = new URLSearchParams({ profileFor, name: name.trim(), mobile });
+    window.location.href = `/register?${params.toString()}`;
+  };
+
+  return (
+    <div style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", overflow: "hidden", boxShadow: "var(--shadow-lg)", width: "100%", maxWidth: "380px" }}>
+      {/* Tab switcher */}
+      <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)" }}>
+        <button
+          onClick={() => setTab("register")}
+          style={{
+            flex: 1, padding: "0.875rem 0.5rem",
+            background: tab === "register" ? "var(--gradient-hero)" : "#f9f9f9",
+            border: "none", cursor: "pointer",
+            fontSize: "0.875rem", fontWeight: 700,
+            color: tab === "register" ? "#fff" : "var(--text-medium)",
+            fontFamily: "var(--font-sans)",
+            transition: "all 0.2s",
+            borderRadius: "0",
+          }}
+        >
+          Register Free
+        </button>
+        <button
+          onClick={() => setTab("login")}
+          style={{
+            flex: 1, padding: "0.875rem 0.5rem",
+            background: tab === "login" ? "var(--gradient-hero)" : "#f9f9f9",
+            border: "none", cursor: "pointer",
+            fontSize: "0.875rem", fontWeight: 700,
+            color: tab === "login" ? "#fff" : "var(--text-medium)",
+            fontFamily: "var(--font-sans)",
+            transition: "all 0.2s",
+            borderRadius: "0",
+          }}
+        >
+          Login
+        </button>
+      </div>
+
+      <div style={{ padding: "1.25rem" }}>
+        {/* ── REGISTER TAB ── */}
+        {tab === "register" && (
+          <>
+            <p style={{ textAlign: "center", fontSize: "0.875rem", fontWeight: 700, color: "var(--text-dark)", marginBottom: "1rem" }}>
+              Find your perfect Tamil match
+            </p>
+            <form onSubmit={handleRegister}>
+              <div style={{ marginBottom: "0.75rem" }}>
+                <select
+                  className="form-select"
+                  value={profileFor}
+                  onChange={(e) => setProfileFor(e.target.value)}
+                >
+                  <option value="" disabled>Profile created for</option>
+                  {PROFILE_FOR_OPTIONS.map((p) => <option key={p.value} value={p.label}>{p.label}</option>)}
+                </select>
+              </div>
+              <div style={{ marginBottom: "0.75rem" }}>
+                <input type="text" className="form-input" placeholder="Enter the name" value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <div style={{ display: "flex" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "3px", border: "1.5px solid var(--border-color)", borderRight: "none", borderRadius: "var(--radius-md) 0 0 var(--radius-md)", padding: "0.625rem 0.625rem", background: "#F7F7F7", fontSize: "0.875rem", color: "var(--text-dark)", fontWeight: 600, flexShrink: 0, whiteSpace: "nowrap" }}>
+                    +91 <ChevronDown size={11} />
+                  </div>
+                  <input type="tel" className="form-input" placeholder="Enter Mobile Number" maxLength={10} value={mobile} onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))} style={{ borderRadius: "0 var(--radius-md) var(--radius-md) 0" }} />
+                </div>
+                <p style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>OTP will be sent to this number</p>
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: "100%", justifyContent: "center", display: "flex", marginTop: "0.875rem", fontSize: "0.9375rem" }}>
+                REGISTER FREE <ArrowRight size={16} />
+              </button>
+            </form>
+            <p style={{ fontSize: "0.6875rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.75rem" }}>
+              *By clicking register free, I agree to the{" "}
+              <Link href="/terms" style={{ color: "var(--primary)", textDecoration: "none" }}>T&C</Link>
+              {" "}and{" "}
+              <Link href="/privacy" style={{ color: "var(--primary)", textDecoration: "none" }}>Privacy Policy</Link>
+            </p>
+          </>
+        )}
+
+        {/* ── LOGIN TAB ── */}
+        {tab === "login" && (
+          <>
+            <p style={{ textAlign: "center", fontSize: "0.875rem", fontWeight: 700, color: "var(--text-dark)", marginBottom: "1rem" }}>
+              Welcome back to Elite Tamil Matrimony
+            </p>
+
+            {!otpSent ? (
+              <form onSubmit={handleSendOtp}>
+                <div style={{ marginBottom: "1rem" }}>
+                  <label className="form-label">Email Address or Mobile Number</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Enter email or 10-digit mobile"
+                    value={otpId}
+                    onChange={(e) => setOtpId(e.target.value)}
+                  />
+                  {otpId && detectType(otpId) === "phone" && (
+                    <p style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>📱 You&apos;ll be redirected to verify via SMS OTP</p>
+                  )}
+                  {otpId && detectType(otpId) === "email" && (
+                    <p style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>✉️ OTP will be sent to this email</p>
+                  )}
+                </div>
+                <button type="submit" disabled={sendingOtp} className="btn btn-primary" style={{ width: "100%", justifyContent: "center", display: "flex" }}>
+                  {sendingOtp ? "Sending..." : "Send OTP"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp}>
+                <p style={{ fontSize: "0.875rem", color: "var(--text-medium)", marginBottom: "0.75rem" }}>
+                  OTP sent to <strong>{otpId}</strong>
+                  <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} style={{ marginLeft: "0.5rem", color: "var(--bm-orange)", background: "none", border: "none", cursor: "pointer", fontSize: "0.8125rem", fontWeight: 600, fontFamily: "var(--font-sans)" }}>Change</button>
+                </p>
+                <div style={{ marginBottom: "1rem" }}>
+                  <label className="form-label">Enter 6-digit OTP</label>
+                  <input type="text" className="form-input" placeholder="- - - - - -" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} style={{ textAlign: "center", fontSize: "1.125rem", letterSpacing: "0.25em" }} autoFocus />
+                </div>
+                <button type="submit" disabled={sendingOtp} className="btn btn-primary" style={{ width: "100%", justifyContent: "center", display: "flex" }}>
+                  {sendingOtp ? "Verifying..." : "Verify & Login"}
+                </button>
+              </form>
+            )}
+
+            <div style={{ textAlign: "center", marginTop: "1rem" }}>
+              <p style={{ fontSize: "0.8125rem", color: "var(--text-medium)", marginBottom: "0.5rem" }}>New here?</p>
+              <button onClick={() => setTab("register")} style={{ color: "var(--primary)", background: "none", border: "none", cursor: "pointer", fontSize: "0.875rem", fontWeight: 700, fontFamily: "var(--font-sans)" }}>Register Free →</button>
+            </div>
+
+            <div style={{ borderTop: "1px solid var(--border-light)", marginTop: "0.75rem", paddingTop: "0.75rem", textAlign: "center" }}>
+              <Link href="/login" style={{ fontSize: "0.8125rem", color: "var(--text-muted)", textDecoration: "none" }}>More login options →</Link>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AuthenticatedDashboard() {
   const { user } = useAuth();
   const [dailyRecs, setDailyRecs] = useState<RegisteredUser[]>([]);
@@ -1054,7 +1268,7 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--bg-page)", paddingTop: "72px" }}>
+      <main style={{ background: "var(--bg-page)", paddingTop: "64px" }}>
 
         {/* =================== HERO =================== */}
         <section style={{ background: "var(--bg-page)", padding: "2rem 0 1.5rem" }}>
@@ -1093,7 +1307,7 @@ export default function HomePage() {
               {/* Right Column: Register form */}
               <div className="hero-right">
                 <div className="hero-form-wrap" style={{ display: "flex", justifyContent: "center" }}>
-                  <RegisterForm />
+                  <HeroAuthCard />
                 </div>
               </div>
             </div>
