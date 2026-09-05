@@ -248,7 +248,7 @@ function AuthenticatedDashboard() {
 
     // Load counts
     Promise.all([
-      fetchMatchProfiles(user.id, user.gender),
+      fetchMatchProfiles(user, user.gender),
       getNewlyJoined(user.id, opp),
       getViewedMe(user.id, opp),
       getShortlistedMe(user.id, opp),

@@ -733,7 +733,7 @@ function MatchesContent() {
         case "professional_pref":    result = await getByProfessionPref(currentUser.id, currentUser.partnerOccupation, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "location_pref":        result = await getByLocationPref(currentUser.id, currentUser.city, currentUser.state, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "nri_matches":          result = await getNRIMatches(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        default:                     result = await fetchMatchProfiles(currentUser.id, currentUser.gender as "male" | "female" | undefined);
+        default:                     result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined);
       }
     } catch {
       result = [];

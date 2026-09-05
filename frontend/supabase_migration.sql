@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS auth_email             TEXT,
   ADD COLUMN IF NOT EXISTS is_premium             BOOLEAN NOT NULL DEFAULT false,
-  ADD COLUMN IF NOT EXISTS membership_plan        TEXT CHECK (membership_plan IN ('Gold','Diamond','Platinum')),
+  ADD COLUMN IF NOT EXISTS membership_plan        TEXT CHECK (membership_plan IN ('Gold','PrimeGold','PrimeTillUMarry','Diamond','Platinum')),
   ADD COLUMN IF NOT EXISTS membership_expiry      TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS membership_activated   TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS membership_price_paid  NUMERIC(10, 2),
@@ -392,6 +392,7 @@ CREATE TABLE IF NOT EXISTS public.success_stories (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE public.success_stories ADD COLUMN IF NOT EXISTS is_visible BOOLEAN NOT NULL DEFAULT TRUE;
 ALTER TABLE public.success_stories ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public can view success stories"         ON public.success_stories;
 DROP POLICY IF EXISTS "Service role manages success stories"    ON public.success_stories;

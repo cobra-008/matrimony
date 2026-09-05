@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cancelMembership } from '@/lib/auth-store';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_build');
@@ -18,8 +18,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'userId is required.' }, { status: 400 });
     }
 
-    const success = await cancelMembership(userId);
-    if (!success) {
+    const { error: cancelError } = await supabaseAdmin
+      .from('profiles')
+      .update({
+        is_premium: false,
+        membership_plan: null,
+        membership_expiry: null,
+        membership_activated: null,
+        membership_price_paid: null,
+        membership_plan_period: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+
+    if (cancelError) {
+      console.error('[cancel-membership] DB Error:', cancelError.message);
       return NextResponse.json({ error: 'Failed to cancel membership. Please contact support.' }, { status: 500 });
     }
 

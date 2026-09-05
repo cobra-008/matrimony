@@ -1005,7 +1005,7 @@ export async function fetchMatchProfiles(
     .from('profiles')
     .select(`*, photos:profile_photos(*)`)
     .order('last_active', { ascending: false })
-    .limit(100);
+    .limit(500); // Increased limit to ensure we have enough profiles after strict filtering
 
   if (currentUserId) query = query.neq('id', currentUserId);
   if (oppositeGender) {
@@ -1015,9 +1015,19 @@ export async function fetchMatchProfiles(
   const { data, error } = await query;
   if (error) return [];
 
-  const profiles = (data || []).map(dbToUser);
+  let profiles = (data || []).map(dbToUser);
 
   if (currentUser) {
+    // Apply strict age filters
+    profiles = profiles.filter(p => {
+      const theirAge = p.dob ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
+      if (theirAge) {
+        if (currentUser!.partnerAgeMin && theirAge < currentUser!.partnerAgeMin) return false;
+        if (currentUser!.partnerAgeMax && theirAge > currentUser!.partnerAgeMax) return false;
+      }
+      return true;
+    });
+
     // Batch-load answers for current user + all candidates in 1 query
     const allIds = [currentUser.id, ...profiles.map(p => p.id)];
     const answersMap = await getCompatibilityAnswersBatch(allIds);
@@ -1561,7 +1571,7 @@ export async function getMutualMatches(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data.map(dbToUser).filter((p: RegisteredUser) => {
-    // Check if p's partner age range includes current user's age
+    // 1. Check if p's partner age range includes current user's age
     const myAge = currentUser.dob
       ? Math.floor((Date.now() - new Date(currentUser.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
       : null;
@@ -1571,17 +1581,27 @@ export async function getMutualMatches(
         (!p.partnerAgeMax || myAge <= p.partnerAgeMax)
       : true;
 
-    // Check if current user's partner religion preference matches p's religion
+    // 2. Check if current user's partner age range includes p's age
+    const theirAge = p.dob
+      ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+      : null;
+
+    const reverseAgeOk = theirAge
+      ? (!currentUser.partnerAgeMin || theirAge >= currentUser.partnerAgeMin) &&
+        (!currentUser.partnerAgeMax || theirAge <= currentUser.partnerAgeMax)
+      : true;
+
+    // 3. Check if current user's partner religion preference matches p's religion
     const religionOk =
       !currentUser.partnerReligion || !p.religion ||
       currentUser.partnerReligion === p.religion;
 
-    // Check reverse: p prefers current user's religion
+    // 4. Check reverse: p prefers current user's religion
     const reverseReligionOk =
       !p.partnerReligion || !currentUser.religion ||
       p.partnerReligion === currentUser.religion;
 
-    return ageOk && religionOk && reverseReligionOk;
+    return ageOk && reverseAgeOk && religionOk && reverseReligionOk;
   });
 }
 

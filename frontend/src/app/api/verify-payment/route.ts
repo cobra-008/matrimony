@@ -10,6 +10,8 @@ const FROM = process.env.RESEND_FROM_EMAIL ?? "Elite Tamil Matrimony <admin@elit
 // Plan config — single source of truth for this route
 const PLAN_CONFIG = {
   Gold:     { period: "1 Month",  months: 1, features: ["Browse 25 Lakh+ profiles","Unlimited interests","30 contact reveals per month","AI compatibility score for every match","Priority profile listing","Advanced search (25+ filters)","See who viewed your profile","Chat with all matched profiles"] },
+  PrimeGold: { period: "3 Months", months: 3, features: ["Everything in Gold","Unlimited contact reveals for 3 months","Priority profile listing","Chat with all matched profiles"] },
+  PrimeTillUMarry: { period: "Till you marry", months: 120, features: ["Everything in PrimeGold","Unlimited contact reveals until marriage","Dedicated account manager"] },
   Diamond:  { period: "1 Month",  months: 1, features: ["Everything in Gold","Unlimited contact reveals","First-page priority placement","Video call request feature","Exclusive Diamond-only matches","Dedicated account manager"] },
   Platinum: { period: "3 Months", months: 3, features: ["Everything in Diamond","Dedicated human matchmaker","Hand-curated match recommendations","Background verification assistance","Profile video introduction","Priority 24/7 support","Astrology compatibility check","Guaranteed 100 curated introductions"] },
 } as const;
