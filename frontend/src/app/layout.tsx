@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
 import MigrationRunner from "@/components/ui/MigrationRunner";
+import CookieConsent from "@/components/ui/CookieConsent";
 
 const lato = Lato({
   variable: "--font-lato",
@@ -84,6 +85,7 @@ export default function RootLayout({
         <AuthProvider>
           <MigrationRunner />
           {children}
+          <CookieConsent />
           <Toaster
             position="top-center"
             toastOptions={{

@@ -31,8 +31,8 @@ const FOOTER_LINKS = {
     { label: "Affiliates", href: "#" },
     { label: "TV Commercials", href: "#" },
     { label: "Advertise with us", href: "#" },
-    { label: "Terms & Conditions", href: "#" },
-    { label: "Privacy Policy", href: "#" },
+    { label: "Terms & Conditions", href: "/terms" },
+    { label: "Privacy Policy", href: "/privacy-policy" },
   ],
   "Related Matrimony Services": [
     { label: "HappyMarriages.com", href: "#" },
