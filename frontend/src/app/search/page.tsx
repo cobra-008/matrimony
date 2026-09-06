@@ -417,7 +417,7 @@ function SearchContent() {
             Find Your Perfect Tamil Match
           </h1>
           <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.875rem", margin: "0.375rem 0 0" }}>
-            Search across 25 Lakh+ verified Tamil profiles
+            Search verified Tamil profiles and find your perfect match
           </p>
         </div>
 
@@ -845,7 +845,7 @@ function SearchContent() {
             }}
           >
             <span style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-              <strong style={{ color: "var(--text-dark)" }}>25 Lakh+</strong> profiles
+              <strong style={{ color: "var(--text-dark)" }}>Verified</strong> profiles
             </span>
             <div style={{ display: "flex", gap: "0.625rem" }}>
               <button

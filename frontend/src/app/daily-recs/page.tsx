@@ -279,8 +279,8 @@ export default function DailyRecsPage() {
                     <h2 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 0.5rem" }}>
                       {activeProfile.name}
                     </h2>
-                    <p style={{ color: "var(--text-light)", fontSize: "0.875rem", margin: "0 0 1.5rem" }}>
-                      H{activeProfile.id.substring(0,8).toUpperCase()} <span style={{margin:"0 8px"}}>|</span> Last seen few weeks ago
+                    <p style={{ color: "var(--text-light)", fontSize: "0.875rem", margin: "0 0 1.5rem", fontWeight: 500, letterSpacing: "0.02em" }}>
+                      ETM-{activeProfile.id.substring(0,8).toUpperCase()}
                     </p>
 
                     {/* Quick Info Rows */}

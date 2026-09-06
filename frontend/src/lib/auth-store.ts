@@ -1740,7 +1740,42 @@ export async function getNRIMatches(
 }
 
 /**
- * Profiles with the same star sign (nakshatra compatibility).
+ * Tamil Nakshatra (Star) compatibility map — Dina Porutham based.
+ * Each star lists the stars that are compatible with it.
+ * Source: Traditional Tamil astrology Dina Porutham chart (27 stars, counted from the girl's star).
+ */
+const STAR_COMPATIBILITY: Record<string, string[]> = {
+  "Ashwini":       ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishtha", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"],
+  "Bharani":       ["Ashwini", "Bharani", "Rohini", "Mrigashira", "Punarvasu", "Pushya", "Uttara Phalguni", "Hasta", "Chitra", "Vishakha", "Anuradha", "Uttara Ashadha", "Shravana", "Shatabhisha", "Uttara Bhadrapada", "Revati"],
+  "Krittika":      ["Ashwini", "Krittika", "Mrigashira", "Ardra", "Pushya", "Magha", "Uttara Phalguni", "Hasta", "Swati", "Anuradha", "Jyeshtha", "Purva Ashadha", "Shravana", "Dhanishtha", "Purva Bhadrapada", "Revati"],
+  "Rohini":        ["Bharani", "Rohini", "Ardra", "Punarvasu", "Ashlesha", "Purva Phalguni", "Chitra", "Vishakha", "Mula", "Uttara Ashadha", "Shatabhisha", "Uttara Bhadrapada"],
+  "Mrigashira":    ["Ashwini", "Bharani", "Krittika", "Mrigashira", "Punarvasu", "Uttara Phalguni", "Hasta", "Vishakha", "Jyeshtha", "Shravana", "Purva Bhadrapada", "Revati"],
+  "Ardra":         ["Ashwini", "Krittika", "Ardra", "Pushya", "Magha", "Hasta", "Swati", "Anuradha", "Purva Ashadha", "Dhanishtha", "Purva Bhadrapada"],
+  "Punarvasu":     ["Bharani", "Rohini", "Punarvasu", "Ashlesha", "Purva Phalguni", "Chitra", "Vishakha", "Mula", "Uttara Ashadha", "Shatabhisha", "Uttara Bhadrapada"],
+  "Pushya":        ["Ashwini", "Krittika", "Ardra", "Pushya", "Uttara Phalguni", "Hasta", "Swati", "Anuradha", "Purva Ashadha", "Shravana", "Dhanishtha"],
+  "Ashlesha":      ["Rohini", "Punarvasu", "Ashlesha", "Purva Phalguni", "Chitra", "Mula", "Uttara Ashadha", "Shatabhisha", "Uttara Bhadrapada"],
+  "Magha":         ["Ashwini", "Krittika", "Ardra", "Magha", "Uttara Phalguni", "Swati", "Jyeshtha", "Purva Ashadha", "Dhanishtha", "Purva Bhadrapada"],
+  "Purva Phalguni":["Bharani", "Rohini", "Punarvasu", "Ashlesha", "Purva Phalguni", "Chitra", "Vishakha", "Mula", "Uttara Ashadha", "Shatabhisha"],
+  "Uttara Phalguni":["Ashwini", "Bharani", "Krittika", "Mrigashira", "Ardra", "Pushya", "Uttara Phalguni", "Hasta", "Swati", "Anuradha", "Shravana", "Revati"],
+  "Hasta":         ["Ashwini", "Bharani", "Krittika", "Mrigashira", "Ardra", "Pushya", "Uttara Phalguni", "Hasta", "Anuradha", "Purva Ashadha", "Shravana", "Purva Bhadrapada"],
+  "Chitra":        ["Bharani", "Rohini", "Punarvasu", "Ashlesha", "Purva Phalguni", "Chitra", "Vishakha", "Mula", "Shatabhisha", "Uttara Bhadrapada"],
+  "Swati":         ["Ashwini", "Krittika", "Ardra", "Pushya", "Magha", "Uttara Phalguni", "Swati", "Anuradha", "Purva Ashadha", "Dhanishtha"],
+  "Vishakha":      ["Ashwini", "Bharani", "Rohini", "Mrigashira", "Punarvasu", "Purva Phalguni", "Chitra", "Vishakha", "Mula", "Uttara Ashadha", "Shatabhisha"],
+  "Anuradha":      ["Ashwini", "Krittika", "Ardra", "Pushya", "Uttara Phalguni", "Hasta", "Swati", "Anuradha", "Jyeshtha", "Purva Ashadha", "Shravana"],
+  "Jyeshtha":      ["Ashwini", "Krittika", "Mrigashira", "Magha", "Anuradha", "Jyeshtha", "Dhanishtha", "Purva Bhadrapada"],
+  "Mula":          ["Rohini", "Punarvasu", "Ashlesha", "Purva Phalguni", "Chitra", "Vishakha", "Mula", "Uttara Ashadha", "Shatabhisha"],
+  "Purva Ashadha": ["Ashwini", "Krittika", "Ardra", "Magha", "Hasta", "Swati", "Anuradha", "Purva Ashadha", "Shravana", "Dhanishtha"],
+  "Uttara Ashadha":["Ashwini", "Bharani", "Rohini", "Punarvasu", "Ashlesha", "Purva Phalguni", "Vishakha", "Mula", "Uttara Ashadha", "Shatabhisha"],
+  "Shravana":      ["Ashwini", "Bharani", "Krittika", "Mrigashira", "Ardra", "Pushya", "Uttara Phalguni", "Hasta", "Anuradha", "Purva Ashadha", "Shravana"],
+  "Dhanishtha":    ["Ashwini", "Krittika", "Ardra", "Magha", "Swati", "Jyeshtha", "Purva Ashadha", "Dhanishtha", "Purva Bhadrapada"],
+  "Shatabhisha":   ["Bharani", "Rohini", "Punarvasu", "Ashlesha", "Purva Phalguni", "Chitra", "Vishakha", "Mula", "Uttara Ashadha", "Shatabhisha"],
+  "Purva Bhadrapada": ["Ashwini", "Krittika", "Ardra", "Magha", "Hasta", "Jyeshtha", "Dhanishtha", "Purva Bhadrapada"],
+  "Uttara Bhadrapada": ["Ashwini", "Bharani", "Rohini", "Punarvasu", "Ashlesha", "Chitra", "Uttara Ashadha", "Shatabhisha", "Uttara Bhadrapada"],
+  "Revati":        ["Ashwini", "Bharani", "Krittika", "Mrigashira", "Uttara Phalguni", "Hasta", "Anuradha", "Shravana", "Revati"],
+};
+
+/**
+ * Profiles with compatible star signs (nakshatra compatibility — Dina Porutham).
  */
 export async function getStarMatches(
   currentUserId: string,
@@ -1749,12 +1784,14 @@ export async function getStarMatches(
 ): Promise<RegisteredUser[]> {
   if (!star) return getWithHoroscope(currentUserId, oppositeGender);
 
-  // Compatible stars (basic grouping — can be expanded with full Jyotish logic)
+  // Get list of compatible stars; fall back to same star if not in map
+  const compatibleStars = STAR_COMPATIBILITY[star] ?? [star];
+
   let query = supabase
     .from('profiles')
     .select('*')
     .neq('id', currentUserId)
-    .eq('star', star)
+    .in('star', compatibleStars)
     .order('last_active', { ascending: false })
     .limit(50);
 

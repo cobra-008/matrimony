@@ -152,7 +152,7 @@ function ProfileCard({
 
   const photo = profile.photoUrl || null;
 
-  const profileCode = `ETM${String(index + 1).padStart(3, "0")}`;
+  const profileCode = `ETM-${profile.id.substring(0, 8).toUpperCase()}`;
   const location = [profile.city, profile.state].filter(Boolean).join(", ") || profile.country || "India";
 
   // Build attribute string
@@ -367,17 +367,18 @@ function ProfileCard({
               {profile.name}
             </Link>
 
-            {/* Profile code + last seen */}
-            <div
-              style={{
-                fontSize: "0.75rem",
-                color: "#E8401A",
-                marginTop: "2px",
-                fontWeight: 500,
-              }}
-            >
-              {profileCode} | Last seen few hour ago
-            </div>
+            {/* Profile code */}
+          <div
+            style={{
+              fontSize: "0.75rem",
+              color: "#888",
+              marginTop: "2px",
+              fontWeight: 500,
+              letterSpacing: "0.02em",
+            }}
+          >
+            {profileCode}
+          </div>
           </div>
         </div>
 
@@ -532,7 +533,7 @@ function ProfileCard({
           {/* View Contact — Gold+ */}
           {canViewContact ? (
             <Link
-              href={`/profile/${profile.id}`}
+              href={`/profile/${profile.id}#section-Contact-Details`}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -550,7 +551,7 @@ function ProfileCard({
               }}
             >
               <PhoneIcon />
-              View Contact
+              Contact
             </Link>
           ) : (
             <Link
@@ -604,31 +605,6 @@ function ProfileCard({
             </svg>
             Message
           </Link>
-
-          {/* View Contact — Gold+ */}
-          {canViewContact ? (
-            <Link
-              href={`/profile/${profile.id}`}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "0.4375rem 1rem",
-                border: "1.5px solid #E8401A",
-                borderRadius: "20px",
-                background: "#fff",
-                color: "#E8401A",
-                fontSize: "0.8125rem",
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: "var(--font-sans)",
-                textDecoration: "none",
-              }}
-            >
-              <PhoneIcon />
-              View Contact
-            </Link>
-          ) : null}
 
         </div>
       </div>
@@ -702,6 +678,7 @@ function MatchesContent() {
   const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(new Set());
   const [sentInterestIds, setSentInterestIds] = useState<Set<string>>(new Set());
   const [nameSearch, setNameSearch] = useState("");
+  const [starMissing, setStarMissing] = useState(false);
   const chipRowRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   // Track last user ID to detect account switches
@@ -713,6 +690,7 @@ function MatchesContent() {
     if (!currentUser) return;
     setLoading(true);
     setProfiles([]);
+    setStarMissing(false);
     let result: RegisteredUser[] = [];
     try {
       switch (sectionId) {
@@ -731,7 +709,15 @@ function MatchesContent() {
         case "with_photos":          result = await getWithPhotos(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "with_horoscope":       result = await getWithHoroscope(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "similar_hobbies":      result = await getSimilarHobbies(currentUser.id, currentUser.hobbies || [], currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "star_matches":         result = await getStarMatches(currentUser.id, currentUser.star, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "star_matches": {
+          if (!currentUser.star) {
+            setStarMissing(true);
+            setLoading(false);
+            return;
+          }
+          result = await getStarMatches(currentUser.id, currentUser.star, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null);
+          break;
+        }
         case "horoscope_matches":    result = await getHoroscopeMatches(currentUser.id, currentUser.rasi, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "mutual_matches":       result = await getMutualMatches(currentUser); break;
         case "looking_for_you":      result = await getLookingForMe(currentUser); break;
@@ -1246,47 +1232,7 @@ function MatchesContent() {
                 </button>
               ))}
 
-              {/* Scroll arrows — scroll chip row left/right */}
-              <button
-                onClick={() => chipRowRef.current?.scrollBy({ left: -200, behavior: "smooth" })}
-                style={{
-                  width: "26px",
-                  height: "26px",
-                  borderRadius: "50%",
-                  border: "1.5px solid #ccc",
-                  background: "#fff",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-                title="Scroll left"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-              <button
-                onClick={() => chipRowRef.current?.scrollBy({ left: 200, behavior: "smooth" })}
-                style={{
-                  width: "26px",
-                  height: "26px",
-                  borderRadius: "50%",
-                  border: "1.5px solid #ccc",
-                  background: "#fff",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-                title="Scroll right"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
+              {/* Scroll arrows removed — chips row is touch-scrollable */}
             </div>
 
             {/* Expandable filter panel */}
@@ -1324,6 +1270,21 @@ function MatchesContent() {
             {/* Profile cards */}
             {loading
               ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
+              : starMissing
+              ? (
+                <div style={{ background: "#fff", border: "1px solid #E8D5B7", borderRadius: "8px", padding: "3rem 2rem", textAlign: "center" }}>
+                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </div>
+                  <h3 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "0.5rem" }}>Star (Nakshatra) Not Set</h3>
+                  <p style={{ color: "#666", fontSize: "0.875rem", marginBottom: "1.5rem", maxWidth: "360px", margin: "0 auto 1.5rem", lineHeight: 1.6 }}>
+                    To view star matches, please update your Nakshatra (Star) in your profile. We use Tamil horoscope star compatibility to find the best matches for you.
+                  </p>
+                  <Link href="/profile/edit?section=religion" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#6B1A2A", color: "#fff", borderRadius: "20px", padding: "0.625rem 1.5rem", fontWeight: 700, fontSize: "0.875rem", textDecoration: "none" }}>
+                    Update Star Details →
+                  </Link>
+                </div>
+              )
               : displayed.length === 0
               ? (
                 <div

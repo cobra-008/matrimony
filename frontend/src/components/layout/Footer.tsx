@@ -268,12 +268,13 @@ export default function Footer() {
               </Link>
             </div>
             <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", maxWidth: "340px", lineHeight: 1.65, margin: 0 }}>
-              Elite Tamil Matrimony is a part of BharatMatrimony — the pioneers of online matrimony service. Today, we are the most trusted Matrimony website by Brand Trust Report. Millions of happy marriages happened and continue to happen through BharatMatrimony. We have been featured in the Limca Book of Records for the highest number of documented marriages online.
+              Elite Tamil Matrimony is a trusted platform created to help individuals and families find meaningful and compatible life partners. We bring together Tamil traditions, modern matchmaking, and a personalized approach to make the journey towards marriage simple and comfortable.
             </p>
             <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", maxWidth: "340px", lineHeight: 1.65, margin: 0 }}>
-              BharatMatrimony is the 1st group to offer 100% mobile verified profiles, reinforcing the trust that members have on us. We have also pioneered the highly personalized matchmaking services — Assisted Service and EliteMatrimony. Our{" "}
-              <a href="/about" style={{ color: "rgba(255,200,100,0.85)", textDecoration: "underline" }}>purpose</a>{" "}
-              is to build a better Bharat through happy marriages.
+              Our goal is to connect genuine profiles and like-minded families while keeping trust, privacy, and compatibility at the heart of every match.
+            </p>
+            <p style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", maxWidth: "340px", lineHeight: 1.65, margin: 0 }}>
+              We believe that finding a life partner is more than just matching profiles — it is about finding the right person to build a beautiful future together.
             </p>
             {/* Contact */}
             <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>

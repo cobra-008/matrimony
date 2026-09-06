@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Bell, Heart, Eye, MessageCircle, BookmarkPlus, Star, CheckCheck, Trash2, Settings } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   getNotifications,
@@ -65,16 +66,28 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function NotificationsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const data = await getNotifications(user.id);
-    setNotifications(data);
+    try {
+      const data = await getNotifications(user.id);
+      setNotifications(data);
+    } catch {
+      setNotifications([]);
+    }
     setLoading(false);
   };
 
@@ -140,6 +153,23 @@ export default function NotificationsPage() {
   };
 
   const displayed = filter === "unread" ? notifications.filter((n) => !n.read) : notifications;
+
+  // Show spinner while auth is resolving
+  if (authLoading || !user) {
+    return (
+      <>
+        <Navbar />
+        <main style={{ background: "#FFF8F0", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: "40px", height: "40px", margin: "0 auto 1rem", border: "3px solid #E8D5B7", borderTopColor: "#6B1A2A", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+            <p style={{ color: "#888", fontSize: "0.875rem" }}>Loading notifications…</p>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

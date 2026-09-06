@@ -335,10 +335,9 @@ function OwnProfileFallback({ id }: { id: string }) {
 const SIDEBAR_ITEMS = [
   { label: "Basic Information", id: "section-Basic-Information" },
   { label: "Photo Gallery", id: "section-Photo-Gallery" },
-  { label: "Religion & Lifestyle", id: "section-Lifestyle" },
+  { label: "Religion & Horoscope", id: "section-Religion-Horoscope" },
   { label: "Location Details", id: "section-Location" },
   { label: "Family Details", id: "section-Family-Details" },
-  { label: "Horoscope Details", id: "section-Horoscope" },
   { label: "Partner Preferences", id: "section-Partner-Preferences" },
   { label: "Contact Details", id: "section-Contact-Details" },
 ];
@@ -376,6 +375,8 @@ export default function ProfileDetailPage({
   const [interested, setInterested] = useState(false);
   const [shortlisted, setShortlisted] = useState(false);
   const [activeSection, setActiveSection] = useState("Basic Information");
+  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   
   const [hasRevealedContact, setHasRevealedContact] = useState(false);
   const [revealsUsed, setRevealsUsed] = useState(0);
@@ -513,37 +514,48 @@ export default function ProfileDetailPage({
       <Navbar />
       <style>{`
         @media (max-width: 899px) {
+          .profile-main-wrap { overflow-x: hidden !important; padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
           .profile-layout-row { flex-direction: column !important; }
           .profile-sidebar { display: none !important; }
           .profile-right-panel { width: 100% !important; margin-top: 1.5rem !important; }
           .profile-info-body { flex-direction: column !important; align-items: flex-start !important; text-align: left !important; padding: 1.25rem !important; }
-          .profile-photo-col { width: 140px !important; margin: 0 0 1rem 0 !important; }
-          .profile-photo-img { width: 140px !important; height: 175px !important; border-radius: var(--radius-lg) !important; margin: 0 !important; }
+          .profile-photo-col { width: 120px !important; margin: 0 0 1rem 0 !important; }
+          .profile-photo-img { width: 120px !important; height: 150px !important; border-radius: var(--radius-lg) !important; margin: 0 !important; }
           .profile-actions-col { flex-direction: row !important; flex-wrap: wrap !important; justify-content: flex-start !important; width: 100% !important; margin-top: 0.75rem !important; gap: 0.5rem !important; }
           .profile-attr-grid { grid-template-columns: 1fr !important; }
           .profile-edu-grid { grid-template-columns: 1fr !important; }
-          /* Ensure tables don't cause horizontal overflow on mobile */
-          .profile-details-table, .profile-main-wrap table { width: 100% !important; table-layout: fixed !important; word-wrap: break-word !important; }
-          .info-label-col { width: 125px !important; min-width: 125px !important; }
-          .profile-edu-grid > span:nth-child(odd) { width: 125px !important; }
-          
+          /* Tables: prevent horizontal overflow */
+          .profile-details-table, .profile-main-wrap table { width: 100% !important; table-layout: fixed !important; word-break: break-word !important; }
+          .info-label-col { width: 110px !important; min-width: 110px !important; max-width: 110px !important; }
+          .profile-edu-grid > span:nth-child(odd) { width: 110px !important; }
+          /* Section cards: prevent overflow */
+          .profile-main-wrap > div > div { max-width: 100% !important; box-sizing: border-box !important; }
+          /* Info column: must not overflow */
+          .my-profile-info-wrap > div, .my-profile-info-wrap { min-width: 0 !important; overflow-x: hidden !important; }
+
           /* Custom classes for perfect left-alignment of My Profile on mobile */
           .my-profile-top-card {
             flex-direction: column !important;
             align-items: flex-start !important;
-            padding: 1.25rem !important;
-            gap: 1.25rem !important;
+            padding: 1rem !important;
+            gap: 1rem !important;
           }
           .my-profile-photo-wrap {
-            width: 140px !important;
-            margin: 0 !important; /* Force left alignment, remove auto margin */
+            width: 120px !important;
+            margin: 0 !important;
           }
           .my-profile-info-wrap {
             width: 100% !important;
-            min-width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
             text-align: left !important;
             align-items: flex-start !important;
+            overflow: hidden !important;
           }
+        }
+        @media (max-width: 400px) {
+          .info-label-col { width: 95px !important; min-width: 95px !important; max-width: 95px !important; }
+          .profile-main-wrap { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
         }
       `}</style>
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
@@ -896,13 +908,71 @@ export default function ProfileDetailPage({
               {profile.photos && profile.photos.length > 0 && (
                 <SectionCard id="section-Photo-Gallery" title={`Photo Gallery (${profile.photos.length})`} onEdit={isOwnProfile ? () => router.push("/profile/edit?section=photo") : undefined}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "1rem" }}>
-                    {profile.photos.sort((a, b) => a.sortOrder - b.sortOrder).map(p => (
-                      <div key={p.id} style={{ position: "relative", borderRadius: "var(--radius-lg)", overflow: "hidden", aspectRatio: "3/4", border: "1px solid var(--border-color)" }}>
-                        <img src={p.url} alt="Gallery photo" style={{ width: "100%", height: "100%", objectFit: "contain", background: "#F8F0F0" }} />
+                    {profile.photos.sort((a, b) => a.sortOrder - b.sortOrder).map((ph, phIdx) => (
+                      <div
+                        key={ph.id}
+                        onClick={() => { setLightboxPhoto(ph.url); setLightboxIndex(phIdx); }}
+                        style={{ position: "relative", borderRadius: "var(--radius-lg)", overflow: "hidden", aspectRatio: "3/4", border: "1px solid var(--border-color)", cursor: "pointer" }}
+                      >
+                        <img src={ph.url} alt="Gallery photo" style={{ width: "100%", height: "100%", objectFit: "contain", background: "#F8F0F0" }} />
+                        <div style={{ position: "absolute", inset: 0, background: "transparent", transition: "background 0.2s" }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.15)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                        />
                       </div>
                     ))}
                   </div>
                 </SectionCard>
+              )}
+
+              {/* Photo lightbox modal */}
+              {lightboxPhoto && (
+                <div
+                  onClick={() => setLightboxPhoto(null)}
+                  style={{
+                    position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)",
+                    zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >
+                  {/* Close */}
+                  <button
+                    onClick={() => setLightboxPhoto(null)}
+                    style={{ position: "absolute", top: "1rem", right: "1rem", background: "rgba(255,255,255,0.15)", border: "none", borderRadius: "50%", width: "44px", height: "44px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                  {/* Prev */}
+                  {profile.photos && profile.photos.length > 1 && (
+                    <button
+                      onClick={e => { e.stopPropagation(); const sorted = profile.photos!.sort((a,b)=>a.sortOrder-b.sortOrder); const prev = (lightboxIndex - 1 + sorted.length) % sorted.length; setLightboxIndex(prev); setLightboxPhoto(sorted[prev].url); }}
+                      style={{ position: "absolute", left: "1rem", background: "rgba(255,255,255,0.15)", border: "none", borderRadius: "50%", width: "44px", height: "44px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                  )}
+                  {/* Image */}
+                  <img
+                    src={lightboxPhoto}
+                    alt="Photo"
+                    onClick={e => e.stopPropagation()}
+                    style={{ maxWidth: "90vw", maxHeight: "90vh", objectFit: "contain", borderRadius: "8px", boxShadow: "0 8px 40px rgba(0,0,0,0.5)" }}
+                  />
+                  {/* Next */}
+                  {profile.photos && profile.photos.length > 1 && (
+                    <button
+                      onClick={e => { e.stopPropagation(); const sorted = profile.photos!.sort((a,b)=>a.sortOrder-b.sortOrder); const next = (lightboxIndex + 1) % sorted.length; setLightboxIndex(next); setLightboxPhoto(sorted[next].url); }}
+                      style={{ position: "absolute", right: "1rem", background: "rgba(255,255,255,0.15)", border: "none", borderRadius: "50%", width: "44px", height: "44px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                  )}
+                  {/* Counter */}
+                  {profile.photos && profile.photos.length > 1 && (
+                    <div style={{ position: "absolute", bottom: "1.25rem", color: "rgba(255,255,255,0.7)", fontSize: "0.875rem" }}>
+                      {lightboxIndex + 1} / {profile.photos.length}
+                    </div>
+                  )}
+                </div>
               )}
               {/* ══════════════════════════════════════════════════
                   3. BASIC INFORMATION
@@ -974,21 +1044,32 @@ export default function ProfileDetailPage({
               </SectionCard>
 
               {/* ══════════════════════════════════════════════════
-                  4. RELIGION INFORMATION (Mapped from Lifestyle / Religion)
+                  4. RELIGION & HOROSCOPE DETAILS (Combined)
                   ══════════════════════════════════════════════════ */}
-              <SectionCard id="section-Lifestyle" title="Religion & Lifestyle Information" onEdit={isOwnProfile ? () => router.push("/profile/edit?section=religion") : undefined}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <tbody>
-                    <InfoRow label="Religion" value={profile.religion || "—"} />
-                    <InfoRow
-                      label="Caste / Sub Caste"
-                      value={p.community || (p.caste && p.subcaste ? `${p.caste} / ${p.subcaste}` : p.caste || p.subcaste || undefined)}
-                    />
-                    <InfoRow label="Gothra(m)" value={p.gothram || undefined} />
-                    <InfoRow label="Star / Raasi" value={(p.star && p.rasi) ? `${p.star} / ${p.rasi}` : (p.star || p.rasi || undefined)} />
-                    <InfoRow label="Dosh" value={p.dhosham || undefined} />
-                  </tbody>
-                </table>
+              <SectionCard id="section-Religion-Horoscope" title="Religion & Horoscope Details" onEdit={isOwnProfile ? () => router.push("/profile/edit?section=religion") : undefined}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 1.5rem" }} className="profile-attr-grid">
+                  {/* Left: Religious info */}
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <tbody>
+                      <InfoRow label="Religion" value={p.religion || undefined} />
+                      <InfoRow label="Caste / Sub Caste" value={p.community || (p.caste && p.subcaste ? `${p.caste} / ${p.subcaste}` : p.caste || p.subcaste || undefined)} />
+                      <InfoRow label="Gothram" value={p.gothram || undefined} />
+                      <InfoRow label="Star (Nakshatra)" value={p.star || undefined} addLink isOwnProfile={isOwnProfile} />
+                      <InfoRow label="Raasi (Moon Sign)" value={p.rasi || undefined} addLink isOwnProfile={isOwnProfile} />
+                      <InfoRow label="Dhosham" value={p.dhosham || undefined} />
+                    </tbody>
+                  </table>
+                  {/* Right: Horoscope birth details */}
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <tbody>
+                      <InfoRow label="Date of Birth" value={isOwnProfile ? (p.dob || dobStr || undefined) : (p.dob || dobStr ? "Available" : undefined)} />
+                      <InfoRow label="Time of Birth" value={undefined} addLink isOwnProfile={isOwnProfile} />
+                      <InfoRow label="Place of Birth" value={p.nativePlace || p.city || undefined} />
+                      <InfoRow label="Country of Birth" value={p.country || "India"} />
+                      <InfoRow label="Mother Tongue" value={p.motherTongue || "Tamil"} />
+                    </tbody>
+                  </table>
+                </div>
               </SectionCard>
 
               {/* ══════════════════════════════════════════════════
@@ -1023,21 +1104,6 @@ export default function ProfileDetailPage({
                 </table>
               </SectionCard>
 
-              {/* ══════════════════════════════════════════════════
-                  7. HOROSCOPE DETAILS
-                  ══════════════════════════════════════════════════ */}
-              <SectionCard id="section-Horoscope" title="Horoscope Details" onEdit={isOwnProfile ? () => router.push("/profile/edit?section=horoscope") : undefined}>
-                <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-                  <table style={{ flex: 1, borderCollapse: "collapse", minWidth: "200px" }}>
-                    <tbody>
-                      <InfoRow label="Date of Birth" value="••/••/••••" />
-                      <InfoRow label="Time of Birth" value="Not specified" />
-                      <InfoRow label="Place of Birth" value="Chennai" />
-                      <InfoRow label="Country of Birth" value="India" />
-                    </tbody>
-                  </table>
-                </div>
-              </SectionCard>
 
               {/* ══════════════════════════════════════════════════
                   7b. PARTNER PREFERENCES

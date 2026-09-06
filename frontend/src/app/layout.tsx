@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s | Elite Tamil Matrimony",
   },
   description:
-    "Elite Tamil Matrimony — The most trusted Tamil matrimony platform. 25 Lakh+ verified profiles. Find your perfect Tamil match today.",
+    "Elite Tamil Matrimony — The most trusted Tamil matrimony platform. Find your perfect Tamil match today. Genuine profiles, trusted matchmaking.",
   keywords: [
     "Tamil matrimony",
     "Tamil marriage",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     url: "https://elitetamilmatrimony.com",
     siteName: "Elite Tamil Matrimony",
     title: "Elite Tamil Matrimony — The No.1 Tamil Matrimony Site",
-    description: "25 Lakh+ verified Tamil profiles. Find your perfect match.",
+    description: "Trusted Tamil matrimony platform. Find your perfect match with genuine, verified profiles.",
   },
   robots: { index: true, follow: true },
 };

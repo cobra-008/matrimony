@@ -773,7 +773,7 @@ function LoginContent() {
                 )}
               </div>
               <div style={{ marginTop: "1.25rem", textAlign: "center" }}>
-                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Trusted by 25 Lakh+ Tamil families &nbsp;•&nbsp; 100% Verified Profiles &nbsp;•&nbsp; Secure &amp; Private</p>
+                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Trusted by Tamil Families &nbsp;•&nbsp; 100% Verified Profiles &nbsp;•&nbsp; Secure &amp; Private</p>
               </div>
             </div>
           </div>
