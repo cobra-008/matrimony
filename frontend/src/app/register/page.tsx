@@ -12,7 +12,7 @@ import {
   RELIGIONS, RELIGION_TO_CASTES, CASTE_TO_SUBCASTE, MOTHER_TONGUES, HEIGHTS,
   EDUCATION_LEVELS, OCCUPATIONS, INCOME_RANGES, INDIAN_STATES,
   CITIES_BY_STATE, MARITAL_STATUS, EATING_HABITS, DHOSHAM_OPTIONS,
-  PROFILE_FOR_OPTIONS,
+  PROFILE_FOR_OPTIONS, STARS, RAASI_LIST,
 } from "@/data/matrimony-data";
 import {
   COMPATIBILITY_QUESTIONS,
@@ -374,6 +374,7 @@ function RegisterWizard() {
     diet: "",
     star: "",
     rasi: "",
+    dhosham: "",
     // Step 3 — Partner Preferences
     partnerAgeMin: 22,
     partnerAgeMax: 35,
@@ -589,6 +590,7 @@ function RegisterWizard() {
     if (form.email) {
       const emailErr = validateEmail(form.email);
       if (emailErr) newErrors.email = emailErr;
+      else if (!emailOtpVerified) newErrors.email = "Please verify your email address before continuing.";
     }
     if (form.password) {
       const pwErr = validatePassword(form.password);
@@ -596,6 +598,7 @@ function RegisterWizard() {
     }
     if (Object.keys(newErrors).length > 0) {
       setFieldErrors((prev) => ({ ...prev, ...newErrors }));
+      toast.error("Please fill in all required fields to continue.");
       return false;
     }
     return true;
@@ -609,6 +612,7 @@ function RegisterWizard() {
     if (!form.religion) newErrors.religion = "Please select a religion.";
     if (Object.keys(newErrors).length > 0) {
       setFieldErrors((prev) => ({ ...prev, ...newErrors }));
+      toast.error("Please fill in all required fields to continue.");
       return false;
     }
     return true;
@@ -621,6 +625,7 @@ function RegisterWizard() {
     if (!form.occupation) newErrors.occupation = "Please select your occupation.";
     if (Object.keys(newErrors).length > 0) {
       setFieldErrors((prev) => ({ ...prev, ...newErrors }));
+      toast.error("Please fill in all required fields to continue.");
       return false;
     }
     return true;
@@ -662,6 +667,7 @@ function RegisterWizard() {
         diet: form.diet,
         star: form.star,
         rasi: form.rasi,
+        dhosham: form.dhosham,
         about: form.about,
         photoUrl: form.photoUrl || undefined,
         // Partner preferences
@@ -1319,6 +1325,49 @@ function RegisterWizard() {
               })()}
 
               <FloatSelect label="Mother Tongue" value={form.motherTongue} onChange={(v) => set("motherTongue", v)} options={MOTHER_TONGUES} />
+
+              <h3 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: "1px solid var(--border-light)", marginTop: "0.5rem" }}>
+                Horoscope Details
+              </h3>
+
+              {/* Star (Natchathiram) */}
+              <div style={{ marginBottom: "1rem" }}>
+                <label className="form-label">Star (Natchathiram)</label>
+                <select
+                  className="form-select"
+                  value={form.star}
+                  onChange={(e) => set("star", e.target.value)}
+                >
+                  <option value="">Select your star</option>
+                  {STARS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+
+              {/* Raasi */}
+              <div style={{ marginBottom: "1rem" }}>
+                <label className="form-label">Raasi</label>
+                <select
+                  className="form-select"
+                  value={form.rasi}
+                  onChange={(e) => set("rasi", e.target.value)}
+                >
+                  <option value="">Select your raasi</option>
+                  {RAASI_LIST.map((r) => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+
+              {/* Dhosham */}
+              <div style={{ marginBottom: "1rem" }}>
+                <label className="form-label">Dhosham</label>
+                <select
+                  className="form-select"
+                  value={form.dhosham}
+                  onChange={(e) => set("dhosham", e.target.value)}
+                >
+                  <option value="">Select dhosham</option>
+                  {DHOSHAM_OPTIONS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+                </select>
+              </div>
 
               <button
                 type="button"

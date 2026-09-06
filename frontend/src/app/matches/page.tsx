@@ -270,22 +270,28 @@ function ProfileCard({
           </button>
         )}
 
-        {/* Photo count badge — bottom right */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "6px",
-            right: "6px",
-            background: "rgba(0,0,0,0.55)",
-            color: "#fff",
-            fontSize: "0.625rem",
-            fontWeight: 700,
-            borderRadius: "3px",
-            padding: "1px 5px",
-          }}
-        >
-          1/3
-        </div>
+        {/* Photo count badge — bottom right, only when photos exist */}
+        {(() => {
+          const photoCount = profile.photos?.length || (profile.photoUrl ? 1 : 0);
+          if (photoCount === 0) return null;
+          return (
+            <div
+              style={{
+                position: "absolute",
+                bottom: "6px",
+                right: "6px",
+                background: "rgba(0,0,0,0.55)",
+                color: "#fff",
+                fontSize: "0.625rem",
+                fontWeight: 700,
+                borderRadius: "3px",
+                padding: "1px 5px",
+              }}
+            >
+              {photoCount > 1 ? `1/${photoCount}` : "1/1"}
+            </div>
+          );
+        })()}
       </div>
 
       {/* RIGHT — Info column */}
@@ -862,7 +868,7 @@ function MatchesContent() {
   return (
     <>
       <Navbar />
-      <main style={{ background: "#f2f2f2", height: "calc(100vh - 64px)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <main style={{ background: "#f2f2f2", height: "calc(100vh - 64px)", overflow: "hidden", display: "flex", flexDirection: "column" }} className="matches-main-content">
         <div
           style={{
             maxWidth: "1100px",
@@ -1509,6 +1515,12 @@ function MatchesContent() {
         .matches-right-scroll::-webkit-scrollbar-track { background: transparent; }
         .matches-right-scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
         .matches-right-scroll::-webkit-scrollbar-thumb:hover { background: #bbb; }
+        /* On mobile, reduce main height to account for the fixed bottom nav bar */
+        @media (max-width: 899px) {
+          .matches-main-content {
+            height: calc(100vh - 64px - 60px - env(safe-area-inset-bottom, 0px)) !important;
+          }
+        }
       `}</style>
     </>
   );
