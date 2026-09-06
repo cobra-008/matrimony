@@ -526,6 +526,24 @@ export default function ProfileDetailPage({
           .profile-details-table, .profile-main-wrap table { width: 100% !important; table-layout: fixed !important; word-wrap: break-word !important; }
           .info-label-col { width: 125px !important; min-width: 125px !important; }
           .profile-edu-grid > span:nth-child(odd) { width: 125px !important; }
+          
+          /* Custom classes for perfect left-alignment of My Profile on mobile */
+          .my-profile-top-card {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            padding: 1.25rem !important;
+            gap: 1.25rem !important;
+          }
+          .my-profile-photo-wrap {
+            width: 140px !important;
+            margin: 0 !important; /* Force left alignment, remove auto margin */
+          }
+          .my-profile-info-wrap {
+            width: 100% !important;
+            min-width: 100% !important;
+            text-align: left !important;
+            align-items: flex-start !important;
+          }
         }
       `}</style>
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
@@ -548,22 +566,28 @@ export default function ProfileDetailPage({
               color: "#888",
             }}
           >
-            <Link
-              href="/matches"
-              style={{
-                color: "var(--primary)",
-                textDecoration: "none",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                fontWeight: 600,
-              }}
-            >
-              <ArrowLeft size={13} />
-              Back to Matches
-            </Link>
-            <ChevronRight size={12} style={{ color: "#ccc" }} />
-            <span>{profile.name}</span>
+            {isOwnProfile ? (
+              <span style={{ color: "var(--text-medium)", fontWeight: 600 }}>My Profile</span>
+            ) : (
+              <>
+                <Link
+                  href="/matches"
+                  style={{
+                    color: "var(--primary)",
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    fontWeight: 600,
+                  }}
+                >
+                  <ArrowLeft size={13} />
+                  Back to Matches
+                </Link>
+                <ChevronRight size={12} style={{ color: "#ccc" }} />
+                <span>{profile.name}</span>
+              </>
+            )}
           </div>
 
           <div className="profile-layout-row" style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
@@ -670,29 +694,40 @@ export default function ProfileDetailPage({
                       <Edit2 size={11} /> Edit Profile
                     </button>
                   </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", padding: "1.5rem", gap: "1.5rem" }}>
+                  <div className="my-profile-top-card" style={{ display: "flex", flexWrap: "nowrap", padding: "1.5rem", gap: "1.5rem" }}>
                     {/* Photo */}
-                    <div style={{ flexShrink: 0, width: "140px", margin: "0 auto" }}>
-                      <div style={{ width: "140px", height: "175px", borderRadius: "var(--radius-lg)", overflow: "hidden", background: "#F8F0F0", border: "2px solid var(--border-light)", position: "relative" }}>
+                    <div className="my-profile-photo-wrap" style={{ flexShrink: 0, width: "140px" }}>
+                      <div style={{ width: "100%", height: "175px", borderRadius: "var(--radius-lg)", overflow: "hidden", background: "#f5f0f0", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border-color)", marginBottom: "0.75rem" }}>
                         {photo ? (
-                          <img src={photo} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                          <img src={photo} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
-                          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary-light)" }}>
-                             <UserCircle size={48} color="var(--primary)" opacity={0.5} />
-                          </div>
-                        )}
-                        {profile.isOnline && (
-                          <span style={{ position: "absolute", bottom: "8px", right: "8px", width: "12px", height: "12px", borderRadius: "50%", background: "#22C55E", border: "2px solid #fff" }} />
+                          <UserCircle size={64} style={{ color: "var(--text-light)" }} />
                         )}
                       </div>
-                      <button onClick={() => router.push("/profile/edit?section=photo")} style={{ width: "100%", marginTop: "0.75rem", padding: "0.5rem 0", background: "none", border: "1px solid var(--primary)", borderRadius: "var(--radius-md)", color: "var(--primary)", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}>
-                        Add/Edit Photos
-                      </button>
-                    </div>
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: "250px", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>{profile.name}</h1>
+                    <Link
+                      href="/profile/edit"
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        padding: "0.5rem 0",
+                        textAlign: "center",
+                        background: "#fff",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "var(--radius-md)",
+                        color: "var(--primary)",
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        textDecoration: "none",
+                        boxShadow: "var(--shadow-sm)"
+                      }}
+                    >
+                      Add/Edit Photos
+                    </Link>
+                  </div>
+                  {/* Info */}
+                  <div className="my-profile-info-wrap" style={{ flex: 1, minWidth: "0", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>{profile.name}</h1>
                         {profile.isVerified && <CheckCircle size={18} fill="var(--success)" stroke="white" strokeWidth={2.5} />}
                       </div>
                       <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
