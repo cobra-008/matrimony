@@ -100,6 +100,7 @@ function InfoRow({
   return (
     <tr>
       <td
+        className="info-label-col"
         style={{
           padding: "0.4375rem 0",
           width: "180px",
@@ -515,13 +516,16 @@ export default function ProfileDetailPage({
           .profile-layout-row { flex-direction: column !important; }
           .profile-sidebar { display: none !important; }
           .profile-right-panel { width: 100% !important; margin-top: 1.5rem !important; }
-          .profile-info-body { flex-direction: column !important; align-items: center !important; text-align: center !important; padding: 1rem !important; }
-          .profile-photo-col { width: 140px !important; margin: 0 auto 0.75rem !important; }
-          .profile-photo-img { width: 140px !important; height: 175px !important; border-radius: var(--radius-lg) !important; margin: 0 auto !important; }
-          .profile-actions-col { flex-direction: row !important; flex-wrap: wrap !important; justify-content: center !important; width: 100% !important; margin-top: 0.75rem !important; gap: 0.5rem !important; }
+          .profile-info-body { flex-direction: column !important; align-items: flex-start !important; text-align: left !important; padding: 1.25rem !important; }
+          .profile-photo-col { width: 140px !important; margin: 0 0 1rem 0 !important; }
+          .profile-photo-img { width: 140px !important; height: 175px !important; border-radius: var(--radius-lg) !important; margin: 0 !important; }
+          .profile-actions-col { flex-direction: row !important; flex-wrap: wrap !important; justify-content: flex-start !important; width: 100% !important; margin-top: 0.75rem !important; gap: 0.5rem !important; }
           .profile-attr-grid { grid-template-columns: 1fr !important; }
           .profile-edu-grid { grid-template-columns: 1fr !important; }
-          .profile-main-wrap { padding: 0.75rem 0.75rem 6.5rem !important; }
+          /* Ensure tables don't cause horizontal overflow on mobile */
+          .profile-details-table, .profile-main-wrap table { width: 100% !important; table-layout: fixed !important; word-wrap: break-word !important; }
+          .info-label-col { width: 125px !important; min-width: 125px !important; }
+          .profile-edu-grid > span:nth-child(odd) { width: 125px !important; }
         }
       `}</style>
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
@@ -843,14 +847,14 @@ export default function ProfileDetailPage({
                         {profile.height || "Height not set"}
                       </div>
                       <div>
-                        {profile.religion}, {profile.community}
+                        {[profile.religion, profile.community].filter(Boolean).join(", ")}
                       </div>
-                      <div>{profile.location}</div>
+                      {profile.location && <div>{profile.location}</div>}
                       <div>
-                        {profile.education},{" "}
-                        {profile.occupation === "Not Working"
-                          ? "Not working"
-                          : profile.occupation}
+                        {[
+                          profile.education,
+                          profile.occupation && profile.occupation !== "Not Working" ? profile.occupation : (profile.occupation === "Not Working" ? "Not working" : null)
+                        ].filter(Boolean).join(", ")}
                       </div>
                       {/* Phone — only show to own profile at the top */}
                       {isOwnProfile && (
