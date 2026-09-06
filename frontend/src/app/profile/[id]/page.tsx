@@ -102,7 +102,8 @@ function InfoRow({
       <td
         style={{
           padding: "0.4375rem 0",
-          width: "45%",
+          width: "180px",
+          minWidth: "140px",
           fontSize: "0.8125rem",
           color: "#888",
           fontWeight: 400,
@@ -338,6 +339,7 @@ const SIDEBAR_ITEMS = [
   { label: "Family Details", id: "section-Family-Details" },
   { label: "Horoscope Details", id: "section-Horoscope" },
   { label: "Partner Preferences", id: "section-Partner-Preferences" },
+  { label: "Contact Details", id: "section-Contact-Details" },
 ];
 
 export default function ProfileDetailPage({
@@ -1203,7 +1205,7 @@ export default function ProfileDetailPage({
                       ["Annual Income", profile.income || "—"],
                     ].map(([k, v]) => (
                       <div key={k} style={{ display: "flex", gap: "0.5rem", padding: "0.375rem 0", borderBottom: "1px solid var(--border-light)" }}>
-                        <span style={{ color: "#888", minWidth: "100px", flexShrink: 0 }}>{k}</span>
+                        <span style={{ color: "#888", width: "180px", flexShrink: 0 }}>{k}</span>
                         <span style={{ color: "var(--text-dark)", fontWeight: 500 }}>
                           <span style={{ color: "#ccc", marginRight: "4px" }}>:</span>
                           {v}

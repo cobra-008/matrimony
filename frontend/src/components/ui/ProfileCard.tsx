@@ -129,7 +129,7 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
         <Link href={isLoggedIn ? `/profile/${profile.id}` : "/login"} style={{ flexShrink: 0, textDecoration: "none" }}>
           <div style={{ position: "relative" }}>
             {photo
-              ? <img src={photo} alt={profile.name} style={{ width: "64px", height: "72px", objectFit: "contain", background: "#F8F0F0", borderRadius: "var(--radius-md)", display: "block", filter: isLoggedIn ? "none" : "blur(6px)" }} />
+              ? <img src={photo} alt={profile.name} style={{ width: "64px", height: "72px", objectFit: "cover", objectPosition: "top center", background: "#F8F0F0", borderRadius: "var(--radius-md)", display: "block", filter: isLoggedIn ? "none" : "blur(6px)" }} />
               : <GenderAvatar gender={profile.gender} width={64} height={72} blur={!isLoggedIn} />}
           </div>
         </Link>
@@ -223,7 +223,7 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
                 alt={profile.name}
                 style={{
                   width: "100%", height: "100%",
-                  objectFit: "contain", display: "block",
+                  objectFit: "cover", objectPosition: "top center", display: "block",
                   filter: isLoggedIn ? "none" : "blur(12px)",
                   transform: isLoggedIn ? "none" : "scale(1.05)",
                 }}
