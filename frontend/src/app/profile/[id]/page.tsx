@@ -660,421 +660,139 @@ export default function ProfileDetailPage({
 
               {/* ══════════════════════════════════════════════════
                   1. PERSONAL INFORMATION — AT THE TOP
-                  (photo + name + key details + action buttons)
+                  (Separated logic for clean responsive layout)
                   ══════════════════════════════════════════════════ */}
-              <div
-                style={{
-                  background: "#fff",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "var(--radius-xl)",
-                  marginBottom: "1rem",
-                  overflow: "hidden",
-                  boxShadow: "var(--shadow-sm)",
-                }}
-              >
-                {/* Pink top bar */}
-                <div
-                  style={{
-                    background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)",
-                    padding: "0.75rem 1.125rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span style={{ color: "white", fontWeight: 700, fontSize: "1rem" }}>
-                    {isOwnProfile ? "My Profile" : "Profile Details"}
-                  </span>
-                  {isOwnProfile && (
-                    <button
-                      onClick={() => router.push("/profile/edit")}
-                      style={{
-                        background: "rgba(255,255,255,0.2)",
-                        border: "1px solid rgba(255,255,255,0.4)",
-                        borderRadius: "var(--radius-full)",
-                        padding: "4px 12px",
-                        color: "white",
-                        fontSize: "0.75rem",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        fontFamily: "var(--font-sans)",
-                      }}
-                    >
-                      <Edit2 size={11} />
-                      Edit Profile
+              {isOwnProfile ? (
+                <div style={{ background: "#fff", borderRadius: "var(--radius-xl)", border: "1px solid var(--border-color)", overflow: "hidden", boxShadow: "var(--shadow-sm)", marginBottom: "1rem" }}>
+                  <div style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)", padding: "0.75rem 1.125rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ color: "white", fontWeight: 700, fontSize: "1rem" }}>My Profile</span>
+                    <button onClick={() => router.push("/profile/edit")} style={{ background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.4)", borderRadius: "var(--radius-full)", padding: "4px 12px", color: "white", fontSize: "0.75rem", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+                      <Edit2 size={11} /> Edit Profile
                     </button>
-                  )}
-                </div>
-
-                {/* Personal info body */}
-                <div className="profile-info-body" style={{ padding: "1.25rem", display: "flex", gap: "1rem" }}>
-                  {/* Photo */}
-                  <div className="profile-photo-col" style={{ flexShrink: 0, position: "relative" }}>
-                    {photo
-                      ? (
-                        <img
-                          src={photo}
-                          alt={profile.name}
-                          className="profile-photo-img"
-                          style={{
-                            width: "130px",
-                            height: "160px",
-                            objectFit: "cover",
-                            background: "#F8F0F0",
-                            objectPosition: "top",
-                            borderRadius: "var(--radius-lg)",
-                            display: "block",
-                            border: "2px solid var(--border-light)",
-                          }}
-                        />
-                      ) : (
-                        <div
-                          className="profile-photo-img"
-                          style={{
-                            width: "130px",
-                            height: "160px",
-                            background: "var(--primary-light)",
-                            borderRadius: "var(--radius-lg)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            border: "2px solid var(--border-light)",
-                          }}
-                        >
-                          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.2" opacity="0.5">
-                            <circle cx="12" cy="7" r="5"/>
-                            <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8"/>
-                          </svg>
-                        </div>
-                      )
-                    }
-                    {/* Online dot */}
-                    {profile.isOnline && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          bottom: "8px",
-                          right: "8px",
-                          width: "10px",
-                          height: "10px",
-                          borderRadius: "50%",
-                          background: "#22C55E",
-                          border: "2px solid #fff",
-                        }}
-                      />
-                    )}
-                    {isOwnProfile && (
-                      <button
-                        onClick={() => router.push("/profile/edit?section=photo")}
-                        style={{
-                          display: "block",
-                          width: "100%",
-                          marginTop: "6px",
-                          background: "none",
-                          border: "1px solid #ddd",
-                          borderRadius: "4px",
-                          padding: "3px 0",
-                          fontSize: "0.6875rem",
-                          color: "var(--primary)",
-                          fontWeight: 600,
-                          cursor: "pointer",
-                          fontFamily: "var(--font-sans)",
-                          textAlign: "center",
-                        }}
-                      >
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", padding: "1.5rem", gap: "1.5rem" }}>
+                    {/* Photo */}
+                    <div style={{ flexShrink: 0, width: "140px", margin: "0 auto" }}>
+                      <div style={{ width: "140px", height: "175px", borderRadius: "var(--radius-lg)", overflow: "hidden", background: "#F8F0F0", border: "2px solid var(--border-light)", position: "relative" }}>
+                        {photo ? (
+                          <img src={photo} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                        ) : (
+                          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary-light)" }}>
+                             <UserCircle size={48} color="var(--primary)" opacity={0.5} />
+                          </div>
+                        )}
+                        {profile.isOnline && (
+                          <span style={{ position: "absolute", bottom: "8px", right: "8px", width: "12px", height: "12px", borderRadius: "50%", background: "#22C55E", border: "2px solid #fff" }} />
+                        )}
+                      </div>
+                      <button onClick={() => router.push("/profile/edit?section=photo")} style={{ width: "100%", marginTop: "0.75rem", padding: "0.5rem 0", background: "none", border: "1px solid var(--primary)", borderRadius: "var(--radius-md)", color: "var(--primary)", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}>
                         Add/Edit Photos
                       </button>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div style={{ flex: 1 }}>
-                    {/* Name + Verified */}
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      <h1
-                        style={{
-                          fontSize: "1.375rem",
-                          fontWeight: 700,
-                          color: "var(--text-dark)",
-                          margin: 0,
-                        }}
-                      >
-                        {profile.name}
-                      </h1>
-                      {profile.isVerified && (
-                        <CheckCircle
-                          size={18}
-                          style={{ color: "var(--success)", flexShrink: 0 }}
-                          fill="var(--success)"
-                          stroke="white"
-                          strokeWidth={2.5}
-                        />
-                      )}
                     </div>
-
-                    {/* Profile created for */}
-                    <div
-                      style={{
-                        fontSize: "0.8125rem",
-                        color: "#888",
-                        marginBottom: "0.625rem",
-                      }}
-                    >
-                      Profile created for{" "}
-                      {profile.gender === "female" ? "Friend" : "Son"}
-                    </div>
-
-                    {/* Key attributes */}
-                    <div
-                      style={{
-                        fontSize: "0.875rem",
-                        color: "var(--text-medium)",
-                        lineHeight: 2,
-                      }}
-                    >
-                      <div>
-                        <strong style={{ fontWeight: 600 }}>{profileAge ? `${profileAge} Yrs` : "—"}</strong>,{" "}
-                        {profile.height || "Height not set"}
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: "250px", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>{profile.name}</h1>
+                        {profile.isVerified && <CheckCircle size={18} fill="var(--success)" stroke="white" strokeWidth={2.5} />}
                       </div>
-                      <div>
-                        {[profile.religion, profile.community].filter(Boolean).join(", ")}
+                      <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
+                        Profile created for {profile.gender === "female" ? "Friend" : "Son"}
                       </div>
-                      {profile.location && <div>{profile.location}</div>}
-                      <div>
-                        {[
-                          profile.education,
-                          profile.occupation && profile.occupation !== "Not Working" ? profile.occupation : (profile.occupation === "Not Working" ? "Not working" : null)
-                        ].filter(Boolean).join(", ")}
+                      <div style={{ display: "grid", gap: "0.5rem", fontSize: "0.9375rem", color: "var(--text-medium)", marginTop: "0.5rem" }}>
+                        <div><strong style={{ color: "var(--text-dark)" }}>{profileAge ? `${profileAge} Yrs` : "—"}</strong>{profile.height ? `, ${profile.height}` : ""}</div>
+                        {profile.religion || profile.community ? (
+                          <div>{[profile.religion, profile.community].filter(Boolean).join(", ")}</div>
+                        ) : null}
+                        {profile.location && <div>{profile.location}</div>}
+                        {profile.education || profile.occupation ? (
+                          <div>{[profile.education, profile.occupation && profile.occupation !== "Not Working" ? profile.occupation : (profile.occupation === "Not Working" ? "Not working" : null)].filter(Boolean).join(", ")}</div>
+                        ) : null}
                       </div>
-                      {/* Phone — only show to own profile at the top */}
-                      {isOwnProfile && (
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                            marginTop: "4px",
-                          }}
-                        >
-                          <Phone size={13} style={{ color: "var(--primary)" }} />
-                          <span
-                            style={{
-                              fontSize: "0.8125rem",
-                              color: "var(--text-dark)",
-                              fontWeight: 600,
-                            }}
-                          >
-                            +91 {profile.mobile || "98765 43210"}
-                          </span>
-                          <a
-                            href="/membership"
-                            style={{
-                              fontSize: "0.75rem",
-                              color: "var(--primary)",
-                              fontWeight: 700,
-                              textDecoration: "none",
-                            }}
-                          >
-                            Edit / Verify
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right — action column */}
-                  <div
-                    className="profile-actions-col"
-                    style={{
-                      flexShrink: 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.5rem",
-                      alignItems: "flex-end",
-                    }}
-                  >
-                    {/* Profile Preview (only for own profile) */}
-                    {isOwnProfile && (
-                      <a
-                        href={`/profile/${profile.id}`}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          padding: "0.4375rem 0.875rem",
-                          border: "1.5px solid var(--primary)",
-                          borderRadius: "var(--radius-full)",
-                          color: "var(--primary)",
-                          fontSize: "0.8125rem",
-                          fontWeight: 600,
-                          textDecoration: "none",
-                        }}
-                      >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.75rem", marginTop: "1rem", padding: "0.75rem 1rem", background: "#f8f9fa", borderRadius: "var(--radius-md)" }}>
+                        <Phone size={14} color="var(--primary)" />
+                        <span style={{ fontWeight: 600, color: "var(--text-dark)" }}>+91 {profile.mobile || "98765 43210"}</span>
+                        <a href="/membership" style={{ fontSize: "0.8125rem", color: "var(--primary)", fontWeight: 600, textDecoration: "none", marginLeft: "auto" }}>Edit / Verify</a>
+                      </div>
+                      <a href={`/profile/${profile.id}`} style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "0.5rem 1rem", border: "1.5px solid var(--primary)", borderRadius: "var(--radius-full)", color: "var(--primary)", fontSize: "0.875rem", fontWeight: 600, textDecoration: "none", marginTop: "0.75rem", alignSelf: "flex-start" }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                           <circle cx="12" cy="12" r="3"/>
                         </svg>
                         Profile Preview
                       </a>
-                    )}
-
-                    {/* Action buttons for other profiles */}
-                    {!isOwnProfile && (
-                      <>
-                        {/* Send Interest */}
-                        <button
-                          onClick={() => {
-                            setInterested((v) => !v);
-                            toast.success(
-                              interested ? "Interest withdrawn" : `Interest sent to ${profile.name}!`
-                            );
-                          }}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            padding: "0.4375rem 0.875rem",
-                            background: interested ? "var(--primary)" : "#fff",
-                            border: "1.5px solid var(--primary)",
-                            borderRadius: "var(--radius-full)",
-                            color: interested ? "#fff" : "var(--primary)",
-                            fontWeight: 700,
-                            fontSize: "0.8125rem",
-                            cursor: "pointer",
-                            fontFamily: "var(--font-sans)",
-                          }}
-                        >
-                          <Heart size={13} fill={interested ? "white" : "none"} />
-                          {interested ? "Interest Sent" : "Send Interest"}
-                        </button>
-
-                        {/* Shortlist */}
-                        <button
-                          onClick={() => {
-                            setShortlisted((v) => !v);
-                            toast.success(
-                              shortlisted ? "Removed from shortlist" : "Added to shortlist"
-                            );
-                          }}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            padding: "0.4375rem 0.875rem",
-                            background: shortlisted ? "var(--success)" : "#fff",
-                            border: "1.5px solid var(--success)",
-                            borderRadius: "var(--radius-full)",
-                            color: shortlisted ? "#fff" : "var(--success)",
-                            fontWeight: 600,
-                            fontSize: "0.8125rem",
-                            cursor: "pointer",
-                            fontFamily: "var(--font-sans)",
-                          }}
-                        >
-                          <BookmarkPlus size={13} />
-                          {shortlisted ? "Shortlisted" : "Shortlist"}
-                        </button>
-
-                        {/* Message — Gold+ functional */}
-                        {canMessage ? (
-                          <Link
-                            href={`/messages?partnerId=${id}`}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "5px",
-                              padding: "0.4375rem 0.875rem",
-                              background: "#fff",
-                              border: "1.5px solid #6B1A2A",
-                              borderRadius: "var(--radius-full)",
-                              color: "#6B1A2A",
-                              fontWeight: 600,
-                              fontSize: "0.8125rem",
-                              cursor: "pointer",
-                              fontFamily: "var(--font-sans)",
-                              textDecoration: "none",
-                            }}
-                          >
-                            <MessageCircle size={13} />
-                            Message
-                          </Link>
-                        ) : (
-                          <Link
-                            href="/membership"
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "5px",
-                              padding: "0.4375rem 0.875rem",
-                              background: "#FFF8E8",
-                              border: "1.5px solid #E8D5B7",
-                              borderRadius: "var(--radius-full)",
-                              color: "#C8973A",
-                              fontWeight: 600,
-                              fontSize: "0.8125rem",
-                              cursor: "pointer",
-                              fontFamily: "var(--font-sans)",
-                              textDecoration: "none",
-                            }}
-                          >
-                            <Crown size={12} />
-                            Message (Gold+)
-                          </Link>
-                        )}
-
-                        {/* Share + Report */}
-                        <div style={{ display: "flex", gap: "0.75rem", marginTop: "4px" }}>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard?.writeText(window.location.href);
-                              toast.success("Profile link copied");
-                            }}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              fontSize: "0.75rem",
-                              color: "#888",
-                              fontFamily: "var(--font-sans)",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "3px",
-                            }}
-                          >
-                            <Share2 size={12} /> Share
-                          </button>
-                          <button
-                            onClick={() => toast("Report submitted")}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              fontSize: "0.75rem",
-                              color: "#888",
-                              fontFamily: "var(--font-sans)",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "3px",
-                            }}
-                          >
-                            <Flag size={12} /> Report
-                          </button>
-                        </div>
-                      </>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div style={{ background: "#fff", borderRadius: "var(--radius-xl)", border: "1px solid var(--border-color)", overflow: "hidden", boxShadow: "var(--shadow-sm)", marginBottom: "1rem" }}>
+                  <div style={{ background: "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)", padding: "0.75rem 1.125rem", display: "flex", alignItems: "center" }}>
+                    <span style={{ color: "white", fontWeight: 700, fontSize: "1rem" }}>Profile Details</span>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", padding: "1.5rem", gap: "1.5rem" }}>
+                    {/* Photo */}
+                    <div style={{ flexShrink: 0, width: "140px", margin: "0 auto" }}>
+                      <div style={{ width: "140px", height: "175px", borderRadius: "var(--radius-lg)", overflow: "hidden", background: "#F8F0F0", border: "2px solid var(--border-light)", position: "relative" }}>
+                        {photo ? (
+                          <img src={photo} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                        ) : (
+                          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary-light)" }}>
+                             <UserCircle size={48} color="var(--primary)" opacity={0.5} />
+                          </div>
+                        )}
+                        {profile.isOnline && (
+                          <span style={{ position: "absolute", bottom: "8px", right: "8px", width: "12px", height: "12px", borderRadius: "50%", background: "#22C55E", border: "2px solid #fff" }} />
+                        )}
+                      </div>
+                    </div>
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: "250px", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", justifyContent: "space-between", flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>{profile.name}</h1>
+                          {profile.isVerified && <CheckCircle size={18} fill="var(--success)" stroke="white" strokeWidth={2.5} />}
+                        </div>
+                        {/* Right side actions */}
+                        <div style={{ display: "flex", gap: "0.5rem" }}>
+                          <button onClick={() => { navigator.clipboard?.writeText(window.location.href); toast.success("Profile link copied"); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#888", display: "flex", alignItems: "center", gap: "4px", fontSize: "0.8125rem" }}><Share2 size={14} /> Share</button>
+                          <button onClick={() => toast("Report submitted")} style={{ background: "none", border: "none", cursor: "pointer", color: "#888", display: "flex", alignItems: "center", gap: "4px", fontSize: "0.8125rem" }}><Flag size={14} /> Report</button>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
+                        Profile created for {profile.gender === "female" ? "Friend" : "Son"}
+                      </div>
+                      <div style={{ display: "grid", gap: "0.5rem", fontSize: "0.9375rem", color: "var(--text-medium)", marginTop: "0.5rem" }}>
+                        <div><strong style={{ color: "var(--text-dark)" }}>{profileAge ? `${profileAge} Yrs` : "—"}</strong>{profile.height ? `, ${profile.height}` : ""}</div>
+                        {profile.religion || profile.community ? (
+                          <div>{[profile.religion, profile.community].filter(Boolean).join(", ")}</div>
+                        ) : null}
+                        {profile.location && <div>{profile.location}</div>}
+                        {profile.education || profile.occupation ? (
+                          <div>{[profile.education, profile.occupation && profile.occupation !== "Not Working" ? profile.occupation : (profile.occupation === "Not Working" ? "Not working" : null)].filter(Boolean).join(", ")}</div>
+                        ) : null}
+                      </div>
+                      
+                      {/* Interaction Buttons */}
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginTop: "1rem" }}>
+                        <button onClick={() => { setInterested((v) => !v); toast.success(interested ? "Interest withdrawn" : `Interest sent to ${profile.name}!`); }} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: interested ? "var(--primary)" : "#fff", border: "1.5px solid var(--primary)", borderRadius: "var(--radius-full)", color: interested ? "#fff" : "var(--primary)", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" }}>
+                          <Heart size={14} fill={interested ? "white" : "none"} /> {interested ? "Interest Sent" : "Send Interest"}
+                        </button>
+                        <button onClick={() => { setShortlisted((v) => !v); toast.success(shortlisted ? "Removed from shortlist" : "Added to shortlist"); }} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: shortlisted ? "var(--success)" : "#fff", border: "1.5px solid var(--success)", borderRadius: "var(--radius-full)", color: shortlisted ? "#fff" : "var(--success)", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" }}>
+                          <BookmarkPlus size={14} /> {shortlisted ? "Shortlisted" : "Shortlist"}
+                        </button>
+                        {canMessage ? (
+                          <Link href={`/messages?partnerId=${id}`} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: "#fff", border: "1.5px solid #6B1A2A", borderRadius: "var(--radius-full)", color: "#6B1A2A", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", textDecoration: "none" }}>
+                            <MessageCircle size={14} /> Message
+                          </Link>
+                        ) : (
+                          <Link href="/membership" style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: "#FFF8E8", border: "1.5px solid #E8D5B7", borderRadius: "var(--radius-full)", color: "#C8973A", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", textDecoration: "none" }}>
+                            <Crown size={14} /> Message (Gold+)
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* ══════════════════════════════════════════════════
                   2. UPLOAD PHOTOS PROMPT (only if isOwnProfile and no photo)
