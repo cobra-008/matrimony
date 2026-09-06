@@ -175,7 +175,7 @@ function OwnProfileFallback({ id }: { id: string }) {
     <>
       <Navbar />
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto", padding: "2rem 1rem" }}>
+        <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1.25rem 1rem 6.5rem" }}>
           {loading ? (
             <ProfileViewSkeleton />
           ) : (
@@ -519,7 +519,7 @@ export default function ProfileDetailPage({
           .profile-actions-col { flex-direction: row !important; flex-wrap: wrap !important; justify-content: center !important; width: 100% !important; margin-top: 0.75rem !important; gap: 0.5rem !important; }
           .profile-attr-grid { grid-template-columns: 1fr !important; }
           .profile-edu-grid { grid-template-columns: 1fr !important; }
-          .profile-main-wrap { padding: 0.75rem 0.75rem 5rem !important; }
+          .profile-main-wrap { padding: 0.75rem 0.75rem 6.5rem !important; }
         }
       `}</style>
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>

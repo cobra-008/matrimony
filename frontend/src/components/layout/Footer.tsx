@@ -437,6 +437,8 @@ export default function Footer() {
             </p>
           </div>
         </div>
+        {/* Spacer so footer content is not hidden behind mobile bottom nav */}
+        <div className="bottom-nav-spacer" aria-hidden="true" />
       </footer>
     </>
   );

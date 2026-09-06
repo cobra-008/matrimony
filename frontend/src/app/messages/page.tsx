@@ -661,7 +661,11 @@ function MessagesContent() {
         @media (max-width: 767px) {
           .messages-search-desktop { display: none !important; }
           .messages-conv-list { border-radius: 12px !important; }
-          .messages-chat-panel { min-height: calc(100vh - 130px) !important; }
+          .messages-chat-panel {
+            height: calc(100vh - 64px - 60px - env(safe-area-inset-bottom, 0px) - 1.5rem) !important;
+            max-height: calc(100vh - 64px - 60px - env(safe-area-inset-bottom, 0px) - 1.5rem) !important;
+            min-height: 0 !important;
+          }
         }
       `}</style>
     </>

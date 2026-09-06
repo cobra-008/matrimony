@@ -776,6 +776,8 @@ img {
 .bottom-nav-spacer {
   height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   display: none;
+  width: 100%;
+  clear: both;
 }
 
 @media (max-width: 900px) {
@@ -785,7 +787,17 @@ img {
   .bottom-nav-spacer {
     display: block;
   }
+  body:has(.bottom-nav) {
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+  }
+  /* Ensure fixed bottom bars sit neatly above bottom nav bar */
+  .search-fixed-bottom,
+  .edit-save-bar,
+  .fixed-bottom-bar {
+    bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px)) !important;
+  }
 }
+
 
 /* ============================================================
    NAVBAR — Desktop nav items hidden on mobile

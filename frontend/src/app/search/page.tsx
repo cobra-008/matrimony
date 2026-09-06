@@ -827,6 +827,7 @@ function SearchContent() {
         {/* ── STICKY BOTTOM BAR ── */}
         {activeTab === "criteria" && (
           <div
+            className="search-fixed-bottom"
             style={{
               position: "fixed",
               bottom: 0,

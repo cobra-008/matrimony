@@ -1053,13 +1053,16 @@ function EditProfileContent() {
       </main>
 
       {/* ── Sticky bottom save bar ── */}
-      <div style={{
-        position: "fixed", bottom: 0, left: 0, right: 0,
-        background: "#fff", borderTop: "1px solid var(--border-color)",
-        padding: "0.875rem 1.5rem",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        zIndex: 50, boxShadow: "0 -4px 16px rgba(0,0,0,0.06)",
-      }}>
+      <div
+        className="edit-save-bar"
+        style={{
+          position: "fixed", bottom: 0, left: 0, right: 0,
+          background: "#fff", borderTop: "1px solid var(--border-color)",
+          padding: "0.875rem 1.5rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          zIndex: 50, boxShadow: "0 -4px 16px rgba(0,0,0,0.06)",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
           <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
             Profile completion: <strong style={{ color: "var(--primary)" }}>{pct}%</strong>

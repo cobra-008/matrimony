@@ -27,26 +27,23 @@ export default function BottomNav() {
   };
 
   return (
-    <>
-      <nav className="bottom-nav" role="navigation" aria-label="Mobile navigation">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = isActive(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`bottom-nav-item${active ? " active" : ""}`}
-              aria-current={active ? "page" : undefined}
-              aria-label={label}
-            >
-              <Icon size={22} strokeWidth={active ? 2.2 : 1.8} />
-              <span>{label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-      {/* Spacer so page content isn't hidden behind the bottom nav */}
-      <div className="bottom-nav-spacer" aria-hidden="true" />
-    </>
+    <nav className="bottom-nav" role="navigation" aria-label="Mobile navigation">
+      {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        const active = isActive(href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={`bottom-nav-item${active ? " active" : ""}`}
+            aria-current={active ? "page" : undefined}
+            aria-label={label}
+          >
+            <Icon size={22} strokeWidth={active ? 2.2 : 1.8} />
+            <span>{label}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
+

@@ -1014,7 +1014,7 @@ function MatchesContent() {
           {/* ── MAIN ────────────────────────────────────────────────────── */}
           <div
             ref={rightPanelRef}
-            style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px" }}>
+            style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px", paddingBottom: "2rem" }}>
             {/* Mobile: Section select button */}
             <div className="matches-mobile-header" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
               <button

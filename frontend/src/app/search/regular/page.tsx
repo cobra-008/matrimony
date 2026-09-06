@@ -72,6 +72,7 @@ function SearchContent() {
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
         {/* Search bar — sticky */}
         <div
+          className="search-regular-sticky"
           style={{
             background: "#fff",
             borderBottom: "1px solid var(--border-color)",
@@ -81,6 +82,11 @@ function SearchContent() {
             zIndex: 40,
           }}
         >
+          <style>{`
+            @media (max-width: 900px) {
+              .search-regular-sticky { top: 60px !important; }
+            }
+          `}</style>
           <div className="container">
             <form onSubmit={handleSearch} style={{ display: "flex", gap: "0.625rem", alignItems: "center" }}>
               {/* Bride/groom toggle (only if not logged in) */}
