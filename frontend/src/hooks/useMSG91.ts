@@ -252,6 +252,7 @@ export function useMSG91() {
   const [ready, setReady]         = useState(false);
   const [initError, setInitError] = useState<string | null>(null);
   const mountedRef                = useRef(true);
+  const lastReqIdRef              = useRef<string | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -289,6 +290,16 @@ export function useMSG91() {
     return () => { mountedRef.current = false; };
   }, []);
 
+  // Helper to format MSG91 error messages
+  const formatErrorMsg = (err: unknown, defaultMsg: string): string => {
+    const d = toData(err);
+    const msg = d.message ?? (typeof err === "string" ? err : defaultMsg);
+    if (msg === "IPBlocked" || d.code === 408 || d.code === "408") {
+      return "MSG91 SMS rate limit / IP security restriction active (IPBlocked). Please use Email OTP or try again shortly.";
+    }
+    return msg;
+  };
+
   // ── sendOtp ──────────────────────────────────────────────────────────────
   // Sends an OTP to the given identifier (email or mobile with country code, no '+')
   // Calls: window.sendOtp(identifier, successCb, failureCb)
@@ -305,12 +316,18 @@ export function useMSG91() {
           identifier,
           (data) => {
             console.log("[MSG91] sendOtp success", data);
+            const d = toData(data);
+            if (d.message && typeof d.message === "string") {
+              lastReqIdRef.current = d.message;
+            } else if (typeof data === "string") {
+              lastReqIdRef.current = data;
+            }
             resolve({ success: true });
           },
           (error) => {
             console.log("[MSG91] sendOtp failure", error);
-            const d = toData(error);
-            resolve({ success: false, error: d.message ?? "Failed to send OTP." });
+            const errMsg = formatErrorMsg(error, "Failed to send OTP.");
+            resolve({ success: false, error: errMsg });
           }
         );
       }),
@@ -336,7 +353,7 @@ export function useMSG91() {
             console.log("[MSG91] verifyOtp success", data);
             const d = toData(data);
             if (d.type === "error") {
-              resolve({ success: false, error: d.message ?? "OTP verification failed." });
+              resolve({ success: false, error: formatErrorMsg(data, "OTP verification failed.") });
               return;
             }
             resolve({ success: true, accessToken: d.access_token ?? "" });
@@ -351,7 +368,7 @@ export function useMSG91() {
             }
             resolve({
               success: false,
-              error: d.message ?? "Incorrect OTP. Please try again.",
+              error: formatErrorMsg(error, "Incorrect OTP. Please try again."),
             });
           }
         );
@@ -363,7 +380,7 @@ export function useMSG91() {
   // ── retryOtp ─────────────────────────────────────────────────────────────
   // Retries OTP delivery on a given channel.
   // channel: null for default, '11'=SMS, '4'=Voice, '3'=Email, '12'=WhatsApp
-  // Calls: window.retryOtp(channel, successCb, failureCb)
+  // Calls: window.retryOtp(channel, successCb, failureCb, reqId)
   const retryOtp = async (
     channel: string | null = null
   ): Promise<{ success: boolean; error?: string }> => {
@@ -381,9 +398,10 @@ export function useMSG91() {
           },
           (error) => {
             console.log("[MSG91] retryOtp failure", error);
-            const d = toData(error);
-            resolve({ success: false, error: d.message ?? "Failed to resend OTP." });
-          }
+            const errMsg = formatErrorMsg(error, "Failed to resend OTP.");
+            resolve({ success: false, error: errMsg });
+          },
+          lastReqIdRef.current ?? undefined
         );
       }),
       "Resend OTP timed out. Please try again."

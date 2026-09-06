@@ -315,14 +315,15 @@ function LoginContent() {
         return;
       }
       const digits = val.replace(/\D/g, "");
-      const phone = `91${digits}`;
+      const phone = digits.length === 10 ? `91${digits}` : digits;
       const result = await msg91.sendOtp(phone);
       if (!result.success) {
         toast.error(result.error ?? "Failed to send OTP. Please try again.");
         setLoading(false);
         return;
       }
-      toast.success(`OTP sent to +91 ${digits}`);
+      const displayDigits = digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
+      toast.success(`OTP sent to +91 ${displayDigits}`);
     }
 
     // Record the send and start cooldown

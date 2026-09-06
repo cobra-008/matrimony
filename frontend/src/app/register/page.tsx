@@ -454,8 +454,8 @@ function RegisterWizard() {
     if (otpSending) return; // prevent double-tap
     setOtpSending(true);
     setOtp("");
-    // Phone must have country code without '+': 91XXXXXXXXXX
-    const phone = `91${form.mobile.replace(/\D/g, "")}`;
+    const digits = form.mobile.replace(/\D/g, "");
+    const phone = digits.length === 10 ? `91${digits}` : digits;
     const result = await msg91.sendOtp(phone);
     setOtpSending(false);
     if (!result.success) {
