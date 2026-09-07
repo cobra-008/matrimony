@@ -234,7 +234,8 @@ function OwnProfileFallback({ id }: { id: string }) {
                     if (!storeUser.star && !storeUser.rasi) missing.push({ label: "Horoscope", section: "religion", icon: <Star size={14} /> });
                     if (!storeUser.about) missing.push({ label: "About Me", section: "about", icon: <FileText size={14} /> });
                     if (!storeUser.city) missing.push({ label: "Location", section: "location", icon: <MapPin size={14} /> });
-                    if (!storeUser.partnerAgeMin) missing.push({ label: "Partner Preferences", section: "partner", icon: <Heart size={14} /> });
+                    const hasSavedPartnerPrefs = !!(storeUser.partnerReligion || storeUser.partnerCaste || storeUser.partnerEducation || storeUser.partnerOccupation || storeUser.partnerHeightMin || (storeUser.partnerAgeMin && storeUser.partnerAgeMin !== 22));
+                    if (!hasSavedPartnerPrefs) missing.push({ label: "Partner Preferences", section: "partner", icon: <Heart size={14} /> });
 
                     const totalFields = 10;
                     const filled = totalFields - missing.length;
@@ -488,9 +489,36 @@ export default function ProfileDetailPage({
     );
   }
 
-  // If not in mock data and not in DB, show own profile fallback
+  // If not found anywhere:
+  // - If the ID matches the logged-in user, show their own profile editor fallback
+  // - Otherwise, show a proper "Profile Not Found" page
   if (!mockProfile && !dbProfile) {
-    return <OwnProfileFallback id={id} />;
+    if (user && id === user.id) {
+      return <OwnProfileFallback id={id} />;
+    }
+    // Profile truly not found — don't fall back to the logged-in user's profile
+    return (
+      <>
+        <Navbar />
+        <main style={{ background: "var(--bg-page)", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+            <div style={{ width: "80px", height: "80px", borderRadius: "50%", background: "var(--primary-light)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1.5rem" }}>
+              <UserCircle size={44} style={{ color: "var(--primary)", opacity: 0.6 }} />
+            </div>
+            <h1 style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-dark)", marginBottom: "0.5rem" }}>
+              Profile Not Found
+            </h1>
+            <p style={{ fontSize: "0.9375rem", color: "var(--text-medium)", marginBottom: "1.5rem", maxWidth: "360px", margin: "0 auto 1.5rem" }}>
+              This profile doesn&apos;t exist or may have been removed.
+            </p>
+            <Link href="/matches" className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <ArrowLeft size={15} /> Back to Matches
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
   }
 
   const profile = mockProfile || dbProfile;

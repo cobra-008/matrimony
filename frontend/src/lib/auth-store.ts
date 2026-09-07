@@ -93,6 +93,7 @@ export interface RegisteredUser {
   membershipPricePaid?: number;  // INR paid (after GST)
   membershipPlanPeriod?: string; // e.g. "1 Month", "3 Months"
   photos?: ProfilePhoto[];
+  casteChangeCount?: number; // tracks how many times caste has been changed
 }
 
 export type RegisterPayload = Omit<RegisteredUser, 'id' | 'createdAt' | 'isVerified' | 'isPremium'> & {
@@ -148,8 +149,8 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     isPremium: row.is_premium ?? false,
     // Compute age from DOB
     age: row.dob ? Math.floor((Date.now() - new Date(row.dob).getTime()) / (365.25 * 24 * 3600 * 1000)) : undefined,
-    partnerAgeMin: row.partner_age_min ?? 22,
-    partnerAgeMax: row.partner_age_max ?? 35,
+    partnerAgeMin: row.partner_age_min ?? undefined,
+    partnerAgeMax: row.partner_age_max ?? undefined,
     partnerReligion: row.partner_religion ?? undefined,
     partnerCaste: row.partner_caste ?? undefined,
     partnerEducation: row.partner_education ?? undefined,
@@ -181,6 +182,7 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
       sortOrder: p.sort_order,
       createdAt: p.created_at,
     })) : [],
+    casteChangeCount: row.caste_change_count ?? 0,
   };
 }
 
@@ -264,6 +266,7 @@ function userToDb(data: Partial<RegisteredUser>): Record<string, unknown> {
   if (typeof data.partnerAgeMax === 'number') db.partner_age_max = data.partnerAgeMax;
   if (typeof data.brothers === 'number')      db.brothers = data.brothers;
   if (typeof data.sisters === 'number')       db.sisters = data.sisters;
+  if (typeof data.casteChangeCount === 'number') db.caste_change_count = data.casteChangeCount;
 
   return db;
 }

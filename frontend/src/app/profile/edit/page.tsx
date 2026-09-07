@@ -339,6 +339,7 @@ function EditProfileContent() {
   // § Religion
   const [religion, setReligion] = useState(user?.religion || "");
   const [caste, setCaste] = useState(user?.caste || "");
+  const [originalCaste] = useState(user?.caste || ""); // to detect if caste was changed
   const [subCaste, setSubCaste] = useState(user?.subcaste || "");
   const [gothram, setGothram] = useState("");
   const [star, setStar] = useState(user?.star || "");
@@ -456,8 +457,8 @@ function EditProfileContent() {
     setAbout(user.about || "");
 
     // Partner Preferences
-    setPAgeMin(String(user.partnerAgeMin || 22));
-    setPAgeMax(String(user.partnerAgeMax || 35));
+    setPAgeMin(String(user.partnerAgeMin ?? 22));
+    setPAgeMax(String(user.partnerAgeMax ?? 35));
     setPReligion(user.partnerReligion || "");
     setPCaste(user.partnerCaste || "");
     setPEducation(user.partnerEducation || "");
@@ -568,57 +569,62 @@ function EditProfileContent() {
     try {
       if (!user) throw new Error("Not logged in");
 
-      await updateProfile(user.id, {
-        name: `${firstName} ${lastName}`.trim(),
-        gender: gender as "male" | "female",
-        dob,
-        height,
-        maritalStatus,
-        motherTongue,
-        religion,
-        caste,
-        subcaste: subCaste,
-        gothram,
-        star,
-        rasi,
-        dhosham,
-        education,
-        college,
-        occupation,
-        company,
-        employmentType,
-        income,
-        diet,
-        smoking,
-        drinking,
-        disabilities,
-        languages,
-        hobbies,
-        interests,
-        country,
-        state,
-        city,
-        nativePlace,
-        about,
-        partnerAgeMin: parseInt(pAgeMin),
-        partnerAgeMax: parseInt(pAgeMax),
-        partnerReligion: pReligion || undefined,
-        partnerCaste: pCaste || undefined,
-        partnerEducation: pEducation || undefined,
-        partnerOccupation: pOccupation || undefined,
-        partnerIncome: pIncome || undefined,
-        partnerHeightMin: pHeightMin || undefined,
-        partnerHeightMax: pHeightMax || undefined,
-        partnerCountry: pCountry || undefined,
-        partnerMaritalStatus: pMaritalStatus,
-        partnerMotherTongue: pMotherTongue,
-        fatherOccupation: fatherOcc || undefined,
-        motherOccupation: motherOcc || undefined,
-        familyStatus: familyStatus || undefined,
-        familyType: familyType || undefined,
-        brothers: parseInt(brothers),
-        sisters: parseInt(sisters),
-      });
+        // Detect if caste was changed and increment casteChangeCount
+        const casteChanged = caste && caste !== originalCaste;
+        const currentCount = user.casteChangeCount ?? 0;
+
+        await updateProfile(user.id, {
+          name: `${firstName} ${lastName}`.trim(),
+          gender: gender as "male" | "female",
+          dob,
+          height,
+          maritalStatus,
+          motherTongue,
+          religion,
+          caste,
+          subcaste: subCaste,
+          gothram,
+          star,
+          rasi,
+          dhosham,
+          education,
+          college,
+          occupation,
+          company,
+          employmentType,
+          income,
+          diet,
+          smoking,
+          drinking,
+          disabilities,
+          languages,
+          hobbies,
+          interests,
+          country,
+          state,
+          city,
+          nativePlace,
+          about,
+          partnerAgeMin: parseInt(pAgeMin),
+          partnerAgeMax: parseInt(pAgeMax),
+          partnerReligion: pReligion || undefined,
+          partnerCaste: pCaste || undefined,
+          partnerEducation: pEducation || undefined,
+          partnerOccupation: pOccupation || undefined,
+          partnerIncome: pIncome || undefined,
+          partnerHeightMin: pHeightMin || undefined,
+          partnerHeightMax: pHeightMax || undefined,
+          partnerCountry: pCountry || undefined,
+          partnerMaritalStatus: pMaritalStatus,
+          partnerMotherTongue: pMotherTongue,
+          fatherOccupation: fatherOcc || undefined,
+          motherOccupation: motherOcc || undefined,
+          familyStatus: familyStatus || undefined,
+          familyType: familyType || undefined,
+          brothers: parseInt(brothers),
+          sisters: parseInt(sisters),
+          ...(casteChanged ? { casteChangeCount: currentCount + 1 } : {}),
+        });
 
       await refresh();
       toast.success("Saved successfully! ✓");
@@ -631,7 +637,7 @@ function EditProfileContent() {
     }
   }, [
     user, firstName, lastName, gender, dob, height, maritalStatus, motherTongue,
-    religion, caste, subCaste, gothram, star, rasi, dhosham, education, college,
+    religion, caste, originalCaste, subCaste, gothram, star, rasi, dhosham, education, college,
     occupation, company, employmentType, income, diet, smoking, drinking, disabilities,
     languages, hobbies, interests, country, state, city, nativePlace, about,
     gallery, pAgeMin, pAgeMax, pReligion, pCaste, pEducation, pOccupation,
@@ -786,10 +792,33 @@ function EditProfileContent() {
                     <FormSelect value={religion} onChange={v => { setReligion(v); setCaste(""); setSubCaste(""); }} options={RELIGIONS} placeholder="Select religion" />
                   </FormField>
                   <FormField label="Caste / Community">
-                    <FormSelect value={caste} onChange={v => { setCaste(v); setSubCaste(""); }} options={availCastes} placeholder={religion ? "Select caste" : "Select religion first"} />
+                    {(user?.casteChangeCount ?? 0) >= 1 ? (
+                      <div>
+                        <div
+                          style={{
+                            border: "1.5px solid var(--border-color)",
+                            borderRadius: "var(--radius-md)",
+                            padding: "0.625rem 0.875rem",
+                            background: "#F5F5F5",
+                            fontSize: "0.9375rem",
+                            color: "var(--text-dark)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {caste || "—"}
+                        </div>
+                        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.375rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                          🔒 Caste can only be changed once. Contact{" "}
+                          <a href="mailto:support@elitetamilmatrimony.com" style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 600 }}>support</a>{" "}
+                          if you need to update it.
+                        </p>
+                      </div>
+                    ) : (
+                      <FormSelect value={caste} onChange={v => { setCaste(v); setSubCaste(""); }} options={availCastes} placeholder={religion ? "Select caste" : "Select religion first"} />
+                    )}
                   </FormField>
-                  <FormField label="Sub Caste">
-                    <FormSelect value={subCaste} onChange={setSubCaste} options={availSubCastes} placeholder={caste ? "Select sub caste" : "Select caste first"} />
+                  <FormField label="Sub Caste" hint="Type your sub-caste (optional)">
+                    <FormInput value={subCaste} onChange={setSubCaste} placeholder="e.g. Mudaliar, Pillai, Vellalar..." />
                   </FormField>
                   <FormField label="Gothram">
                     <FormInput value={gothram} onChange={setGothram} placeholder="Enter gothram (optional)" />

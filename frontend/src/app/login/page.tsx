@@ -247,6 +247,8 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [multiProfiles, setMultiProfiles] = useState<RegisteredUser[] | null>(null);
+  const [notRegistered, setNotRegistered] = useState<string | null>(null); // identifier when not found
+  const [otpError, setOtpError] = useState<string | null>(null); // inline OTP field error
 
   function FieldError({ msg }: { msg?: string }) {
     if (!msg) return null;
@@ -376,14 +378,18 @@ function LoginContent() {
   // ── Verify OTP ────────────────────────────────────────────────────────────
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length !== 6) { toast.error("Please enter the 6-digit OTP"); return; }
+    if (otp.length !== 6) {
+      setOtpError("Please enter the 6-digit OTP.");
+      return;
+    }
+    setOtpError(null);
     setLoading(true);
 
     if (otpType === "phone") {
       const verifyResult = await msg91.verifyOtp(otp);
       if (!verifyResult.success) {
         setLoading(false);
-        toast.error(verifyResult.error ?? "Incorrect OTP. Please try again.");
+        setOtpError(verifyResult.error ?? "Incorrect OTP. Please try again.");
         return;
       }
       if (verifyResult.accessToken) {
@@ -409,7 +415,7 @@ function LoginContent() {
       const profiles = await getProfilesByMobile(digits);
       if (profiles.length === 0) {
         setLoading(false);
-        toast.error("No account found with this mobile number. Please register first.");
+        setNotRegistered(otpIdentifier.trim());
         return;
       }
       if (profiles.length === 1) {
@@ -458,7 +464,7 @@ function LoginContent() {
     const profiles = await getProfilesByEmail(otpIdentifier.trim());
     if (profiles.length === 0) {
       setLoading(false);
-      toast.error("No account found with this email. Please register first.");
+      setNotRegistered(otpIdentifier.trim());
       return;
     }
     if (profiles.length === 1) {
@@ -554,6 +560,13 @@ function LoginContent() {
     router.push("/matches");
   };
 
+  // Build redirect URL for "Create Account" with prefilled identifier
+  const buildRegisterUrl = (identifier: string) => {
+    const isEmail = identifier.includes("@");
+    const params = new URLSearchParams(isEmail ? { email: identifier } : { mobile: identifier.replace(/\D/g, "") });
+    return `/register?${params.toString()}`;
+  };
+
   const inputType = detectInputType(otpIdentifier);
 
   return (
@@ -622,17 +635,32 @@ function LoginContent() {
                       )}
 
                       {/* ── OTP: Step 2 — enter OTP ── */}
-                      {mode === "otp" && otpSent && (
+                      {mode === "otp" && otpSent && !notRegistered && (
                         <form onSubmit={handleVerifyOtp}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
                             <p style={{ fontSize: "0.875rem", color: "var(--text-medium)" }}>
                               OTP sent to <strong>{otpType === "phone" ? `+91 ${otpIdentifier.replace(/\D/g, "")}` : otpIdentifier}</strong>
                             </p>
-                            <button type="button" onClick={() => { setOtpSent(false); setOtp(""); }} style={{ fontSize: "0.8125rem", color: "var(--bm-orange)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 600 }}>Change</button>
+                            <button type="button" onClick={() => { setOtpSent(false); setOtp(""); setOtpError(null); setNotRegistered(null); }} style={{ fontSize: "0.8125rem", color: "var(--bm-orange)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 600 }}>Change</button>
                           </div>
-                          <div style={{ marginBottom: "1rem" }}>
+                          <div style={{ marginBottom: otpError ? "0.5rem" : "1rem" }}>
                             <label className="form-label">Enter 6-digit OTP</label>
-                            <input type="text" className="form-input" placeholder="- - - - - -" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} style={{ textAlign: "center", fontSize: "1.125rem", letterSpacing: "0.25em" }} autoFocus />
+                            <input
+                              type="text"
+                              className="form-input"
+                              placeholder="- - - - - -"
+                              maxLength={6}
+                              value={otp}
+                              onChange={(e) => { setOtp(e.target.value.replace(/\D/g, "")); setOtpError(null); }}
+                              style={{ textAlign: "center", fontSize: "1.125rem", letterSpacing: "0.25em", borderColor: otpError ? "#D32F2F" : undefined, outline: otpError ? "none" : undefined, boxShadow: otpError ? "0 0 0 3px rgba(211,47,47,0.12)" : undefined }}
+                              autoFocus
+                            />
+                            {otpError && (
+                              <p style={{ fontSize: "0.75rem", color: "#D32F2F", marginTop: "0.375rem", display: "flex", alignItems: "center", gap: "4px" }} role="alert">
+                                <AlertCircle size={13} />
+                                {otpError}
+                              </p>
+                            )}
                           </div>
 
                           {/* Resend button with cooldown */}
@@ -665,6 +693,42 @@ function LoginContent() {
                             {loading ? "Verifying..." : "Verify & Login"}
                           </button>
                         </form>
+                      )}
+
+                      {/* ── Not registered banner ── */}
+                      {notRegistered && (
+                        <div
+                          style={{
+                            background: "#FFF8E1",
+                            border: "1.5px solid #FFB300",
+                            borderRadius: "var(--radius-lg)",
+                            padding: "1rem 1.125rem",
+                          }}
+                          role="alert"
+                        >
+                          <p style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#7B4F00", margin: "0 0 0.25rem" }}>
+                            Account not found
+                          </p>
+                          <p style={{ fontSize: "0.8125rem", color: "#5D3900", margin: "0 0 0.875rem", lineHeight: 1.5 }}>
+                            <strong>{notRegistered}</strong> is not registered with Elite Tamil Matrimony.
+                            Would you like to create a new account?
+                          </p>
+                          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                            <button
+                              onClick={() => router.push(buildRegisterUrl(notRegistered))}
+                              className="btn btn-primary"
+                              style={{ fontSize: "0.875rem", padding: "0.5rem 1rem" }}
+                            >
+                              Create Account →
+                            </button>
+                            <button
+                              onClick={() => { setNotRegistered(null); setOtpSent(false); setOtp(""); }}
+                              style={{ fontSize: "0.875rem", background: "none", border: "1px solid #7B4F00", borderRadius: "var(--radius-full)", color: "#7B4F00", padding: "0.5rem 1rem", cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 600 }}
+                            >
+                              Try another number
+                            </button>
+                          </div>
+                        </div>
                       )}
 
                       {/* ── Password login ── */}

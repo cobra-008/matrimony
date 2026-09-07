@@ -335,6 +335,7 @@ function RegisterWizard() {
   const initProfileFor = searchParams.get("profileFor") || "";
   const initName = searchParams.get("name") || "";
   const initMobile = searchParams.get("mobile") || "";
+  const initEmail = searchParams.get("email") || ""; // prefilled from login "Create Account" flow
 
   // Step state:
   //   0 = Basic info (profile_for / name / mobile / DOB / gender) — pre-filled from homepage if applicable
@@ -356,7 +357,7 @@ function RegisterWizard() {
     dobYear: "",
     gender: "",
     password: "",
-    email: "",
+    email: initEmail, // prefilled when coming from login "Create Account"
     // Step 1
     height: "",
     physicalStatus: "Normal",
