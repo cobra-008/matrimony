@@ -877,27 +877,28 @@ export default function ProfileDetailPage({
                   style={{
                     background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)",
                     borderRadius: "var(--radius-xl)",
-                    padding: "1rem 1.25rem",
+                    padding: "1.25rem 1.375rem",
                     marginBottom: "1rem",
                     display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    flexDirection: "column",
                     gap: "1rem",
                   }}
                 >
+                  {/* Text block — full width, horizontal flow */}
                   <div style={{ color: "white" }}>
-                    <p style={{ fontWeight: 700, fontSize: "0.9375rem", marginBottom: "3px" }}>
+                    <p style={{ fontWeight: 700, fontSize: "0.9375rem", marginBottom: "4px", lineHeight: 1.4 }}>
                       Photos are the first thing that prospects look at.
                     </p>
-                    <p style={{ fontSize: "0.8125rem", opacity: 0.9 }}>
+                    <p style={{ fontSize: "0.8125rem", opacity: 0.9, lineHeight: 1.5, margin: 0 }}>
                       Add your photo and get 10 times more responses!
                     </p>
                   </div>
-                  <div style={{ display: "flex", gap: "0.625rem", flexShrink: 0 }}>
+                  {/* Buttons — bottom row */}
+                  <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
                     <button
                       onClick={() => toast("Skipped")}
                       style={{
-                        padding: "0.4375rem 1rem",
+                        padding: "0.5rem 1.25rem",
                         border: "1px solid rgba(255,255,255,0.5)",
                         borderRadius: "var(--radius-full)",
                         background: "transparent",
@@ -906,6 +907,7 @@ export default function ProfileDetailPage({
                         fontWeight: 600,
                         cursor: "pointer",
                         fontFamily: "var(--font-sans)",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       Skip
@@ -913,7 +915,7 @@ export default function ProfileDetailPage({
                     <button
                       onClick={() => router.push("/profile/edit?section=photo")}
                       style={{
-                        padding: "0.4375rem 1.25rem",
+                        padding: "0.5rem 1.375rem",
                         border: "none",
                         borderRadius: "var(--radius-full)",
                         background: "white",
@@ -922,6 +924,7 @@ export default function ProfileDetailPage({
                         fontWeight: 700,
                         cursor: "pointer",
                         fontFamily: "var(--font-sans)",
+                        whiteSpace: "nowrap",
                       }}
                     >
                       Upload Photos Now
@@ -929,6 +932,7 @@ export default function ProfileDetailPage({
                   </div>
                 </div>
               )}
+
 
               {/* ══════════════════════════════════════════════════
                   PHOTO GALLERY
