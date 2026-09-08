@@ -29,6 +29,7 @@ export interface RegisteredUser {
   gender?: 'male' | 'female';
   height?: string;
   weight?: string;
+  bodyType?: string;
   physicalStatus?: string;
   maritalStatus?: string;
   religion?: string;
@@ -53,6 +54,7 @@ export interface RegisteredUser {
   star?: string;
   rasi?: string;
   dhosham?: string;
+  timeOfBirth?: string;
   languages?: string[];
   hobbies?: string[];
   interests?: string[];
@@ -116,6 +118,7 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     gender: row.gender as 'male' | 'female' | undefined,
     height: row.height ?? undefined,
     weight: row.weight ?? undefined,
+    bodyType: row.body_type ?? undefined,
     physicalStatus: row.physical_status ?? undefined,
     maritalStatus: row.marital_status ?? undefined,
     religion: row.religion ?? undefined,
@@ -140,6 +143,7 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     star: row.star ?? undefined,
     rasi: row.rasi ?? undefined,
     dhosham: row.dhosham ?? undefined,
+    timeOfBirth: row.time_of_birth ?? undefined,
     languages: row.languages ?? [],
     hobbies: row.hobbies ?? [],
     interests: row.interests ?? [],
@@ -209,6 +213,7 @@ function userToDb(data: Partial<RegisteredUser>): Record<string, unknown> {
   set('gender',        data.gender);
   set('height',        data.height);
   set('weight',        data.weight);
+  set('body_type',     data.bodyType);
   set('physical_status', data.physicalStatus);
   set('marital_status',  data.maritalStatus);
   set('religion',      data.religion);
@@ -233,6 +238,7 @@ function userToDb(data: Partial<RegisteredUser>): Record<string, unknown> {
   set('star',          data.star);
   set('rasi',          data.rasi);
   set('dhosham',       data.dhosham);
+  set('time_of_birth', data.timeOfBirth);
   set('about',         data.about);
   set('photo_url',     data.photoUrl);
   set('partner_religion',       data.partnerReligion);

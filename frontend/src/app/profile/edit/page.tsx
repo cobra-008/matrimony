@@ -333,6 +333,8 @@ function EditProfileContent() {
   const [dob, setDob] = useState(user?.dob || "");
   const [height, setHeight] = useState(user?.height || "");
   const [weight, setWeight] = useState("");
+  const [bodyType, setBodyType] = useState("");
+  const [physicalStatus, setPhysicalStatus] = useState("");
   const [maritalStatus, setMaritalStatus] = useState(user?.maritalStatus || "");
   const [motherTongue, setMotherTongue] = useState(user?.motherTongue || "");
 
@@ -345,6 +347,7 @@ function EditProfileContent() {
   const [star, setStar] = useState(user?.star || "");
   const [rasi, setRasi] = useState(user?.rasi || "");
   const [dhosham, setDhosham] = useState(user?.dhosham || "");
+  const [timeOfBirth, setTimeOfBirth] = useState("");
 
   // § Professional
   const [education, setEducation] = useState(user?.education || "");
@@ -410,6 +413,8 @@ function EditProfileContent() {
     setDob(user.dob || "");
     setHeight(user.height || "");
     setWeight(user.weight || "");
+    setBodyType(user.bodyType || "");
+    setPhysicalStatus(user.physicalStatus || "");
     setMaritalStatus(user.maritalStatus || "");
     setMotherTongue(user.motherTongue || "");
 
@@ -421,6 +426,7 @@ function EditProfileContent() {
     setStar(user.star || "");
     setRasi(user.rasi || "");
     setDhosham(user.dhosham || "");
+    setTimeOfBirth(user.timeOfBirth || "");
 
     // Professional
     setEducation(user.education || "");
@@ -578,6 +584,9 @@ function EditProfileContent() {
           gender: gender as "male" | "female",
           dob,
           height,
+          weight,
+          bodyType: bodyType || undefined,
+          physicalStatus: physicalStatus || undefined,
           maritalStatus,
           motherTongue,
           religion,
@@ -587,6 +596,7 @@ function EditProfileContent() {
           star,
           rasi,
           dhosham,
+          timeOfBirth: timeOfBirth || undefined,
           education,
           college,
           occupation,
@@ -636,8 +646,8 @@ function EditProfileContent() {
       setSaving(false);
     }
   }, [
-    user, firstName, lastName, gender, dob, height, maritalStatus, motherTongue,
-    religion, caste, originalCaste, subCaste, gothram, star, rasi, dhosham, education, college,
+    user, firstName, lastName, gender, dob, height, weight, bodyType, physicalStatus, maritalStatus, motherTongue,
+    religion, caste, originalCaste, subCaste, gothram, star, rasi, dhosham, timeOfBirth, education, college,
     occupation, company, employmentType, income, diet, smoking, drinking, disabilities,
     languages, hobbies, interests, country, state, city, nativePlace, about,
     gallery, pAgeMin, pAgeMax, pReligion, pCaste, pEducation, pOccupation,
@@ -780,6 +790,12 @@ function EditProfileContent() {
                   <FormField label="Mother Tongue" required>
                     <FormSelect value={motherTongue} onChange={setMotherTongue} options={MOTHER_TONGUES} placeholder="Select language" />
                   </FormField>
+                  <FormField label="Body Type">
+                    <FormSelect value={bodyType} onChange={setBodyType} options={["Slim", "Athletic", "Average", "Heavy"]} placeholder="Select body type" />
+                  </FormField>
+                  <FormField label="Physical Status">
+                    <FormSelect value={physicalStatus} onChange={setPhysicalStatus} options={["Normal", "Physically Challenged"]} placeholder="Select" />
+                  </FormField>
                 </FieldGrid>
               </SectionCard>
 
@@ -831,6 +847,9 @@ function EditProfileContent() {
                   </FormField>
                   <FormField label="Dhosham" required>
                     <FormSelect value={dhosham} onChange={setDhosham} options={DHOSHAM_OPTIONS} placeholder="Select" />
+                  </FormField>
+                  <FormField label="Time of Birth" hint="Used for jathagam matching">
+                    <FormInput type="time" value={timeOfBirth} onChange={setTimeOfBirth} placeholder="e.g. 10:30" />
                   </FormField>
                   <FormField label="Upload Horoscope" hint="PDF or JPG of your jathagam">
                     <button

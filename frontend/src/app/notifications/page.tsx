@@ -53,8 +53,11 @@ const NOTIF_CONFIG: Record<NotifType, { icon: React.ReactNode; color: string; bg
   },
 };
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
+function timeAgo(dateStr?: string): string {
+  if (!dateStr) return "";
+  const time = new Date(dateStr).getTime();
+  if (isNaN(time)) return "";
+  const diff = Date.now() - time;
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "Just now";
   if (mins < 60) return `${mins} min ago`;

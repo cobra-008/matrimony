@@ -91,12 +91,16 @@ function InfoRow({
   value,
   addLink,
   isOwnProfile,
+  editSection,
 }: {
   label: string;
   value?: string | null;
   addLink?: boolean;
   isOwnProfile?: boolean;
+  /** The ?section= param to jump to in /profile/edit when "Add" is clicked */
+  editSection?: string;
 }) {
+  const addHref = editSection ? `/profile/edit?section=${editSection}` : "/profile/edit";
   return (
     <tr>
       <td
@@ -129,7 +133,7 @@ function InfoRow({
           value
         ) : addLink && isOwnProfile ? (
           <a
-            href="/settings"
+            href={addHref}
             style={{
               color: "var(--primary)",
               fontWeight: 600,
@@ -203,7 +207,6 @@ function OwnProfileFallback({ id }: { id: string }) {
                 </div>
                 <div>
                   <h1 style={{ color: "#fff", fontWeight: 800, fontSize: "1.375rem", margin: 0 }}>{storeUser?.name || "My Profile"}</h1>
-                  <div style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.8125rem", marginTop: "4px" }}>{storeUser?.id || id}</div>
                   {storeUser?.isVerified && (
                     <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "4px", color: "#fff", fontSize: "0.75rem" }}>
                       <CheckCircle size={13} fill="#fff" stroke="var(--primary)" strokeWidth={2} /> Verified
@@ -676,9 +679,6 @@ export default function ProfileDetailPage({
                 <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--text-dark)" }}>
                   {profile.name.split(" ")[0]}
                 </div>
-                <div style={{ fontSize: "0.6875rem", color: "#888", marginTop: "2px" }}>
-                  {profile.id}
-                </div>
               </div>
 
               {/* Nav items */}
@@ -937,23 +937,47 @@ export default function ProfileDetailPage({
               {/* ══════════════════════════════════════════════════
                   PHOTO GALLERY
                   ══════════════════════════════════════════════════ */}
-              {profile.photos && profile.photos.length > 0 && (
-                <SectionCard id="section-Photo-Gallery" title={`Photo Gallery (${profile.photos.length})`} onEdit={isOwnProfile ? () => router.push("/profile/edit?section=photo") : undefined}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "1rem" }}>
-                    {profile.photos.sort((a, b) => a.sortOrder - b.sortOrder).map((ph, phIdx) => (
-                      <div
-                        key={ph.id}
-                        onClick={() => { setLightboxPhoto(ph.url); setLightboxIndex(phIdx); }}
-                        style={{ position: "relative", borderRadius: "var(--radius-lg)", overflow: "hidden", aspectRatio: "3/4", border: "1px solid var(--border-color)", cursor: "pointer" }}
+              {/* Show gallery section always for own profile (with empty state), or when others have photos */}
+              {(isOwnProfile || (profile.photos && profile.photos.length > 0)) && (
+                <SectionCard
+                  id="section-Photo-Gallery"
+                  title={profile.photos && profile.photos.length > 0 ? `Photo Gallery (${profile.photos.length})` : "Photo Gallery"}
+                  onEdit={isOwnProfile ? () => router.push("/profile/edit?section=photo") : undefined}
+                >
+                  {profile.photos && profile.photos.length > 0 ? (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "1rem" }}>
+                      {profile.photos.sort((a, b) => a.sortOrder - b.sortOrder).map((ph, phIdx) => (
+                        <div
+                          key={ph.id}
+                          onClick={() => { setLightboxPhoto(ph.url); setLightboxIndex(phIdx); }}
+                          style={{ position: "relative", borderRadius: "var(--radius-lg)", overflow: "hidden", aspectRatio: "3/4", border: "1px solid var(--border-color)", cursor: "pointer" }}
+                        >
+                          <img src={ph.url} alt="Gallery photo" style={{ width: "100%", height: "100%", objectFit: "contain", background: "#F8F0F0" }} />
+                          <div style={{ position: "absolute", inset: 0, background: "transparent", transition: "background 0.2s" }}
+                            onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.15)")}
+                            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    /* Empty state — only shown for own profile */
+                    <div style={{ textAlign: "center", padding: "1.5rem 1rem" }}>
+                      <Camera size={36} style={{ color: "var(--border-color)", margin: "0 auto 0.75rem", display: "block" }} />
+                      <p style={{ fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.375rem", fontSize: "0.9375rem" }}>
+                        No photos added yet
+                      </p>
+                      <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
+                        Profiles with photos get 8× more responses
+                      </p>
+                      <button
+                        onClick={() => router.push("/profile/edit?section=photo")}
+                        style={{ background: "var(--primary)", color: "#fff", border: "none", borderRadius: "var(--radius-full)", padding: "0.5rem 1.5rem", fontWeight: 700, fontSize: "0.8125rem", cursor: "pointer", fontFamily: "var(--font-sans)" }}
                       >
-                        <img src={ph.url} alt="Gallery photo" style={{ width: "100%", height: "100%", objectFit: "contain", background: "#F8F0F0" }} />
-                        <div style={{ position: "absolute", inset: 0, background: "transparent", transition: "background 0.2s" }}
-                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,0,0,0.15)")}
-                          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                        Add Photos Now
+                      </button>
+                    </div>
+                  )}
                 </SectionCard>
               )}
 
@@ -1031,22 +1055,22 @@ export default function ProfileDetailPage({
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <tbody>
                       <InfoRow label="Profile created for" value={profile.gender === "female" ? "Friend" : "Son"} />
-                      <InfoRow label="Body Type" addLink isOwnProfile={isOwnProfile} />
-                      <InfoRow label="Physical Status" value="Normal" />
-                      <InfoRow label="Weight" addLink isOwnProfile={isOwnProfile} />
-                      <InfoRow label="Marital Status" value="Never Married" />
-                      <InfoRow label="Drinking Habits" addLink isOwnProfile={isOwnProfile} />
+                      <InfoRow label="Body Type" value={p.bodyType || undefined} addLink isOwnProfile={isOwnProfile} editSection="lifestyle" />
+                      <InfoRow label="Physical Status" value={p.physicalStatus || "Normal"} />
+                      <InfoRow label="Weight" value={p.weight ? `${p.weight} kg` : undefined} addLink isOwnProfile={isOwnProfile} editSection="basic" />
+                      <InfoRow label="Marital Status" value={p.maritalStatus || "Never Married"} />
+                      <InfoRow label="Drinking Habits" value={p.drinking || undefined} addLink isOwnProfile={isOwnProfile} editSection="lifestyle" />
                     </tbody>
                   </table>
                   {/* Right column */}
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <tbody>
                       <InfoRow label="Name" value={profile.name} />
-                      <InfoRow label="Age" value={`${profile.age} Years`} />
-                      <InfoRow label="Height" value={profile.height || "5 Ft 4 In / 163 Cms"} />
-                      <InfoRow label="Mother Tongue" value="Tamil" />
-                      <InfoRow label="Eating Habits" addLink isOwnProfile={isOwnProfile} />
-                      <InfoRow label="Smoking Habits" addLink isOwnProfile={isOwnProfile} />
+                      <InfoRow label="Age" value={profileAge ? `${profileAge} Years` : undefined} />
+                      <InfoRow label="Height" value={profile.height || undefined} addLink isOwnProfile={isOwnProfile} editSection="basic" />
+                      <InfoRow label="Mother Tongue" value={p.motherTongue || "Tamil"} />
+                      <InfoRow label="Eating Habits" value={p.diet || undefined} addLink isOwnProfile={isOwnProfile} editSection="lifestyle" />
+                      <InfoRow label="Smoking Habits" value={p.smoking || undefined} addLink isOwnProfile={isOwnProfile} editSection="lifestyle" />
                     </tbody>
                   </table>
                 </div>
@@ -1095,7 +1119,7 @@ export default function ProfileDetailPage({
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <tbody>
                       <InfoRow label="Date of Birth" value={isOwnProfile ? (p.dob || dobStr || undefined) : (p.dob || dobStr ? "Available" : undefined)} />
-                      <InfoRow label="Time of Birth" value={undefined} addLink isOwnProfile={isOwnProfile} />
+                      <InfoRow label="Time of Birth" value={isOwnProfile ? (p.timeOfBirth || undefined) : (p.timeOfBirth ? "Available" : undefined)} addLink isOwnProfile={isOwnProfile} editSection="religion" />
                       <InfoRow label="Place of Birth" value={p.nativePlace || p.city || undefined} />
                       <InfoRow label="Country of Birth" value={p.country || "India"} />
                       <InfoRow label="Mother Tongue" value={p.motherTongue || "Tamil"} />

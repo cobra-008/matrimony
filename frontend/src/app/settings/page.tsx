@@ -241,7 +241,6 @@ function SettingsContent() {
           <FieldRow label="Full Name" value={user?.name || "—"} onEdit={() => toast("Edit name from Edit Profile")} />
           <FieldRow label="Mobile Number" value={user?.mobile || "—"} onEdit={() => setModal("phone")} />
           <FieldRow label="Email Address" value={user?.email || "Not set"} onEdit={() => setModal("email")} />
-          <FieldRow label="Profile ID" value={user?.id || "—"} />
           <FieldRow label="Member Since" value={user ? new Date(user.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long" }) : "—"} />
         </SettingsCard>
 

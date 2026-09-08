@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   dob                    DATE,
   height                 TEXT,
   weight                 TEXT,
+  body_type              TEXT,
   physical_status        TEXT,
   marital_status         TEXT,
   religion               TEXT,
@@ -41,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   star                   TEXT,
   rasi                   TEXT,
   dhosham                TEXT,
+  time_of_birth          TEXT,
   languages              TEXT[] DEFAULT '{}',
   hobbies                TEXT[] DEFAULT '{}',
   interests              TEXT[] DEFAULT '{}',
@@ -83,6 +85,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- Ensure all columns exist on pre-existing tables
 ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS body_type              TEXT,
+  ADD COLUMN IF NOT EXISTS time_of_birth          TEXT,
   ADD COLUMN IF NOT EXISTS auth_email             TEXT,
   ADD COLUMN IF NOT EXISTS is_premium             BOOLEAN NOT NULL DEFAULT false,
   ADD COLUMN IF NOT EXISTS membership_plan        TEXT CHECK (membership_plan IN ('Gold','PrimeGold','PrimeTillUMarry','Diamond','Platinum')),
