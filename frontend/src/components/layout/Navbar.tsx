@@ -242,8 +242,8 @@ export default function Navbar() {
                 style={{ height: "46px", width: "auto", display: "block" }}
               />
               <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
-                <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "1rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite Tamil</span>
-                <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.75rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Matrimony</span>
+                <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "1rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite</span>
+                <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.75rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tamil Matrimony</span>
               </div>
             </Link>
 
@@ -778,8 +778,8 @@ export default function Navbar() {
             style={{ height: "38px", width: "auto", display: "block" }}
           />
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
-            <span style={{ fontFamily: "\'Lato\', sans-serif", fontWeight: 700, fontSize: "0.875rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite Tamil</span>
-            <span style={{ fontFamily: "\'Lato\', sans-serif", fontWeight: 700, fontSize: "0.625rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Matrimony</span>
+            <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.875rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite</span>
+            <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.625rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tamil Matrimony</span>
           </div>
         </Link>
 
@@ -894,8 +894,8 @@ export default function Navbar() {
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <img src="/logo-transparent.png" alt="Elite Tamil Matrimony" style={{ height: "34px", width: "auto" }} />
                 <div>
-                  <div style={{ fontFamily: "\'Lato\', sans-serif", fontWeight: 700, fontSize: "0.875rem", color: "#6B1A2A", textTransform: "uppercase", letterSpacing: "0.04em" }}>Elite Tamil</div>
-                  <div style={{ fontFamily: "\'Lato\', sans-serif", fontWeight: 700, fontSize: "0.625rem", color: "#C8973A", textTransform: "uppercase", letterSpacing: "0.08em" }}>Matrimony</div>
+                  <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.875rem", color: "#6B1A2A", textTransform: "uppercase", letterSpacing: "0.04em" }}>Elite</div>
+                  <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.625rem", color: "#C8973A", textTransform: "uppercase", letterSpacing: "0.08em" }}>Tamil Matrimony</div>
                 </div>
               </div>
               <button

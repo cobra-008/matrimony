@@ -24,7 +24,7 @@ export const MOCK_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM002",
@@ -46,7 +46,7 @@ export const MOCK_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM003",
@@ -68,7 +68,7 @@ export const MOCK_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM004",
@@ -90,7 +90,7 @@ export const MOCK_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM005",
@@ -112,7 +112,7 @@ export const MOCK_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM006",
@@ -134,7 +134,7 @@ export const MOCK_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM007",
@@ -156,7 +156,7 @@ export const MOCK_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/1382731/pexels-photo-1382731.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM008",
@@ -178,7 +178,7 @@ export const MOCK_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
 ];
 
@@ -204,7 +204,7 @@ export const MOCK_GROOM_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM102",
@@ -226,7 +226,7 @@ export const MOCK_GROOM_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM103",
@@ -248,7 +248,7 @@ export const MOCK_GROOM_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM104",
@@ -270,7 +270,7 @@ export const MOCK_GROOM_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM105",
@@ -292,7 +292,7 @@ export const MOCK_GROOM_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM106",
@@ -314,7 +314,7 @@ export const MOCK_GROOM_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Tamil",
     photoUrl:
-      "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM107",
@@ -336,7 +336,7 @@ export const MOCK_GROOM_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Telugu",
     photoUrl:
-      "https://images.pexels.com/photos/1680172/pexels-photo-1680172.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
   {
     id: "ETM108",
@@ -358,6 +358,6 @@ export const MOCK_GROOM_PROFILES: ProfileData[] = [
     maritalStatus: "Never Married",
     motherTongue: "Telugu",
     photoUrl:
-      "https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "",
   },
 ];

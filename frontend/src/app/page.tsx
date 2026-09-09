@@ -613,12 +613,11 @@ function AuthenticatedDashboard() {
                     width: "72px", height: "72px", borderRadius: "50%",
                     border: "2px solid #E8D5B7",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    overflow: "hidden", background: userPhoto ? "transparent" : "var(--primary-light)",
-                  }}
-                >
+                    overflow: "hidden", background: userPhoto ? "transparent" : "#DFDFDF",
+                  }}>
                   {userPhoto
                     ? <img src={userPhoto} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
-                    : <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5" opacity="0.6"><circle cx="12" cy="7" r="5"/><path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8"/></svg>
+                    : <svg width="50" height="50" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "-8px" }}><circle cx="12" cy="8" r="5" fill="#FFFFFF" /><path d="M4 22c0-4.5 3.5-8 8-8s8 3.5 8 8" fill="#FFFFFF" /></svg>
                   }
                 </div>
               <Link

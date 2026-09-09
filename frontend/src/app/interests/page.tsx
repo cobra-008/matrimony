@@ -26,29 +26,18 @@ type ActiveSection = "received" | "sent";
 
 // ── SVG Avatar (no stock photos) ─────────────────────────────────────
 function GenderAvatar({ gender, size = 200 }: { gender?: string; size?: number }) {
-  const isFemale = gender === "female";
   return (
     <div style={{
       width: "148px", height: `${size}px`,
-      background: isFemale ? "#F5E6E9" : "#EAF0FA",
-      display: "flex", alignItems: "center", justifyContent: "center",
+      background: "#DFDFDF",
+      display: "flex", alignItems: "flex-end", justifyContent: "center",
       flexShrink: 0,
+      overflow: "hidden"
     }}>
-      {isFemale ? (
-        <svg width="72" height="72" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/>
-          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#6B1A2A" opacity="0.3"/>
-          <circle cx="12" cy="7" r="4.5" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/>
-          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/>
-        </svg>
-      ) : (
-        <svg width="72" height="72" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/>
-          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#1A3A6B" opacity="0.2"/>
-          <circle cx="12" cy="7" r="4.5" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/>
-          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/>
-        </svg>
-      )}
+      <svg width="100" height="100" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "-6px" }}>
+        <circle cx="12" cy="8" r="5" fill="#FFFFFF" />
+        <path d="M4 22c0-4.5 3.5-8 8-8s8 3.5 8 8" fill="#FFFFFF" />
+      </svg>
     </div>
   );
 }

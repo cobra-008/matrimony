@@ -39,33 +39,22 @@ interface ProfileCardProps {
   variant?: "full" | "compact";
 }
 
-// SVG Avatar — no stock photos
+// SVG Avatar — WhatsApp style generic avatar
 function GenderAvatar({ gender, width = 64, height = 72, blur = false }: { gender?: string; width?: number; height?: number; blur?: boolean }) {
-  const isFemale = gender === "female";
   return (
     <div style={{
       width: `${width}px`, height: `${height}px`,
-      background: isFemale ? "#F5E6E9" : "#EAF0FA",
+      background: "#DFDFDF",
       borderRadius: "var(--radius-md)",
-      display: "flex", alignItems: "center", justifyContent: "center",
+      display: "flex", alignItems: "flex-end", justifyContent: "center",
       flexShrink: 0,
       filter: blur ? "blur(6px)" : "none",
+      overflow: "hidden"
     }}>
-      {isFemale ? (
-        <svg width={Math.round(width * 0.65)} height={Math.round(height * 0.65)} viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/>
-          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#6B1A2A" opacity="0.3"/>
-          <circle cx="12" cy="7" r="4.5" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/>
-          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#6B1A2A" strokeWidth="1.2" fill="none"/>
-        </svg>
-      ) : (
-        <svg width={Math.round(width * 0.65)} height={Math.round(height * 0.65)} viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="7" r="4.5" fill="#C8973A" opacity="0.7"/>
-          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" fill="#1A3A6B" opacity="0.2"/>
-          <circle cx="12" cy="7" r="4.5" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/>
-          <path d="M4 21c0-4.5 3.6-8 8-8s8 3.5 8 8" stroke="#1A3A6B" strokeWidth="1.2" fill="none"/>
-        </svg>
-      )}
+      <svg width={Math.round(width * 0.8)} height={Math.round(height * 0.8)} viewBox="0 0 24 24" fill="none" style={{ marginBottom: "-4px" }}>
+        <circle cx="12" cy="8" r="5" fill="#FFFFFF" />
+        <path d="M4 22c0-4.5 3.5-8 8-8s8 3.5 8 8" fill="#FFFFFF" />
+      </svg>
     </div>
   );
 }
