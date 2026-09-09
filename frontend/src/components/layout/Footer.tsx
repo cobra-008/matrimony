@@ -10,41 +10,11 @@ const FOOTER_LINKS = {
     { label: "Feedback", href: "/contact" },
     { label: "FAQs", href: "/faq" },
   ],
-  "Our Other Services": [
-    { label: "EliteMatrimony.com", href: "/" },
-  ],
-  "Social Initiatives": [
-    { label: "AbilityMatrimony.com", href: "#" },
-    { label: "Happymarriages.com", href: "#" },
-  ],
-  "Our Wedding Services": [
-    { label: "MatrimonyMandaps.com", href: "#" },
-    { label: "weddingBazaar.com", href: "#" },
-  ],
   "Information": [
     { label: "About Us", href: "/about" },
-    { label: "Awards", href: "#" },
-    { label: "Milestones", href: "#" },
     { label: "Success stories", href: "/success-stories" },
-    { label: "Careers", href: "#" },
-    { label: "Media Room", href: "#" },
-    { label: "Affiliates", href: "#" },
-    { label: "TV Commercials", href: "#" },
-    { label: "Advertise with us", href: "#" },
     { label: "Terms & Conditions", href: "/terms" },
     { label: "Privacy Policy", href: "/privacy-policy" },
-  ],
-  "Related Matrimony Services": [
-    { label: "HappyMarriages.com", href: "#" },
-    { label: "Safe Matrimony", href: "#" },
-    { label: "Matrimonial Tools", href: "#" },
-    { label: "Matrimonial Sites", href: "#" },
-    { label: "Tamil Matrimonials", href: "#" },
-    { label: "Matrimonial Websites", href: "#" },
-    { label: "Tamil Matrimony Branches", href: "#" },
-    { label: "Kalyana Mandapams", href: "#" },
-    { label: "Banquet Halls", href: "#" },
-    { label: "Muhurtham Dates", href: "#" },
   ],
 };
 
@@ -317,12 +287,12 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Links grid — Help, Services, Information, Related */}
+          {/* Links grid — Help, Information */}
           <div
             className="footer-links-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
+              gridTemplateColumns: "repeat(1, 1fr)",
               gap: "1.5rem 1.5rem",
               borderTop: "1px solid rgba(255,255,255,0.1)",
               paddingTop: "1.5rem",
@@ -331,8 +301,6 @@ export default function Footer() {
           >
             <style>{`
               @media (min-width: 640px) { .footer-links-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-              @media (min-width: 900px) { .footer-links-grid { grid-template-columns: repeat(3, 1fr) !important; } }
-              @media (min-width: 1100px) { .footer-links-grid { grid-template-columns: 1.4fr 1fr 1.2fr 1.3fr !important; } }
             `}</style>
 
             {/* Help & Support + sub-sections */}
@@ -346,42 +314,6 @@ export default function Footer() {
                       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>
                       {link.label}
                     </Link>
-                  </li>
-                ))}
-              </ul>
-              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", margin: "0 0 0.5rem" }}>Our Other Services</h4>
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                {FOOTER_LINKS["Our Other Services"].map((link) => (
-                  <li key={link.href + link.label}>
-                    <Link href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", margin: "0 0 0.5rem" }}>Social Initiatives</h4>
-              <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                {FOOTER_LINKS["Social Initiatives"].map((link) => (
-                  <li key={link.href + link.label}>
-                    <a href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
-                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)")}
-                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)")}>
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", margin: "0 0 0.5rem" }}>Our Wedding Services</h4>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                {FOOTER_LINKS["Our Wedding Services"].map((link) => (
-                  <li key={link.href + link.label}>
-                    <a href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
-                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)")}
-                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)")}>
-                      {link.label}
-                    </a>
                   </li>
                 ))}
               </ul>
@@ -403,21 +335,6 @@ export default function Footer() {
               </ul>
             </div>
 
-            {/* Related Matrimony Services */}
-            <div>
-              <h4 style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#fff", margin: "0 0 0.75rem" }}>Related Matrimony Services</h4>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                {FOOTER_LINKS["Related Matrimony Services"].map((link) => (
-                  <li key={link.href + link.label}>
-                    <a href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
-                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)")}
-                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)")}>
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
 
           {/* Bottom bar — no dead links */}
