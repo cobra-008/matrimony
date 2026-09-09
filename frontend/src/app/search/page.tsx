@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Search, RotateCcw } from "lucide-react";
 import toast from "react-hot-toast";
 
-type SearchTab = "criteria" | "profileid" | "byname" | "saved";
+type SearchTab = "criteria" | "byname" | "saved";
 
 // ── COLLAPSIBLE SECTION ────────────────────────────────────────────────
 function Section({
@@ -377,7 +377,6 @@ function SearchContent() {
 
   const tabs: { id: SearchTab; label: string }[] = [
     { id: "criteria", label: "By Criteria" },
-    { id: "profileid", label: "By Profile ID" },
     { id: "byname", label: "By Name" },
     { id: "saved", label: "Saved Search" },
   ];
@@ -663,47 +662,6 @@ function SearchContent() {
                     </Field>
                   </FormGrid>
                 </Section>
-              </div>
-            )}
-
-            {/* ── BY PROFILE ID ──────────────────────────────── */}
-            {activeTab === "profileid" && (
-              <div style={{ padding: "2rem" }}>
-                <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: "1.25rem" }}>
-                  Enter the Profile ID of the person you are looking for.
-                </p>
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", maxWidth: "420px" }}>
-                  <input
-                    type="text"
-                    value={profileIdInput}
-                    onChange={(e) => setProfileIdInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && profileIdInput.trim()) {
-                        router.push(`/profile/${profileIdInput.trim()}`);
-                      }
-                    }}
-                    placeholder="Enter Profile ID (e.g., ETM10001)"
-                    className="form-input"
-                    style={{ flex: 1 }}
-                  />
-                  <button
-                    onClick={() => {
-                      if (profileIdInput.trim()) {
-                        router.push(`/profile/${profileIdInput.trim()}`);
-                      } else {
-                        toast.error("Please enter a Profile ID");
-                      }
-                    }}
-                    className="btn btn-primary"
-                    style={{ flexShrink: 0 }}
-                  >
-                    <Search size={15} />
-                    Search
-                  </button>
-                </div>
-                <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.625rem" }}>
-                  Profile IDs start with ETM followed by numbers (e.g., ETM10001).
-                </p>
               </div>
             )}
 

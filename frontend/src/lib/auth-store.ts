@@ -29,6 +29,7 @@ export interface RegisteredUser {
   gender?: 'male' | 'female';
   height?: string;
   weight?: string;
+  bodyType?: string;
   physicalStatus?: string;
   maritalStatus?: string;
   religion?: string;
@@ -53,6 +54,7 @@ export interface RegisteredUser {
   star?: string;
   rasi?: string;
   dhosham?: string;
+  timeOfBirth?: string;
   languages?: string[];
   hobbies?: string[];
   interests?: string[];
@@ -93,6 +95,7 @@ export interface RegisteredUser {
   membershipPricePaid?: number;  // INR paid (after GST)
   membershipPlanPeriod?: string; // e.g. "1 Month", "3 Months"
   photos?: ProfilePhoto[];
+  casteChangeCount?: number; // tracks how many times caste has been changed
 }
 
 export type RegisterPayload = Omit<RegisteredUser, 'id' | 'createdAt' | 'isVerified' | 'isPremium'> & {
@@ -115,6 +118,7 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     gender: row.gender as 'male' | 'female' | undefined,
     height: row.height ?? undefined,
     weight: row.weight ?? undefined,
+    bodyType: row.body_type ?? undefined,
     physicalStatus: row.physical_status ?? undefined,
     maritalStatus: row.marital_status ?? undefined,
     religion: row.religion ?? undefined,
@@ -139,6 +143,7 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     star: row.star ?? undefined,
     rasi: row.rasi ?? undefined,
     dhosham: row.dhosham ?? undefined,
+    timeOfBirth: row.time_of_birth ?? undefined,
     languages: row.languages ?? [],
     hobbies: row.hobbies ?? [],
     interests: row.interests ?? [],
@@ -148,8 +153,8 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
     isPremium: row.is_premium ?? false,
     // Compute age from DOB
     age: row.dob ? Math.floor((Date.now() - new Date(row.dob).getTime()) / (365.25 * 24 * 3600 * 1000)) : undefined,
-    partnerAgeMin: row.partner_age_min ?? 22,
-    partnerAgeMax: row.partner_age_max ?? 35,
+    partnerAgeMin: row.partner_age_min ?? undefined,
+    partnerAgeMax: row.partner_age_max ?? undefined,
     partnerReligion: row.partner_religion ?? undefined,
     partnerCaste: row.partner_caste ?? undefined,
     partnerEducation: row.partner_education ?? undefined,
@@ -181,6 +186,7 @@ function dbToUser(row: Record<string, any>): RegisteredUser {
       sortOrder: p.sort_order,
       createdAt: p.created_at,
     })) : [],
+    casteChangeCount: row.caste_change_count ?? 0,
   };
 }
 
@@ -207,6 +213,7 @@ function userToDb(data: Partial<RegisteredUser>): Record<string, unknown> {
   set('gender',        data.gender);
   set('height',        data.height);
   set('weight',        data.weight);
+  set('body_type',     data.bodyType);
   set('physical_status', data.physicalStatus);
   set('marital_status',  data.maritalStatus);
   set('religion',      data.religion);
@@ -231,6 +238,7 @@ function userToDb(data: Partial<RegisteredUser>): Record<string, unknown> {
   set('star',          data.star);
   set('rasi',          data.rasi);
   set('dhosham',       data.dhosham);
+  set('time_of_birth', data.timeOfBirth);
   set('about',         data.about);
   set('photo_url',     data.photoUrl);
   set('partner_religion',       data.partnerReligion);
@@ -264,6 +272,7 @@ function userToDb(data: Partial<RegisteredUser>): Record<string, unknown> {
   if (typeof data.partnerAgeMax === 'number') db.partner_age_max = data.partnerAgeMax;
   if (typeof data.brothers === 'number')      db.brothers = data.brothers;
   if (typeof data.sisters === 'number')       db.sisters = data.sisters;
+  if (typeof data.casteChangeCount === 'number') db.caste_change_count = data.casteChangeCount;
 
   return db;
 }

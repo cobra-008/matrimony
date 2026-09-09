@@ -502,7 +502,8 @@ function AuthenticatedDashboard() {
   if (!user.star && !user.rasi) missing.push({ label: "Horoscope Details", href: "/profile/edit?section=religion", icon: <Star size={16} color="#C8973A" /> });
   if (!user.about) missing.push({ label: "About Me", href: "/profile/edit?section=about", icon: <FileText size={16} color="#6B1A2A" /> });
   if (!user.city) missing.push({ label: "Location", href: "/profile/edit?section=location", icon: <MapPin size={16} color="#6B1A2A" /> });
-  if (!user.partnerHeightMin && !user.partnerReligion && !user.partnerCaste && (!user.partnerAgeMin || user.partnerAgeMin === 22)) missing.push({ label: "Set Partner Preferences", href: "/profile/edit?section=partner", icon: <Heart size={16} color="#C8973A" /> });
+  const hasSavedPartnerPrefs = !!(user.partnerReligion || user.partnerCaste || user.partnerEducation || user.partnerOccupation || user.partnerHeightMin || (user.partnerAgeMin && user.partnerAgeMin !== 22));
+  if (!hasSavedPartnerPrefs) missing.push({ label: "Set Partner Preferences", href: "/profile/edit?section=partner", icon: <Heart size={16} color="#C8973A" /> });
 
   const totalFields = 10;
   const pct = Math.round(((totalFields - missing.length) / totalFields) * 100);

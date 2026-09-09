@@ -333,17 +333,21 @@ function EditProfileContent() {
   const [dob, setDob] = useState(user?.dob || "");
   const [height, setHeight] = useState(user?.height || "");
   const [weight, setWeight] = useState("");
+  const [bodyType, setBodyType] = useState("");
+  const [physicalStatus, setPhysicalStatus] = useState("");
   const [maritalStatus, setMaritalStatus] = useState(user?.maritalStatus || "");
   const [motherTongue, setMotherTongue] = useState(user?.motherTongue || "");
 
   // § Religion
   const [religion, setReligion] = useState(user?.religion || "");
   const [caste, setCaste] = useState(user?.caste || "");
+  const [originalCaste] = useState(user?.caste || ""); // to detect if caste was changed
   const [subCaste, setSubCaste] = useState(user?.subcaste || "");
   const [gothram, setGothram] = useState("");
   const [star, setStar] = useState(user?.star || "");
   const [rasi, setRasi] = useState(user?.rasi || "");
   const [dhosham, setDhosham] = useState(user?.dhosham || "");
+  const [timeOfBirth, setTimeOfBirth] = useState("");
 
   // § Professional
   const [education, setEducation] = useState(user?.education || "");
@@ -409,6 +413,8 @@ function EditProfileContent() {
     setDob(user.dob || "");
     setHeight(user.height || "");
     setWeight(user.weight || "");
+    setBodyType(user.bodyType || "");
+    setPhysicalStatus(user.physicalStatus || "");
     setMaritalStatus(user.maritalStatus || "");
     setMotherTongue(user.motherTongue || "");
 
@@ -420,6 +426,7 @@ function EditProfileContent() {
     setStar(user.star || "");
     setRasi(user.rasi || "");
     setDhosham(user.dhosham || "");
+    setTimeOfBirth(user.timeOfBirth || "");
 
     // Professional
     setEducation(user.education || "");
@@ -456,8 +463,8 @@ function EditProfileContent() {
     setAbout(user.about || "");
 
     // Partner Preferences
-    setPAgeMin(String(user.partnerAgeMin || 22));
-    setPAgeMax(String(user.partnerAgeMax || 35));
+    setPAgeMin(String(user.partnerAgeMin ?? 22));
+    setPAgeMax(String(user.partnerAgeMax ?? 35));
     setPReligion(user.partnerReligion || "");
     setPCaste(user.partnerCaste || "");
     setPEducation(user.partnerEducation || "");
@@ -568,57 +575,66 @@ function EditProfileContent() {
     try {
       if (!user) throw new Error("Not logged in");
 
-      await updateProfile(user.id, {
-        name: `${firstName} ${lastName}`.trim(),
-        gender: gender as "male" | "female",
-        dob,
-        height,
-        maritalStatus,
-        motherTongue,
-        religion,
-        caste,
-        subcaste: subCaste,
-        gothram,
-        star,
-        rasi,
-        dhosham,
-        education,
-        college,
-        occupation,
-        company,
-        employmentType,
-        income,
-        diet,
-        smoking,
-        drinking,
-        disabilities,
-        languages,
-        hobbies,
-        interests,
-        country,
-        state,
-        city,
-        nativePlace,
-        about,
-        partnerAgeMin: parseInt(pAgeMin),
-        partnerAgeMax: parseInt(pAgeMax),
-        partnerReligion: pReligion || undefined,
-        partnerCaste: pCaste || undefined,
-        partnerEducation: pEducation || undefined,
-        partnerOccupation: pOccupation || undefined,
-        partnerIncome: pIncome || undefined,
-        partnerHeightMin: pHeightMin || undefined,
-        partnerHeightMax: pHeightMax || undefined,
-        partnerCountry: pCountry || undefined,
-        partnerMaritalStatus: pMaritalStatus,
-        partnerMotherTongue: pMotherTongue,
-        fatherOccupation: fatherOcc || undefined,
-        motherOccupation: motherOcc || undefined,
-        familyStatus: familyStatus || undefined,
-        familyType: familyType || undefined,
-        brothers: parseInt(brothers),
-        sisters: parseInt(sisters),
-      });
+        // Detect if caste was changed and increment casteChangeCount
+        const casteChanged = caste && caste !== originalCaste;
+        const currentCount = user.casteChangeCount ?? 0;
+
+        await updateProfile(user.id, {
+          name: `${firstName} ${lastName}`.trim(),
+          gender: gender as "male" | "female",
+          dob,
+          height,
+          weight,
+          bodyType: bodyType || undefined,
+          physicalStatus: physicalStatus || undefined,
+          maritalStatus,
+          motherTongue,
+          religion,
+          caste,
+          subcaste: subCaste,
+          gothram,
+          star,
+          rasi,
+          dhosham,
+          timeOfBirth: timeOfBirth || undefined,
+          education,
+          college,
+          occupation,
+          company,
+          employmentType,
+          income,
+          diet,
+          smoking,
+          drinking,
+          disabilities,
+          languages,
+          hobbies,
+          interests,
+          country,
+          state,
+          city,
+          nativePlace,
+          about,
+          partnerAgeMin: parseInt(pAgeMin),
+          partnerAgeMax: parseInt(pAgeMax),
+          partnerReligion: pReligion || undefined,
+          partnerCaste: pCaste || undefined,
+          partnerEducation: pEducation || undefined,
+          partnerOccupation: pOccupation || undefined,
+          partnerIncome: pIncome || undefined,
+          partnerHeightMin: pHeightMin || undefined,
+          partnerHeightMax: pHeightMax || undefined,
+          partnerCountry: pCountry || undefined,
+          partnerMaritalStatus: pMaritalStatus,
+          partnerMotherTongue: pMotherTongue,
+          fatherOccupation: fatherOcc || undefined,
+          motherOccupation: motherOcc || undefined,
+          familyStatus: familyStatus || undefined,
+          familyType: familyType || undefined,
+          brothers: parseInt(brothers),
+          sisters: parseInt(sisters),
+          ...(casteChanged ? { casteChangeCount: currentCount + 1 } : {}),
+        });
 
       await refresh();
       toast.success("Saved successfully! ✓");
@@ -630,8 +646,8 @@ function EditProfileContent() {
       setSaving(false);
     }
   }, [
-    user, firstName, lastName, gender, dob, height, maritalStatus, motherTongue,
-    religion, caste, subCaste, gothram, star, rasi, dhosham, education, college,
+    user, firstName, lastName, gender, dob, height, weight, bodyType, physicalStatus, maritalStatus, motherTongue,
+    religion, caste, originalCaste, subCaste, gothram, star, rasi, dhosham, timeOfBirth, education, college,
     occupation, company, employmentType, income, diet, smoking, drinking, disabilities,
     languages, hobbies, interests, country, state, city, nativePlace, about,
     gallery, pAgeMin, pAgeMax, pReligion, pCaste, pEducation, pOccupation,
@@ -774,6 +790,12 @@ function EditProfileContent() {
                   <FormField label="Mother Tongue" required>
                     <FormSelect value={motherTongue} onChange={setMotherTongue} options={MOTHER_TONGUES} placeholder="Select language" />
                   </FormField>
+                  <FormField label="Body Type">
+                    <FormSelect value={bodyType} onChange={setBodyType} options={["Slim", "Athletic", "Average", "Heavy"]} placeholder="Select body type" />
+                  </FormField>
+                  <FormField label="Physical Status">
+                    <FormSelect value={physicalStatus} onChange={setPhysicalStatus} options={["Normal", "Physically Challenged"]} placeholder="Select" />
+                  </FormField>
                 </FieldGrid>
               </SectionCard>
 
@@ -786,10 +808,33 @@ function EditProfileContent() {
                     <FormSelect value={religion} onChange={v => { setReligion(v); setCaste(""); setSubCaste(""); }} options={RELIGIONS} placeholder="Select religion" />
                   </FormField>
                   <FormField label="Caste / Community">
-                    <FormSelect value={caste} onChange={v => { setCaste(v); setSubCaste(""); }} options={availCastes} placeholder={religion ? "Select caste" : "Select religion first"} />
+                    {(user?.casteChangeCount ?? 0) >= 1 ? (
+                      <div>
+                        <div
+                          style={{
+                            border: "1.5px solid var(--border-color)",
+                            borderRadius: "var(--radius-md)",
+                            padding: "0.625rem 0.875rem",
+                            background: "#F5F5F5",
+                            fontSize: "0.9375rem",
+                            color: "var(--text-dark)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {caste || "—"}
+                        </div>
+                        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.375rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                          🔒 Caste can only be changed once. Contact{" "}
+                          <a href="mailto:support@elitetamilmatrimony.com" style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 600 }}>support</a>{" "}
+                          if you need to update it.
+                        </p>
+                      </div>
+                    ) : (
+                      <FormSelect value={caste} onChange={v => { setCaste(v); setSubCaste(""); }} options={availCastes} placeholder={religion ? "Select caste" : "Select religion first"} />
+                    )}
                   </FormField>
-                  <FormField label="Sub Caste">
-                    <FormSelect value={subCaste} onChange={setSubCaste} options={availSubCastes} placeholder={caste ? "Select sub caste" : "Select caste first"} />
+                  <FormField label="Sub Caste" hint="Type your sub-caste (optional)">
+                    <FormInput value={subCaste} onChange={setSubCaste} placeholder="e.g. Mudaliar, Pillai, Vellalar..." />
                   </FormField>
                   <FormField label="Gothram">
                     <FormInput value={gothram} onChange={setGothram} placeholder="Enter gothram (optional)" />
@@ -802,6 +847,9 @@ function EditProfileContent() {
                   </FormField>
                   <FormField label="Dhosham" required>
                     <FormSelect value={dhosham} onChange={setDhosham} options={DHOSHAM_OPTIONS} placeholder="Select" />
+                  </FormField>
+                  <FormField label="Time of Birth" hint="Used for jathagam matching">
+                    <FormInput type="time" value={timeOfBirth} onChange={setTimeOfBirth} placeholder="e.g. 10:30" />
                   </FormField>
                   <FormField label="Upload Horoscope" hint="PDF or JPG of your jathagam">
                     <button
