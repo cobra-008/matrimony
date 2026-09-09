@@ -20,7 +20,7 @@ import { supabase } from "@/lib/supabase";
 type NotifType = NotificationRow["type"];
 
 // Notification type config — maroon + gold theme only
-const NOTIF_CONFIG: Record<NotifType, { icon: React.ReactNode; color: string; bg: string }> = {
+const NOTIF_CONFIG: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
   interest: {
     icon: <Heart size={16} fill="#6B1A2A" strokeWidth={0} />,
     color: "#6B1A2A",
@@ -295,7 +295,7 @@ export default function NotificationsPage() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
               {displayed.map((notif) => {
-                const config = NOTIF_CONFIG[notif.type];
+                const config = NOTIF_CONFIG[notif.type] || NOTIF_CONFIG.system;
                 const content = (
                   <div
                     key={notif.id}
