@@ -3,238 +3,417 @@
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { ChevronDown, ChevronUp, Search } from "lucide-react";
+import { Search, ChevronDown, MessageCircle, HelpCircle, ShieldCheck, CreditCard, UserCircle, Heart } from "lucide-react";
+import Link from "next/link";
 
-const FAQ_DATA = [
+// ── NEW PREMIUM FAQ CONTENT ───────────────────────────────────────
+const FAQ_CATEGORIES = [
+  { id: "all", label: "All Questions", icon: HelpCircle },
+  { id: "registration", label: "Registration & Profile", icon: UserCircle },
+  { id: "matches", label: "Matches & Search", icon: Heart },
+  { id: "premium", label: "Premium Memberships", icon: CreditCard },
+  { id: "safety", label: "Trust & Safety", icon: ShieldCheck },
+];
+
+const NEW_FAQ_DATA = [
+  // ── Registration & Profile ──
   {
-    category: "Registration",
-    questions: [
-      {
-        q: "How do I create a profile?",
-        a: "Click 'Register Free' and follow our 8-step guided wizard. It takes about 5 minutes and covers basic info, education, religion, location, lifestyle, and partner preferences. You can update any section later.",
-      },
-      {
-        q: "Is registration free?",
-        a: "Yes! Creating a profile is 100% free. You can browse profiles and receive interests at no cost. Premium features like contact reveals and AI match scores require a Gold or Diamond subscription.",
-      },
-      {
-        q: "Can I create a profile on behalf of my son/daughter?",
-        a: "Absolutely. In the first step of registration, select 'My Son', 'My Daughter', 'My Brother', or 'My Sister'. The profile will be clearly marked as created by a guardian.",
-      },
-      {
-        q: "Can I have multiple profiles?",
-        a: "No. One phone number can be associated with one profile only. This prevents spam and ensures every user is genuine.",
-      },
-    ],
+    category: "registration",
+    q: "How do I create a profile on Elite Tamil Matrimony?",
+    a: "Creating a profile is completely free and takes only a few minutes. Click on 'Register' at the top right, fill in your basic details, verify your mobile number via OTP, and complete your profile by adding your education, profession, family background, and partner preferences.",
   },
   {
-    category: "Privacy & Safety",
-    questions: [
-      {
-        q: "Is my phone number visible to everyone?",
-        a: "No. Your phone number is hidden by default. It is only shared when you explicitly choose to reveal it or accept a contact request from a premium member you've matched with.",
-      },
-      {
-        q: "Who can see my photos?",
-        a: "By default, your photos are visible to all logged-in members. You can change photo privacy settings in your account settings to show photos only to members you've expressed interest in.",
-      },
-      {
-        q: "How do I block someone?",
-        a: "On any profile page, tap the three-dot menu (⋮) and select 'Block'. Blocked users cannot view your profile, send you messages, or see you in search results.",
-      },
-      {
-        q: "Is my data safe?",
-        a: "We follow industry-standard encryption and data protection practices. All data is stored securely and we never sell your personal information to third parties.",
-      },
-    ],
+    category: "registration",
+    q: "Can I register a profile on behalf of my son, daughter, or sibling?",
+    a: "Yes! During registration, you can choose the 'Profile Created For' option and select Son, Daughter, Brother, Sister, or Relative. This helps other members know they are interacting with a parent or guardian.",
   },
   {
-    category: "Membership & Billing",
-    questions: [
-      {
-        q: "What are the membership plans?",
-        a: "We offer Free, Gold (₹999/month), Diamond (₹1,999/month), and Platinum Concierge (₹9,999 for 3 months). Each plan has different contact reveal limits and features.",
-      },
-      {
-        q: "Can I cancel my subscription?",
-        a: "Yes, you can cancel any paid subscription from your account settings. You'll continue to have premium access until the end of your current billing period. No refund for the remaining days except in the first 7 days of your first purchase.",
-      },
-      {
-        q: "How does billing work?",
-        a: "Your subscription auto-renews on the same date each month (or at the end of your plan period for Platinum). You'll receive an email reminder 3 days before renewal.",
-      },
-      {
-        q: "Do you offer a refund?",
-        a: "We offer a 7-day money-back guarantee for your first purchase. Contact support@elitetamilmatrimony.com within 7 days of purchase with your registered email and reason.",
-      },
-    ],
+    category: "registration",
+    q: "Why is my profile marked as 'Unverified'?",
+    a: "To ensure a safe and trustworthy community, we verify all profiles. You can verify your profile by submitting a valid Government ID (Aadhaar, Passport, etc.) in the 'Settings' section. Once our team approves it, a 'Verified' badge will appear on your profile.",
   },
   {
-    category: "AI & Matching",
-    questions: [
-      {
-        q: "How does the compatibility score work?",
-        a: "Our AI analyzes 5 dimensions: education compatibility, religion/cultural alignment, career/lifestyle match, location preference, and values alignment. Each dimension gets a score and the overall percentage is a weighted average.",
-      },
-      {
-        q: "Why are some profiles marked as 'top match'?",
-        a: "Profiles with a compatibility score above 85% are highlighted as top matches. These are profiles where multiple dimensions align particularly well with your profile data.",
-      },
-      {
-        q: "Can I change my preferences to get better matches?",
-        a: "Yes. Go to Settings → Partner Preferences to update your age range, religion, location, education, and lifestyle preferences. Matches are re-computed within 24 hours.",
-      },
-    ],
+    category: "registration",
+    q: "How do I temporarily hide or permanently delete my profile?",
+    a: "If you have found your life partner or wish to take a break, you can hide or delete your profile from the 'Settings' page. Hiding your profile will remove it from search results and recommendations, while deleting will permanently erase your data.",
+  },
+
+  // ── Matches & Search ──
+  {
+    category: "matches",
+    q: "How does the 'Daily Recommendations' feature work?",
+    a: "Our advanced algorithm analyzes your partner preferences (age, height, religion, education, etc.) and suggests a curated list of highly compatible profiles every day. You have 24 hours to review and send interest to your daily recommendations.",
   },
   {
-    category: "Verification",
-    questions: [
-      {
-        q: "How do I get verified?",
-        a: "Go to your profile → Verification Center. You can verify via: (1) Phone OTP (done at registration), (2) Email click, (3) ID upload (Aadhaar/PAN/Passport — reviewed by our team within 48 hours), (4) Selfie photo match.",
-      },
-      {
-        q: "Is Aadhaar verification mandatory?",
-        a: "No, Aadhaar verification is optional. However, verified profiles get higher search ranking and a 'Verified' badge that increases trust and response rates by up to 3x.",
-      },
-      {
-        q: "How long does verification take?",
-        a: "Phone and email verification is instant. ID verification (Aadhaar/PAN/Passport) takes 24–48 hours as our team manually reviews documents. Photo verification is typically instant.",
-      },
-    ],
+    category: "matches",
+    q: "What happens when I 'Shortlist' a profile?",
+    a: "Shortlisting a profile is a great way to save them for later review without alerting them immediately. You can view all your shortlisted profiles from the sidebar in the Matches section.",
+  },
+  {
+    category: "matches",
+    q: "Why am I not getting enough relevant matches?",
+    a: "If your matches are too few, try broadening your 'Partner Preferences'. Being too strict with criteria like exact height, specific sub-caste, or income can limit your results. Make sure your own profile is 100% complete and includes a clear photo to attract more interests.",
+  },
+  {
+    category: "matches",
+    q: "How can I express interest in someone?",
+    a: "When viewing a profile or a match card, simply click the 'Send Interest' button. The member will receive a notification. If they accept your interest, you can start messaging or view their contact details.",
+  },
+
+  // ── Premium Memberships ──
+  {
+    category: "premium",
+    q: "What is the difference between a Free and a Premium membership?",
+    a: "Free members can create a profile, search for matches, and receive interests. Premium members (Gold, Diamond, Platinum) unlock exclusive features such as initiating messages, viewing hidden contact numbers, prioritizing their profile in search results, and accessing advanced horoscope matching.",
+  },
+  {
+    category: "premium",
+    q: "How many contact reveals do I get?",
+    a: "Contact limits depend on your membership tier. For instance, the Gold plan may offer up to 40 contact reveals per month, while higher tiers like Platinum offer unlimited contact access. You can track your usage in the Profile view section.",
+  },
+  {
+    category: "premium",
+    q: "What are the 'Prime' and 'Till U Marry' plans?",
+    a: "'Prime' plans offer priority customer support and a dedicated relationship manager to assist in your search. The 'Till U Marry' plan is a specialized subscription that remains active without renewals until you successfully find your life partner through our platform.",
+  },
+  {
+    category: "premium",
+    q: "Can I upgrade my membership plan later?",
+    a: "Yes, you can seamlessly upgrade your plan at any time. If you upgrade while an existing subscription is active, the pro-rated value of your current plan will be adjusted against the new plan's cost.",
+  },
+
+  // ── Trust & Safety ──
+  {
+    category: "safety",
+    q: "Is my contact number visible to everyone?",
+    a: "No! Your privacy is our top priority. By default, your contact number is hidden from free members and search engines. Only Premium members who use one of their 'Contact Reveals' can view your number, and you will be notified when someone views it.",
+  },
+  {
+    category: "safety",
+    q: "Who can see my profile photos?",
+    a: "Your photos are visible to registered and logged-in members of Elite Tamil Matrimony. For added privacy, you can configure your Photo Privacy settings to show your photos only to members you have sent or accepted interest from.",
+  },
+  {
+    category: "safety",
+    q: "What should I do if I encounter a fake or suspicious profile?",
+    a: "If you notice a profile with inappropriate content, stock photos, or someone asking for money, please click the 'Report / Block' option found on their profile or in the messaging menu. Our Trust & Safety team will investigate and take immediate action.",
   },
 ];
 
-export default function FaqPage() {
-  const [search, setSearch] = useState("");
-  const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+// ── COMPONENT ───────────────────────────────────────────────────
+export default function FAQPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const toggle = (key: string) => {
-    setOpenItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  };
-
-  const filtered = FAQ_DATA.map((cat) => ({
-    ...cat,
-    questions: cat.questions.filter(
-      (q) =>
-        !search ||
-        q.q.toLowerCase().includes(search.toLowerCase()) ||
-        q.a.toLowerCase().includes(search.toLowerCase())
-    ),
-  })).filter((cat) => cat.questions.length > 0);
+  // Filter logic
+  const filteredFAQs = NEW_FAQ_DATA.filter((faq) => {
+    const matchesSearch =
+      faq.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      faq.a.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = activeCategory === "all" || faq.category === activeCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--cream-bg)", minHeight: "100vh" }}>
-        {/* Hero */}
+      <main style={{ background: "#FAFAFA", minHeight: "100vh", paddingBottom: "5rem" }}>
+        
+        {/* ── HERO SECTION ── */}
         <section
-          className="section"
-          style={{ background: "var(--gradient-hero)" }}
+          style={{
+            background: "linear-gradient(135deg, #4A101D 0%, #6B1A2A 100%)",
+            padding: "5rem 1rem",
+            textAlign: "center",
+            color: "#fff",
+            position: "relative",
+            overflow: "hidden",
+          }}
         >
-          <div className="container text-center text-white">
-            <h1 className="text-heading-xl text-white mb-3" style={{ fontFamily: "var(--font-serif)" }}>
-              Frequently Asked Questions
+          {/* Background decorative elements */}
+          <div style={{ position: "absolute", top: "-50px", left: "-50px", width: "200px", height: "200px", background: "rgba(255,255,255,0.05)", borderRadius: "50%", filter: "blur(20px)" }} />
+          <div style={{ position: "absolute", bottom: "-100px", right: "-50px", width: "300px", height: "300px", background: "rgba(200,151,58,0.1)", borderRadius: "50%", filter: "blur(30px)" }} />
+
+          <div style={{ maxWidth: "700px", margin: "0 auto", position: "relative", zIndex: 2 }}>
+            <h1 style={{ fontSize: "2.5rem", fontWeight: 800, marginBottom: "1rem", letterSpacing: "-0.02em" }}>
+              How can we help you?
             </h1>
-            <p className="text-white/70 mb-8 max-w-lg mx-auto text-sm">
-              Everything you need to know about Elite Tamil Matrimony.
+            <p style={{ fontSize: "1.125rem", color: "rgba(255,255,255,0.8)", marginBottom: "2.5rem" }}>
+              Search our knowledge base or browse categories below to find answers to your questions.
             </p>
-            {/* Search */}
-            <div className="relative max-w-lg mx-auto">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+
+            {/* Search Bar */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                background: "#fff",
+                borderRadius: "50px",
+                padding: "0.5rem 1.5rem",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+                maxWidth: "600px",
+                margin: "0 auto",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              className="faq-search-wrapper"
+            >
+              <Search size={20} color="#888" />
               <input
                 type="text"
-                className="form-input pl-10 text-[var(--text-primary)]"
-                placeholder="Search FAQ..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={{ background: "white" }}
+                placeholder="Search for answers (e.g. 'membership', 'hide profile')..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  flex: 1,
+                  border: "none",
+                  outline: "none",
+                  padding: "0.75rem 1rem",
+                  fontSize: "1rem",
+                  fontFamily: "var(--font-sans)",
+                  background: "transparent",
+                  color: "#111",
+                }}
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  style={{ background: "none", border: "none", color: "#888", cursor: "pointer", fontWeight: 600, fontSize: "0.875rem" }}
+                >
+                  Clear
+                </button>
+              )}
             </div>
           </div>
         </section>
 
-        {/* FAQ sections */}
-        <section className="section">
-          <div className="container max-w-3xl">
-            {filtered.length === 0 ? (
-              <div className="text-center py-10">
-                <Search size={40} className="mx-auto mb-3" style={{ color: "var(--border-color)" }} />
-                <p className="text-[var(--text-secondary)]">No results found for &ldquo;{search}&rdquo;</p>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {filtered.map((cat) => (
-                  <div key={cat.category}>
-                    <h2
-                      className="font-bold text-[var(--text-primary)] mb-4 pb-3 border-b"
-                      style={{ fontFamily: "var(--font-serif)", fontSize: "1.2rem", borderColor: "var(--border)" }}
-                    >
-                      {cat.category}
-                    </h2>
-                    <div className="space-y-3">
-                      {cat.questions.map((item, i) => {
-                        const key = `${cat.category}-${i}`;
-                        const isOpen = openItems.has(key);
-                        return (
-                          <div key={key} className="card overflow-hidden">
-                            <button
-                              onClick={() => toggle(key)}
-                              className="w-full text-left p-5 flex items-start justify-between gap-4"
-                            >
-                              <span className="font-semibold text-[var(--text-primary)] text-sm leading-relaxed">
-                                {item.q}
-                              </span>
-                              <span
-                                className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors"
-                                style={{ background: isOpen ? "var(--rose-50)" : "var(--cream-bg)", color: isOpen ? "var(--rose-primary)" : "var(--text-muted)" }}
-                              >
-                                {isOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                              </span>
-                            </button>
-                            {isOpen && (
-                              <div
-                                className="px-5 pb-5 text-sm text-[var(--text-secondary)] leading-relaxed"
-                                style={{ borderTop: "1px solid var(--border-light)" }}
-                              >
-                                <div className="pt-4">{item.a}</div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Contact CTA */}
+        {/* ── CONTENT SECTION ── */}
+        <section style={{ maxWidth: "1000px", margin: "-2rem auto 0", padding: "0 1rem", position: "relative", zIndex: 10 }}>
+          
+          <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start", flexDirection: "row" }} className="faq-layout">
+            
+            {/* ── SIDEBAR TABS ── */}
             <div
-              className="mt-10 p-6 rounded-2xl text-center"
-              style={{ background: "var(--rose-50)", border: "1px solid var(--rose-200)" }}
+              className="faq-sidebar"
+              style={{
+                width: "280px",
+                flexShrink: 0,
+                background: "#fff",
+                borderRadius: "16px",
+                padding: "1rem",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                border: "1px solid #E8D5B7",
+                position: "sticky",
+                top: "100px",
+              }}
             >
-              <p className="font-semibold text-[var(--text-primary)] mb-2">
-                Still have questions?
-              </p>
-              <p className="text-sm text-[var(--text-secondary)] mb-4">
-                Our support team is available Monday–Saturday, 9am–6pm IST.
-              </p>
-              <a
-                href="/contact"
-                className="btn btn-primary"
+              <h3 style={{ fontSize: "0.875rem", fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0.5rem 1rem 1rem" }}>
+                Categories
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.375rem" }}>
+                {FAQ_CATEGORIES.map((cat) => {
+                  const Icon = cat.icon;
+                  const isActive = activeCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => { setActiveCategory(cat.id); setOpenIndex(null); }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                        width: "100%",
+                        padding: "0.875rem 1rem",
+                        borderRadius: "10px",
+                        border: "none",
+                        background: isActive ? "#FFF0F5" : "transparent",
+                        color: isActive ? "#6B1A2A" : "#444",
+                        fontWeight: isActive ? 700 : 500,
+                        fontSize: "0.9375rem",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        transition: "all 0.2s ease",
+                        fontFamily: "var(--font-sans)",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = "#fafafa";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.background = "transparent";
+                        }
+                      }}
+                    >
+                      <Icon size={18} color={isActive ? "#6B1A2A" : "#888"} />
+                      {cat.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── FAQ LIST ── */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              
+              {filteredFAQs.length === 0 ? (
+                <div style={{ background: "#fff", borderRadius: "16px", padding: "4rem 2rem", textAlign: "center", border: "1px solid #e0e0e0" }}>
+                  <div style={{ width: "64px", height: "64px", background: "#f5f5f5", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+                    <Search size={28} color="#aaa" />
+                  </div>
+                  <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#111", marginBottom: "0.5rem" }}>No results found</h3>
+                  <p style={{ color: "#888" }}>We couldn't find any FAQs matching "{searchQuery}".</p>
+                  <button onClick={() => { setSearchQuery(""); setActiveCategory("all"); }} className="btn btn-outline" style={{ marginTop: "1.5rem" }}>
+                    View all questions
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  {filteredFAQs.map((faq, index) => {
+                    const isOpen = openIndex === index;
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          background: "#fff",
+                          borderRadius: "12px",
+                          border: isOpen ? "1px solid #C8973A" : "1px solid #E8D5B7",
+                          boxShadow: isOpen ? "0 4px 20px rgba(200,151,58,0.1)" : "0 2px 8px rgba(0,0,0,0.02)",
+                          overflow: "hidden",
+                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                        }}
+                      >
+                        <button
+                          onClick={() => setOpenIndex(isOpen ? null : index)}
+                          style={{
+                            width: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "1.25rem 1.5rem",
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            textAlign: "left",
+                            color: isOpen ? "#6B1A2A" : "#111",
+                            fontWeight: 700,
+                            fontSize: "1.0625rem",
+                            fontFamily: "var(--font-sans)",
+                          }}
+                        >
+                          <span style={{ paddingRight: "1rem", lineHeight: 1.4 }}>{faq.q}</span>
+                          <div
+                            style={{
+                              background: isOpen ? "#FFF0F5" : "#f9f9f9",
+                              borderRadius: "50%",
+                              width: "32px",
+                              height: "32px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              flexShrink: 0,
+                              transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+                              transition: "transform 0.3s ease, background 0.3s ease",
+                            }}
+                          >
+                            <ChevronDown size={18} color={isOpen ? "#6B1A2A" : "#888"} />
+                          </div>
+                        </button>
+                        
+                        <div
+                          style={{
+                            maxHeight: isOpen ? "500px" : "0",
+                            opacity: isOpen ? 1 : 0,
+                            overflow: "hidden",
+                            transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease",
+                          }}
+                        >
+                          <div
+                            style={{
+                              padding: "0 1.5rem 1.5rem",
+                              color: "#444",
+                              fontSize: "0.9375rem",
+                              lineHeight: 1.6,
+                              borderTop: "1px solid transparent",
+                            }}
+                          >
+                            {faq.a}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* ── STILL NEED HELP? ── */}
+              <div
+                style={{
+                  marginTop: "3rem",
+                  background: "linear-gradient(135deg, #fff 0%, #FFF8F0 100%)",
+                  borderRadius: "16px",
+                  padding: "2rem",
+                  border: "1px solid #E8D5B7",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: "1.5rem",
+                }}
               >
-                Contact Support
-              </a>
+                <div>
+                  <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#111", margin: "0 0 0.5rem" }}>Still have questions?</h3>
+                  <p style={{ color: "#666", margin: 0, fontSize: "0.9375rem", maxWidth: "400px" }}>
+                    Can't find the answer you're looking for? Our dedicated support team is here to help you 24/7.
+                  </p>
+                </div>
+                <Link
+                  href="/contact"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "#6B1A2A",
+                    color: "#fff",
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "30px",
+                    textDecoration: "none",
+                    fontWeight: 600,
+                    fontSize: "0.9375rem",
+                    boxShadow: "0 4px 12px rgba(107, 26, 42, 0.2)",
+                    transition: "transform 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
+                >
+                  <MessageCircle size={18} />
+                  Contact Support
+                </Link>
+              </div>
+
             </div>
           </div>
         </section>
       </main>
+
+      <style>{`
+        .faq-search-wrapper:focus-within {
+          box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
+          transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+          .faq-layout {
+            flex-direction: column !important;
+          }
+          .faq-sidebar {
+            width: 100% !important;
+            position: relative !important;
+            top: 0 !important;
+            margin-bottom: 1rem;
+          }
+        }
+      `}</style>
       <Footer />
     </>
   );
