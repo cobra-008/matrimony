@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 import { MOCK_PROFILES, MOCK_GROOM_PROFILES } from "@/data/mock-profiles";
 import { Heart, BookmarkPlus, MessageCircle, Phone, Share2, Flag, ArrowLeft, ChevronRight, Edit2, CheckCircle, Camera, UserCircle, Briefcase, Star, FileText, MapPin, Crown, Lock } from "lucide-react";
 import toast from "react-hot-toast";
-import { getUserById, sendInterest, shortlistProfile, recordProfileViewWithNotification } from "@/lib/auth-store";
+import { getUserById, sendInterestWithNotification, getInterestStatus, shortlistProfileWithNotification, recordProfileViewWithNotification } from "@/lib/auth-store";
 import { useAuth } from "@/context/AuthContext";
 import { useMembership } from "@/hooks/useMembership";
 import { ProfileViewSkeleton } from "@/components/ui/Skeleton";
@@ -381,7 +381,16 @@ export default function ProfileDetailPage({
   const [activeSection, setActiveSection] = useState("Basic Information");
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  
+
+  // Load interest status from DB on mount
+  useEffect(() => {
+    if (!user || !id || user.id === id) return;
+    getInterestStatus(user.id, id).then(row => {
+      if (row && row.status === "pending") setInterested(true);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, id]);
+
   const [hasRevealedContact, setHasRevealedContact] = useState(false);
   const [revealsUsed, setRevealsUsed] = useState(0);
 
@@ -453,14 +462,22 @@ export default function ProfileDetailPage({
 
   const handleSendInterest = async () => {
     if (!user) { toast.error("Please login"); return; }
-    await sendInterest(user.id, id);
-    setInterested(v => !v);
-    toast.success(interested ? "Interest withdrawn" : `Interest sent!`);
+    if (interested) {
+      toast("You have already sent an interest to this profile.");
+      return;
+    }
+    const result = await sendInterestWithNotification(user.id, id, user.name);
+    if (!result.error) {
+      setInterested(true);
+      toast.success(`Interest sent to ${(mockProfile || dbProfile)?.name || "this profile"}!`);
+    } else {
+      toast.error("Failed to send interest. Please try again.");
+    }
   };
 
   const handleShortlist = async () => {
     if (!user) { toast.error("Please login"); return; }
-    if (!shortlisted) await shortlistProfile(user.id, id);
+    if (!shortlisted) await shortlistProfileWithNotification(user.id, id, user.name);
     setShortlisted(v => !v);
     toast.success(shortlisted ? "Removed from shortlist" : "Added to shortlist");
   };

@@ -94,7 +94,72 @@ const SIDEBAR = [
       { id: "nri_matches", label: "NRI matches", sub: "Profiles from outside India" },
     ],
   },
+  {
+    group: null,
+    items: [
+      { id: "hidden_profiles", label: "Hidden Profiles", sub: "Profiles you have hidden" },
+    ],
+  },
 ];
+
+// ── Sidebar SVG icon map ──────────────────────────────────────────────────────
+const SidebarIcon = ({ id, active }: { id: string; active: boolean }) => {
+  const color = active ? "#6B1A2A" : id === "hidden_profiles" ? "#888" : "#aaa";
+  const icons: Record<string, React.ReactElement> = {
+    your_matches:       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+    shortlisted_by_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>,
+    viewed_you:         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+    shortlisted_you:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+    viewed_by_you:      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+    newly_joined:       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>,
+    nearby_matches:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+    with_photos:        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
+    with_horoscope:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+    similar_hobbies:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>,
+    star_matches:       <svg width="13" height="13" viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+    horoscope_matches:  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+    mutual_matches:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>,
+    looking_for_you:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+    education_pref:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
+    professional_pref:  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+    location_pref:      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+    nri_matches:        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+    hidden_profiles:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+  };
+  return icons[id] ?? null;
+};
+
+// ── Pagination component ──────────────────────────────────────────────────────
+const PAGE_SIZE = 10;
+function Pagination({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (p: number) => void; }) {
+  if (totalPages <= 1) return (
+    <div style={{ textAlign: "center", padding: "0.75rem 0" }}>
+      <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px", borderRadius: "6px", background: "#6B1A2A", color: "#fff", fontSize: "0.8125rem", fontWeight: 700 }}>1</span>
+    </div>
+  );
+  let start = Math.max(1, currentPage - 2);
+  let end = Math.min(totalPages, currentPage + 2);
+  if (end - start < 4) { if (start === 1) end = Math.min(totalPages, 5); else start = Math.max(1, end - 4); }
+  const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  const btn = (active: boolean, disabled?: boolean): React.CSSProperties => ({
+    display: "inline-flex", alignItems: "center", justifyContent: "center",
+    padding: "0 10px", height: "32px", minWidth: "32px", borderRadius: "6px",
+    border: active ? "none" : "1.5px solid #ddd",
+    background: active ? "#6B1A2A" : disabled ? "#f5f5f5" : "#fff",
+    color: active ? "#fff" : disabled ? "#ccc" : "#333",
+    fontSize: "0.8125rem", fontWeight: active ? 700 : 500,
+    cursor: disabled ? "default" : "pointer", fontFamily: "var(--font-sans)",
+  });
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.375rem", padding: "1rem 0" }}>
+      <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1} style={btn(false, currentPage === 1)}>← Prev</button>
+      {start > 1 && <><button onClick={() => onPageChange(1)} style={btn(false)}>1</button>{start > 2 && <span style={{ color: "#aaa", padding: "0 4px" }}>…</span>}</>}
+      {pages.map(p => <button key={p} onClick={() => onPageChange(p)} style={btn(p === currentPage)}>{p}</button>)}
+      {end < totalPages && <>{end < totalPages - 1 && <span style={{ color: "#aaa", padding: "0 4px" }}>…</span>}<button onClick={() => onPageChange(totalPages)} style={btn(false)}>{totalPages}</button></>}
+      <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} style={btn(false, currentPage === totalPages)}>Next →</button>
+    </div>
+  );
+}
 
 // ── WhatsApp + Phone SVG icons ────────────────────────────────────────────────
 const PhoneIcon = () => (
@@ -155,14 +220,17 @@ function ProfileCard({
   const profileCode = `ETM-${profile.id.substring(0, 8).toUpperCase()}`;
   const location = [profile.city, profile.state].filter(Boolean).join(", ") || profile.country || "India";
 
-  // Build attribute string
+  // Build attribute string (includes marital status, dhosham, diet, income)
   const attrs: string[] = [
     age > 0 ? `${age} yrs` : "",
     profile.height || "",
+    profile.maritalStatus || "",
     profile.caste || "",
     profile.education || "",
     profile.occupation || "",
     profile.income ? `₹ ${profile.income}` : "",
+    profile.diet || "",
+    profile.dhosham ? `Dhosham: ${profile.dhosham}` : "",
     location,
   ].filter(Boolean);
 
@@ -642,9 +710,11 @@ function SkeletonCard() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 function MatchesContent() {
   const { user, loading: authLoading } = useAuth();
-  const { can } = useMembership();
+  const { can, isPremium } = useMembership();
   const canMessage     = can("messages");
   const canViewContact = can("contacts");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hiddenProfiles, setHiddenProfiles] = useState<RegisteredUser[]>([]);
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab");
   const [activeSection, setActiveSection] = useState(() => {
@@ -670,15 +740,13 @@ function MatchesContent() {
   }, [activeSection]);
   const [profiles, setProfiles] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeChips, setActiveChips] = useState<string[]>([]);
-  const [sortOpen, setSortOpen] = useState(false);
-  const [sort, setSort] = useState("Best Match");
   const [filterOpen, setFilterOpen] = useState(false);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(new Set());
   const [sentInterestIds, setSentInterestIds] = useState<Set<string>>(new Set());
   const [nameSearch, setNameSearch] = useState("");
   const [starMissing, setStarMissing] = useState(false);
+  const [activeChips, setActiveChips] = useState<string[]>([]);
   const chipRowRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   // Track last user ID to detect account switches
@@ -686,11 +754,22 @@ function MatchesContent() {
 
   const oppositeGender = user?.gender === "male" ? "female" : user?.gender === "female" ? "male" : null;
 
+  // Load hidden IDs from localStorage on user change
+  useEffect(() => {
+    if (!user?.id) return;
+    try {
+      const stored = localStorage.getItem(`etm_hidden_${user.id}`);
+      if (stored) setHiddenIds(new Set(JSON.parse(stored) as string[]));
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   const loadSection = useCallback(async (sectionId: string, currentUser: typeof user) => {
     if (!currentUser) return;
     setLoading(true);
     setProfiles([]);
     setStarMissing(false);
+    setCurrentPage(1);
     let result: RegisteredUser[] = [];
     try {
       switch (sectionId) {
@@ -725,12 +804,13 @@ function MatchesContent() {
         case "professional_pref":    result = await getByProfessionPref(currentUser.id, currentUser.partnerOccupation, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "location_pref":        result = await getByLocationPref(currentUser.id, currentUser.city, currentUser.state, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "nri_matches":          result = await getNRIMatches(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "hidden_profiles":      result = []; break;
         default:                     result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined);
       }
     } catch {
       result = [];
     }
-    setProfiles(result.slice(0, 30));
+    setProfiles(result.slice(0, 200));
     setLoading(false);
   }, []);
 
@@ -780,21 +860,35 @@ function MatchesContent() {
   }, [loading]);
 
   // Client-side chip filtering + hide + name search
-  const displayed = profiles.filter((p) => {
-    if (hiddenIds.has(p.id)) return false;
+  const allFiltered = profiles.filter((p) => {
+    if (activeSection !== "hidden_profiles" && hiddenIds.has(p.id)) return false;
     if (nameSearch.trim() && !p.name.toLowerCase().includes(nameSearch.toLowerCase())) return false;
-    if (activeChips.includes("Profiles with photo") && !p.photoUrl) return false;
-    if (activeChips.includes("Matches with horoscope") && !p.star && !p.rasi) return false;
-    if (activeChips.includes("Newly joined")) {
+    if (activeChips?.includes("Profiles with photo") && !p.photoUrl) return false;
+    if (activeChips?.includes("Matches with horoscope") && !p.star && !p.rasi) return false;
+    if (activeChips?.includes("Newly joined")) {
       if (!p.createdAt || Date.now() - new Date(p.createdAt).getTime() > 30 * 24 * 60 * 60 * 1000) return false;
     }
     return true;
   });
+  const totalPages = Math.max(1, Math.ceil(allFiltered.length / PAGE_SIZE));
+  const displayed = allFiltered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const toggleChip = (chip: string) =>
+  // For hidden profiles section
+  useEffect(() => {
+    if (activeSection !== "hidden_profiles" || !user) return;
+    if (hiddenIds.size === 0) { setHiddenProfiles([]); return; }
+    fetchMatchProfiles(user, user.gender as "male" | "female" | undefined)
+      .then(all => setHiddenProfiles(all.filter(p => hiddenIds.has(p.id))))
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection, user?.id, hiddenIds.size]);
+
+  const toggleChip = (chip: string) => {
+    setCurrentPage(1);
     setActiveChips((prev) =>
       prev.includes(chip) ? prev.filter((c) => c !== chip) : [...prev, chip]
     );
+  };
 
   const handleShortlist = async (profileId: string, name: string) => {
     if (!user) { toast.error("Please login"); return; }
@@ -810,8 +904,26 @@ function MatchesContent() {
   };
 
   const handleHide = (profileId: string) => {
-    setHiddenIds((prev) => new Set([...prev, profileId]));
-    toast("Profile hidden");
+    setHiddenIds((prev) => {
+      const next = new Set([...prev, profileId]);
+      if (user?.id) {
+        try { localStorage.setItem(`etm_hidden_${user.id}`, JSON.stringify([...next])); } catch { /* ignore */ }
+      }
+      return next;
+    });
+    toast("Profile hidden. View in \"Hidden Profiles\".");
+  };
+
+  const handleUnhide = (profileId: string, name: string) => {
+    setHiddenIds((prev) => {
+      const next = new Set(prev); next.delete(profileId);
+      if (user?.id) {
+        try { localStorage.setItem(`etm_hidden_${user.id}`, JSON.stringify([...next])); } catch { /* ignore */ }
+      }
+      return next;
+    });
+    setHiddenProfiles((prev) => prev.filter(p => p.id !== profileId));
+    toast(`${name} is now visible again.`);
   };
 
   const handleSendInterest = async (profileId: string, name: string) => {
@@ -825,8 +937,9 @@ function MatchesContent() {
     toast.success(`Interest sent to ${name}!`);
   };
 
-  // Section label for heading
+  // Section label for heading — used in h1
   const sectionLabel = SIDEBAR.flatMap((s) => s.items).find((i) => i.id === activeSection)?.label || "Matches";
+  void sectionLabel; // suppress unused warning
 
   // While auth is resolving (e.g. account switch in progress), show a spinner
   if (authLoading) {
@@ -911,7 +1024,7 @@ function MatchesContent() {
             </div>
 
             {SIDEBAR.map((section) => (
-              <div key={section.group ?? "root"}>
+              <div key={section.group ?? (section.items[0]?.id ?? "root")}>
                 {/* Group label */}
                 {section.group && (
                   <div
@@ -934,60 +1047,43 @@ function MatchesContent() {
 
                 {section.items.map((item) => {
                   const active = activeSection === item.id;
+                  const isHiddenItem = item.id === "hidden_profiles";
                   return (
                     <button
                       key={item.id}
-                      onClick={() => setActiveSection(item.id)}
+                      onClick={() => { setActiveSection(item.id); setSidebarOpen(false); }}
                       style={{
                         width: "100%",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
                         padding: "0.625rem 1rem",
-                        background: active ? "#FEF0F0" : "transparent",
+                        background: active ? "#FEF0F0" : isHiddenItem ? "#fafafa" : "transparent",
                         border: "none",
                         borderLeft: active ? "3px solid #6B1A2A" : "3px solid transparent",
+                        borderTop: isHiddenItem ? "2px solid #f0f0f0" : undefined,
                         cursor: "pointer",
                         textAlign: "left",
                         fontFamily: "var(--font-sans)",
                         borderBottom: "1px solid #f8f8f8",
                       }}
                     >
-                      <div style={{ flex: 1 }}>
-                        <div
-                          style={{
-                            fontWeight: active ? 700 : 600,
-                            fontSize: "0.875rem",
-                            color: active ? "#6B1A2A" : "#222",
-                            marginBottom: "1px",
-                          }}
-                        >
-                          {item.label}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: "0.6875rem",
-                            color: "#999",
-                            lineHeight: 1.3,
-                          }}
-                        >
-                          {item.sub.split("\n").map((l, i) => (
-                            <span key={i}>
-                              {l}
-                              {i < item.sub.split("\n").length - 1 && <br />}
-                            </span>
-                          ))}
+                      <div style={{ flex: 1, display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                        <span style={{ color: active ? "#6B1A2A" : isHiddenItem ? "#888" : "#bbb", marginTop: "2px", flexShrink: 0 }}>
+                          <SidebarIcon id={item.id} active={active} />
+                        </span>
+                        <div>
+                          <div style={{ fontWeight: active ? 700 : 600, fontSize: "0.875rem", color: active ? "#6B1A2A" : isHiddenItem ? "#555" : "#222", marginBottom: "1px" }}>
+                            {item.label}
+                          </div>
+                          <div style={{ fontSize: "0.6875rem", color: "#999", lineHeight: 1.3 }}>
+                            {item.sub.split("\n").map((l, i) => (
+                              <span key={i}>{l}{i < item.sub.split("\n").length - 1 && <br />}</span>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#ccc"
-                        strokeWidth="2.5"
-                        style={{ flexShrink: 0, marginLeft: "4px" }}
-                      >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2.5" style={{ flexShrink: 0, marginLeft: "4px" }}>
                         <polyline points="9 18 15 12 9 6" />
                       </svg>
                     </button>
@@ -1028,7 +1124,7 @@ function MatchesContent() {
                   flex: 1,
                 }}
               >
-                {loading ? "Loading…" : `${displayed.length} matches`}
+                {loading ? "Loading…" : activeSection === "hidden_profiles" ? `${hiddenProfiles.length} hidden profiles` : `${allFiltered.length} matches`}
               </h1>
             </div>
 
@@ -1133,70 +1229,6 @@ function MatchesContent() {
                 )}
               </button>
 
-              {/* Sort by */}
-              <div style={{ position: "relative", flexShrink: 0 }}>
-                <button
-                  onClick={() => setSortOpen((v) => !v)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    padding: "0.3125rem 0.75rem",
-                    border: "1.5px solid #ccc",
-                    borderRadius: "20px",
-                    background: "#fff",
-                    fontWeight: 600,
-                    fontSize: "0.8125rem",
-                    cursor: "pointer",
-                    fontFamily: "var(--font-sans)",
-                    color: "#333",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Sort by
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-                {sortOpen && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "calc(100% + 4px)",
-                      left: 0,
-                      background: "#fff",
-                      border: "1px solid #ddd",
-                      borderRadius: "6px",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                      zIndex: 100,
-                      minWidth: "170px",
-                    }}
-                  >
-                    {["Best Match", "Newly Joined", "Profile with Photo", "Profile with Horoscope"].map((opt) => (
-                      <button
-                        key={opt}
-                        onClick={() => { setSort(opt); setSortOpen(false); }}
-                        style={{
-                          display: "block",
-                          width: "100%",
-                          padding: "0.5rem 0.875rem",
-                          background: sort === opt ? "#FEF0F0" : "transparent",
-                          border: "none",
-                          textAlign: "left",
-                          fontSize: "0.8125rem",
-                          fontWeight: sort === opt ? 700 : 400,
-                          color: sort === opt ? "#6B1A2A" : "#333",
-                          cursor: "pointer",
-                          fontFamily: "var(--font-sans)",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
 
               {/* Quick filter chips */}
               {QUICK_CHIPS.map((chip) => (
@@ -1268,7 +1300,50 @@ function MatchesContent() {
             )}
 
             {/* Profile cards */}
-            {loading
+            {activeSection === "hidden_profiles" ? (
+              hiddenProfiles.length === 0 ? (
+                <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px", padding: "4rem 2rem", textAlign: "center" }}>
+                  <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.2" style={{ margin: "0 auto 1rem", display: "block" }}>
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                  <p style={{ fontWeight: 700, color: "#555", fontSize: "1rem", margin: "0 0 0.5rem" }}>No hidden profiles</p>
+                  <p style={{ color: "#aaa", fontSize: "0.875rem", margin: 0 }}>Profiles you hide using &ldquo;Don&apos;t Show&rdquo; will appear here.</p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ background: "#FFF8E8", border: "1px solid #E8D5B7", borderRadius: "6px", padding: "0.75rem 1rem", marginBottom: "0.875rem", fontSize: "0.8125rem", color: "#888" }}>
+                    These profiles are hidden from all match lists. Click &ldquo;Unhide&rdquo; to make them visible again.
+                  </div>
+                  {hiddenProfiles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE).map((profile, idx) => (
+                    <div key={profile.id}>
+                      <div style={{ opacity: 0.85, border: "1px solid #e0d0c0", borderRadius: "8px", marginBottom: "14px", overflow: "hidden", background: "#fafafa", position: "relative" }}>
+                        <div style={{ position: "absolute", top: "8px", left: "8px", zIndex: 2, background: "rgba(80,80,80,0.85)", color: "#fff", borderRadius: "3px", padding: "3px 8px", fontSize: "0.6875rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                          Hidden
+                        </div>
+                        <ProfileCard
+                          profile={profile} index={idx}
+                          onShortlist={() => handleShortlist(profile.id, profile.name)}
+                          onHide={() => {}}
+                          onSendInterest={() => handleSendInterest(profile.id, profile.name)}
+                          shortlisted={shortlistedIds.has(profile.id)}
+                          interestSent={sentInterestIds.has(profile.id)}
+                          canMessage={canMessage}
+                          canViewContact={canViewContact}
+                        />
+                        <div style={{ padding: "0 1rem 0.75rem", display: "flex", justifyContent: "flex-end" }}>
+                          <button onClick={() => handleUnhide(profile.id, profile.name)} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "0.4375rem 1rem", border: "1.5px solid #6B1A2A", borderRadius: "20px", background: "#fff", color: "#6B1A2A", fontSize: "0.8125rem", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-sans)" }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            Unhide
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Pagination currentPage={currentPage} totalPages={Math.max(1, Math.ceil(hiddenProfiles.length / PAGE_SIZE))} onPageChange={(p) => { setCurrentPage(p); rightPanelRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }} />
+                </>
+              )
+            ) : loading
               ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
               : starMissing
               ? (
@@ -1323,31 +1398,23 @@ function MatchesContent() {
                   </button>
                 </div>
               )
-              : activeSection === "shortlisted_you" && !user?.isPremium ? (
+              : (activeSection === "shortlisted_you" || activeSection === "viewed_you") && !isPremium ? (
                 <div style={{ padding: "4rem 2rem", textAlign: "center", background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px" }}>
-                  <div style={{
-                    width: "64px", height: "64px", borderRadius: "50%",
-                    background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    margin: "0 auto 1rem",
-                  }}>
+                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
                     <Lock size={28} color="#fff" />
                   </div>
                   <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "0.5rem" }}>
-                    See Who Shortlisted You
+                    {activeSection === "shortlisted_you" ? "See Who Shortlisted You" : "See Who Viewed You"}
                   </h3>
-                  <p style={{ color: "#666", fontSize: "0.9375rem", marginBottom: "1.5rem", maxWidth: "400px", margin: "0 auto 1.5rem" }}>
-                    Upgrade to Gold to unlock this feature and see all the members who have expressed interest in your profile.
+                  {profiles.length > 0 && (
+                    <p style={{ color: "#6B1A2A", fontSize: "1.5rem", fontWeight: 800, margin: "0 0 0.5rem" }}>
+                      {profiles.length} members
+                    </p>
+                  )}
+                  <p style={{ color: "#666", fontSize: "0.875rem", marginBottom: "1.5rem", maxWidth: "400px", margin: "0 auto 1.5rem" }}>
+                    Upgrade to Gold or Prime to see exactly who {activeSection === "shortlisted_you" ? "shortlisted" : "viewed"} your profile and connect with them.
                   </p>
-                  <Link href="/membership"
-                    style={{
-                      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px",
-                      background: "linear-gradient(135deg, #C8973A 0%, #E8C060 100%)",
-                      color: "#fff", fontWeight: 700, fontSize: "0.9375rem",
-                      borderRadius: "30px", padding: "0.75rem 2rem",
-                      textDecoration: "none", boxShadow: "0 4px 16px rgba(200,151,58,0.35)",
-                    }}
-                  >
+                  <Link href="/membership" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "linear-gradient(135deg, #C8973A 0%, #E8C060 100%)", color: "#fff", fontWeight: 700, fontSize: "0.9375rem", borderRadius: "30px", padding: "0.75rem 2rem", textDecoration: "none", boxShadow: "0 4px 16px rgba(200,151,58,0.35)" }}>
                     <Crown size={16} />
                     Upgrade to Gold — ₹999/mo
                   </Link>
@@ -1379,27 +1446,14 @@ function MatchesContent() {
               ))
             }
 
-            {/* Load more */}
-            {!loading && displayed.length > 0 && (
-              <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                <button
-                  onClick={() => loadSection(activeSection, user)}
-
-                  style={{
-                    padding: "0.625rem 2rem",
-                    border: "1.5px solid #6B1A2A",
-                    borderRadius: "20px",
-                    background: "#fff",
-                    color: "#6B1A2A",
-                    fontWeight: 700,
-                    fontSize: "0.875rem",
-                    cursor: "pointer",
-                    fontFamily: "var(--font-sans)",
-                  }}
-                >
-                  Load More
-                </button>
-              </div>
+            {/* Pagination */}
+            {!loading && allFiltered.length > 0 && activeSection !== "hidden_profiles" &&
+              !((activeSection === "shortlisted_you" || activeSection === "viewed_you") && !isPremium) && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(p) => { setCurrentPage(p); rightPanelRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }}
+              />
             )}
           </div>
         </div>

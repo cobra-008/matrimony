@@ -6,8 +6,8 @@ import { useAuth } from "@/context/AuthContext";
 
 import Navbar from "@/components/layout/Navbar";
 import {
-  Search, Phone, Video, MoreVertical,
-  Send, CheckCheck, Check, Crown, MessageCircle, ArrowLeft,
+  Search, MoreVertical,
+  Send, CheckCheck, Check, Crown, MessageCircle, ArrowLeft, UserCircle, Flag,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -156,6 +156,8 @@ function MessagesContent() {
 
   const selectedConv = conversations.find((c) => c.partnerId === selectedId);
   const selectedProfile = selectedConv?.partnerProfile;
+  const [headerProfile, setHeaderProfile] = useState<import("@/lib/auth-store").RegisteredUser | null>(null);
+  const displayProfile = selectedProfile || headerProfile;
 
   // Load conversations
   const loadConversations = useCallback(async () => {
@@ -186,9 +188,16 @@ function MessagesContent() {
     setLoadingConvs(false);
   }, [user?.id, initPartnerId, router]);
 
+  useEffect(() => { loadConversations(); }, [loadConversations]);
+
+  // Whenever a conversation is opened, make sure we have the profile
   useEffect(() => {
-    loadConversations();
-  }, [loadConversations]);
+    if (!selectedId) { setHeaderProfile(null); return; }
+    if (selectedProfile) { setHeaderProfile(selectedProfile); return; }
+    // Fallback: fetch directly if not in conversation list yet
+    getUserById(selectedId).then(p => { if (p) setHeaderProfile(p); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, selectedProfile?.name]);
 
   // Load messages when partner changes
   useEffect(() => {
@@ -494,59 +503,80 @@ function MessagesContent() {
                       <ArrowLeft size={20} />
                     </button>
                     <Link href={`/profile/${selectedId}`} style={{ display: "flex", flexShrink: 0 }}>
-                      <Avatar src={selectedProfile?.photoUrl} name={selectedProfile?.name || "Member"} size={38} />
+                      <Avatar src={displayProfile?.photoUrl} name={displayProfile?.name || "Member"} size={38} />
                     </Link>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <span style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {selectedProfile?.name || "Member"}
+                          {displayProfile?.name || (loadingConvs ? "Loading…" : "Member")}
                         </span>
-                        {selectedProfile?.isPremium && (
+                        {displayProfile?.isPremium && (
                           <Crown size={13} style={{ color: "#C8973A", flexShrink: 0 }} fill="#C8973A" />
                         )}
                       </div>
                       <div style={{ fontSize: "0.6875rem", color: "#888", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {[
-                          selectedProfile?.occupation,
-                          [selectedProfile?.city, selectedProfile?.state].filter(Boolean).join(", "),
-                        ].filter(Boolean).join(" · ")}
+                          displayProfile?.occupation,
+                          [displayProfile?.city, displayProfile?.state].filter(Boolean).join(", "),
+                        ].filter(Boolean).join(" · ") || "View profile →"}
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: "0.25rem", flexShrink: 0 }}>
-                      <button
-                        onClick={() => toast("Voice calls available for premium members")}
-                        style={{
-                          background: "none", border: "1px solid #E8D5B7", borderRadius: "50%",
-                          width: "36px", height: "36px", display: "flex", alignItems: "center",
-                          justifyContent: "center", cursor: "pointer", color: "#6B1A2A",
-                        }}
-                        aria-label="Voice call"
-                      >
-                        <Phone size={15} />
-                      </button>
-                      <button
-                        onClick={() => toast("Video calls available for premium members")}
-                        style={{
-                          background: "none", border: "1px solid #E8D5B7", borderRadius: "50%",
-                          width: "36px", height: "36px", display: "flex", alignItems: "center",
-                          justifyContent: "center", cursor: "pointer", color: "#6B1A2A",
-                        }}
-                        aria-label="Video call"
-                      >
-                        <Video size={15} />
-                      </button>
-                      <Link
-                        href={`/profile/${selectedId}`}
-                        style={{
-                          background: "none", border: "1px solid #E8D5B7", borderRadius: "50%",
-                          width: "36px", height: "36px", display: "flex", alignItems: "center",
-                          justifyContent: "center", cursor: "pointer", color: "#6B1A2A",
-                          textDecoration: "none",
-                        }}
-                        aria-label="View profile"
-                      >
-                        <MoreVertical size={15} />
-                      </Link>
+                    <div style={{ display: "flex", gap: "0.25rem", flexShrink: 0, position: "relative" }}>
+                      {/* Three-dot dropdown */}
+                      <div style={{ position: "relative" }}>
+                        <button
+                          id="msg-more-btn"
+                          onClick={(e) => {
+                            const menu = document.getElementById("msg-more-menu");
+                            if (menu) menu.style.display = menu.style.display === "block" ? "none" : "block";
+                            e.stopPropagation();
+                          }}
+                          style={{
+                            background: "none", border: "1px solid #E8D5B7", borderRadius: "50%",
+                            width: "36px", height: "36px", display: "flex", alignItems: "center",
+                            justifyContent: "center", cursor: "pointer", color: "#6B1A2A",
+                          }}
+                          aria-label="More options"
+                        >
+                          <MoreVertical size={15} />
+                        </button>
+                        <div
+                          id="msg-more-menu"
+                          style={{
+                            display: "none", position: "absolute", top: "calc(100% + 6px)", right: 0,
+                            background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px",
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.12)", zIndex: 200, minWidth: "180px",
+                            overflow: "hidden",
+                          }}
+                          onClick={() => { const m = document.getElementById("msg-more-menu"); if(m) m.style.display="none"; }}
+                        >
+                          <Link
+                            href={`/profile/${selectedId}`}
+                            style={{
+                              display: "flex", alignItems: "center", gap: "10px",
+                              padding: "0.75rem 1rem", color: "#222", textDecoration: "none",
+                              fontSize: "0.875rem", fontWeight: 600, fontFamily: "var(--font-sans)",
+                              borderBottom: "1px solid #f5f5f5",
+                            }}
+                          >
+                            <UserCircle size={16} style={{ color: "#6B1A2A" }} />
+                            View Profile
+                          </Link>
+                          <button
+                            onClick={() => { toast("Report submitted. Our team will review it."); }}
+                            style={{
+                              display: "flex", alignItems: "center", gap: "10px",
+                              padding: "0.75rem 1rem", color: "#C0392B", background: "none",
+                              border: "none", width: "100%", textAlign: "left",
+                              fontSize: "0.875rem", fontWeight: 600, fontFamily: "var(--font-sans)",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <Flag size={16} />
+                            Block / Report
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

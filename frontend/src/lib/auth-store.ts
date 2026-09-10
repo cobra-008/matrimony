@@ -389,10 +389,20 @@ export async function registerUser(payload: RegisterPayload): Promise<Registered
     state: payload.state,
     city: payload.city,
     diet: payload.diet,
+    smoking: payload.smoking,
+    drinking: payload.drinking,
     star: payload.star,
     rasi: payload.rasi,
+    dhosham: payload.dhosham,
     about: payload.about,
     photoUrl: payload.photoUrl,
+    bodyType: payload.bodyType,
+    timeOfBirth: payload.timeOfBirth,
+    nativePlace: payload.nativePlace,
+    company: payload.company,
+    employmentType: payload.employmentType,
+    gothram: payload.gothram,
+    college: payload.college,
   });
 
   // 4. Upsert profile (core fields only)

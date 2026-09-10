@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   dob                    DATE,
   height                 TEXT,
   weight                 TEXT,
+  body_type              TEXT,
   physical_status        TEXT,
   marital_status         TEXT,
   religion               TEXT,
@@ -41,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   star                   TEXT,
   rasi                   TEXT,
   dhosham                TEXT,
+  time_of_birth          TEXT,
   languages              TEXT[] DEFAULT '{}',
   hobbies                TEXT[] DEFAULT '{}',
   interests              TEXT[] DEFAULT '{}',
@@ -48,7 +50,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   photo_url              TEXT,
   is_verified            BOOLEAN NOT NULL DEFAULT false,
   is_premium             BOOLEAN NOT NULL DEFAULT false,
-  membership_plan        TEXT CHECK (membership_plan IN ('Gold', 'Diamond', 'Platinum')),
+  membership_plan        TEXT CHECK (membership_plan IN ('Gold', 'PrimeGold', 'PrimeTillUMarry', 'Diamond', 'Platinum')),
   membership_expiry      TIMESTAMPTZ,
   membership_activated   TIMESTAMPTZ,
   membership_price_paid  NUMERIC(10, 2),
@@ -392,6 +394,11 @@ CREATE TABLE IF NOT EXISTS public.success_stories (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Ensure is_visible column exists on pre-existing tables
+ALTER TABLE public.success_stories
+  ADD COLUMN IF NOT EXISTS is_visible BOOLEAN NOT NULL DEFAULT TRUE;
+
 ALTER TABLE public.success_stories ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public can view success stories"         ON public.success_stories;
 DROP POLICY IF EXISTS "Service role manages success stories"    ON public.success_stories;
