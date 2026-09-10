@@ -434,8 +434,12 @@ export default function ProfileDetailPage({
       toast.error("Please login to view contact numbers");
       return;
     }
+    if (!canViewContact || contactLimit === 0) {
+      toast.error("Contact viewing requires Gold plan or above. Please upgrade.");
+      return;
+    }
     if (revealsUsed >= contactLimit && contactLimit !== Infinity) {
-      toast.error("Monthly contact reveal limit (40) reached! Upgrade your plan for unlimited views.");
+      toast.error(`Monthly contact reveal limit (${contactLimit}) reached! Upgrade your plan for unlimited views.`);
       return;
     }
     try {
@@ -1255,14 +1259,14 @@ export default function ProfileDetailPage({
                       fontSize: "0.9375rem",
                       color: "var(--text-dark)",
                       marginBottom: "0.75rem",
-                      filter: hasRevealedContact ? "none" : "blur(4px)",
-                      userSelect: hasRevealedContact ? "auto" : "none",
+                      filter: hasRevealedContact && canViewContact ? "none" : "blur(4px)",
+                      userSelect: hasRevealedContact && canViewContact ? "auto" : "none",
                       fontWeight: 600,
                     }}
                   >
                     +91 {profile.mobile || "98765 43210"}
                   </div>
-                  {hasRevealedContact ? (
+                  {hasRevealedContact && canViewContact ? (
                     <a
                       href={`tel:+91${profile.mobile || "9876543210"}`}
                       style={{
@@ -1302,7 +1306,9 @@ export default function ProfileDetailPage({
                     </button>
                   )}
                   <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.625rem" }}>
-                    {contactLimit !== Infinity
+                    {contactLimit === 0
+                      ? "Upgrade to view contacts"
+                      : contactLimit !== Infinity
                       ? `${revealsUsed} of ${contactLimit} monthly views used`
                       : "Unlimited contact views with your plan"}
                   </p>

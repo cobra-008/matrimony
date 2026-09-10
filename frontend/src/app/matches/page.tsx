@@ -106,25 +106,25 @@ const SIDEBAR = [
 const SidebarIcon = ({ id, active }: { id: string; active: boolean }) => {
   const color = active ? "#6B1A2A" : id === "hidden_profiles" ? "#888" : "#aaa";
   const icons: Record<string, React.ReactElement> = {
-    your_matches:       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-    shortlisted_by_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>,
-    viewed_you:         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
-    shortlisted_you:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
-    viewed_by_you:      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-    newly_joined:       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>,
-    nearby_matches:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-    with_photos:        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
-    with_horoscope:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-    similar_hobbies:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>,
-    star_matches:       <svg width="13" height="13" viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-    horoscope_matches:  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
-    mutual_matches:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>,
-    looking_for_you:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-    education_pref:     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>,
-    professional_pref:  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
-    location_pref:      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-    nri_matches:        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
-    hidden_profiles:    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>,
+    your_matches: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+    shortlisted_by_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>,
+    viewed_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>,
+    shortlisted_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
+    viewed_by_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
+    newly_joined: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>,
+    nearby_matches: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>,
+    with_photos: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" /></svg>,
+    with_horoscope: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>,
+    similar_hobbies: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" /></svg>,
+    star_matches: <svg width="13" height="13" viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>,
+    horoscope_matches: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>,
+    mutual_matches: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" /><polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" /></svg>,
+    looking_for_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>,
+    education_pref: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>,
+    professional_pref: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>,
+    location_pref: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>,
+    nri_matches: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>,
+    hidden_profiles: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>,
   };
   return icons[id] ?? null;
 };
@@ -406,13 +406,13 @@ function ProfileCard({
                     fontWeight: 800,
                     background:
                       profile.compatibilityScore >= 70 ? "#E8F5E9" :
-                      profile.compatibilityScore >= 50 ? "#FBF6EC" : "#F5F5F5",
+                        profile.compatibilityScore >= 50 ? "#FBF6EC" : "#F5F5F5",
                     color:
                       profile.compatibilityScore >= 70 ? "#2E7D32" :
-                      profile.compatibilityScore >= 50 ? "#C8973A" : "#888",
+                        profile.compatibilityScore >= 50 ? "#C8973A" : "#888",
                     border:
                       profile.compatibilityScore >= 70 ? "1px solid #A5D6A7" :
-                      profile.compatibilityScore >= 50 ? "1px solid #E0C070" : "1px solid #ddd",
+                        profile.compatibilityScore >= 50 ? "1px solid #E0C070" : "1px solid #ddd",
                   }}
                 >
                   {profile.compatibilityScore}% Match
@@ -436,17 +436,17 @@ function ProfileCard({
             </Link>
 
             {/* Profile code */}
-          <div
-            style={{
-              fontSize: "0.75rem",
-              color: "#888",
-              marginTop: "2px",
-              fontWeight: 500,
-              letterSpacing: "0.02em",
-            }}
-          >
-            {profileCode}
-          </div>
+            <div
+              style={{
+                fontSize: "0.75rem",
+                color: "#888",
+                marginTop: "2px",
+                fontWeight: 500,
+                letterSpacing: "0.02em",
+              }}
+            >
+              {profileCode}
+            </div>
           </div>
         </div>
 
@@ -711,7 +711,7 @@ function SkeletonCard() {
 function MatchesContent() {
   const { user, loading: authLoading } = useAuth();
   const { can, isPremium } = useMembership();
-  const canMessage     = can("messages");
+  const canMessage = can("messages");
   const canViewContact = can("contacts");
   const [currentPage, setCurrentPage] = useState(1);
   const [hiddenProfiles, setHiddenProfiles] = useState<RegisteredUser[]>([]);
@@ -731,7 +731,7 @@ function MatchesContent() {
     if (tab && tab !== activeSection) {
       setActiveSection(tab);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
   // Keep sessionStorage in sync whenever the user changes section
@@ -747,6 +747,10 @@ function MatchesContent() {
   const [nameSearch, setNameSearch] = useState("");
   const [starMissing, setStarMissing] = useState(false);
   const [activeChips, setActiveChips] = useState<string[]>([]);
+  const [ageFrom, setAgeFrom] = useState("Any");
+  const [ageTo, setAgeTo] = useState("Any");
+  const [heightFrom, setHeightFrom] = useState("Any");
+  const [heightTo, setHeightTo] = useState("Any");
   const chipRowRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   // Track last user ID to detect account switches
@@ -761,7 +765,7 @@ function MatchesContent() {
       const stored = localStorage.getItem(`etm_hidden_${user.id}`);
       if (stored) setHiddenIds(new Set(JSON.parse(stored) as string[]));
     } catch { /* ignore */ }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const loadSection = useCallback(async (sectionId: string, currentUser: typeof user) => {
@@ -773,21 +777,21 @@ function MatchesContent() {
     let result: RegisteredUser[] = [];
     try {
       switch (sectionId) {
-        case "your_matches":         result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined); break;
-        case "shortlisted_by_you":   {
+        case "your_matches": result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined); break;
+        case "shortlisted_by_you": {
           const all = await getShortlistedProfiles(currentUser.id);
           const og = currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null;
           result = og ? all.filter(p => p.gender === og) : all;
           break;
         }
-        case "viewed_you":           result = await getViewedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "shortlisted_you":      result = await getShortlistedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "viewed_by_you":        result = await getViewedByMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "newly_joined":         result = await getNewlyJoined(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "nearby_matches":       result = await getNearbyMatches(currentUser.id, currentUser.state, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "with_photos":          result = await getWithPhotos(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "with_horoscope":       result = await getWithHoroscope(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "similar_hobbies":      result = await getSimilarHobbies(currentUser.id, currentUser.hobbies || [], currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "viewed_you": result = await getViewedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "shortlisted_you": result = await getShortlistedMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "viewed_by_you": result = await getViewedByMe(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "newly_joined": result = await getNewlyJoined(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "nearby_matches": result = await getNearbyMatches(currentUser.id, currentUser.state, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "with_photos": result = await getWithPhotos(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "with_horoscope": result = await getWithHoroscope(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "similar_hobbies": result = await getSimilarHobbies(currentUser.id, currentUser.hobbies || [], currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "star_matches": {
           if (!currentUser.star) {
             setStarMissing(true);
@@ -797,15 +801,15 @@ function MatchesContent() {
           result = await getStarMatches(currentUser.id, currentUser.star, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null);
           break;
         }
-        case "horoscope_matches":    result = await getHoroscopeMatches(currentUser.id, currentUser.rasi, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "mutual_matches":       result = await getMutualMatches(currentUser); break;
-        case "looking_for_you":      result = await getLookingForMe(currentUser); break;
-        case "education_pref":       result = await getByEducationPref(currentUser.id, currentUser.partnerEducation, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "professional_pref":    result = await getByProfessionPref(currentUser.id, currentUser.partnerOccupation, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "location_pref":        result = await getByLocationPref(currentUser.id, currentUser.city, currentUser.state, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "nri_matches":          result = await getNRIMatches(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
-        case "hidden_profiles":      result = []; break;
-        default:                     result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined);
+        case "horoscope_matches": result = await getHoroscopeMatches(currentUser.id, currentUser.rasi, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "mutual_matches": result = await getMutualMatches(currentUser); break;
+        case "looking_for_you": result = await getLookingForMe(currentUser); break;
+        case "education_pref": result = await getByEducationPref(currentUser.id, currentUser.partnerEducation, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "professional_pref": result = await getByProfessionPref(currentUser.id, currentUser.partnerOccupation, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "location_pref": result = await getByLocationPref(currentUser.id, currentUser.city, currentUser.state, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "nri_matches": result = await getNRIMatches(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
+        case "hidden_profiles": result = []; break;
+        default: result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined);
       }
     } catch {
       result = [];
@@ -820,7 +824,7 @@ function MatchesContent() {
     getInterestsSent(user.id).then(rows => {
       setSentInterestIds(new Set(rows.map(r => r.receiverId)));
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   // Reload data whenever the user changes (account switch) or active section changes
@@ -837,7 +841,7 @@ function MatchesContent() {
     // User changed (account switch) or section changed
     lastUserIdRef.current = user.id;
     loadSection(activeSection, user);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id]);
 
   // Restore scroll position of the right panel when navigating back from a profile
@@ -856,11 +860,12 @@ function MatchesContent() {
         });
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
-  // Client-side chip filtering + hide + name search
+  // Client-side chip filtering + hide + name search + advanced filters
   const allFiltered = profiles.filter((p) => {
+    if (p.id === user?.id) return false;
     if (activeSection !== "hidden_profiles" && hiddenIds.has(p.id)) return false;
     if (nameSearch.trim() && !p.name.toLowerCase().includes(nameSearch.toLowerCase())) return false;
     if (activeChips?.includes("Profiles with photo") && !p.photoUrl) return false;
@@ -868,6 +873,25 @@ function MatchesContent() {
     if (activeChips?.includes("Newly joined")) {
       if (!p.createdAt || Date.now() - new Date(p.createdAt).getTime() > 30 * 24 * 60 * 60 * 1000) return false;
     }
+
+    // Age Filter
+    const age = p.dob ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
+    if (age !== null) {
+      if (ageFrom !== "Any" && age < parseInt(ageFrom)) return false;
+      if (ageTo !== "Any" && age > parseInt(ageTo)) return false;
+    }
+
+    // Height Filter
+    if (heightFrom !== "Any" || heightTo !== "Any") {
+      const fromIdx = HEIGHTS.findIndex(h => h.label === heightFrom);
+      const toIdx = HEIGHTS.findIndex(h => h.label === heightTo);
+      const pIdx = HEIGHTS.findIndex(h => h.label === p.height);
+      if (pIdx !== -1) {
+        if (fromIdx !== -1 && pIdx < fromIdx) return false;
+        if (toIdx !== -1 && pIdx > toIdx) return false;
+      }
+    }
+
     return true;
   });
   const totalPages = Math.max(1, Math.ceil(allFiltered.length / PAGE_SIZE));
@@ -879,8 +903,8 @@ function MatchesContent() {
     if (hiddenIds.size === 0) { setHiddenProfiles([]); return; }
     fetchMatchProfiles(user, user.gender as "male" | "female" | undefined)
       .then(all => setHiddenProfiles(all.filter(p => hiddenIds.has(p.id))))
-      .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch(() => { });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id, hiddenIds.size]);
 
   const toggleChip = (chip: string) => {
@@ -894,8 +918,10 @@ function MatchesContent() {
     if (!user) { toast.error("Please login"); return; }
     const isAlreadyShortlisted = shortlistedIds.has(profileId);
     if (isAlreadyShortlisted) {
-      setShortlistedIds((prev) => { const s = new Set(prev); s.delete(profileId); return s; });
-      toast("Removed from shortlist");
+      if (window.confirm(`Are you sure you want to remove ${name} from your shortlist?`)) {
+        setShortlistedIds((prev) => { const s = new Set(prev); s.delete(profileId); return s; });
+        toast("Removed from shortlist");
+      }
     } else {
       setShortlistedIds((prev) => new Set([...prev, profileId]));
       await shortlistProfileWithNotification(user.id, profileId, user.name);
@@ -929,7 +955,10 @@ function MatchesContent() {
   const handleSendInterest = async (profileId: string, name: string) => {
     if (!user) { toast.error("Please login"); return; }
     if (sentInterestIds.has(profileId)) {
-      toast("Interest already sent to " + name);
+      if (window.confirm(`Are you sure you want to withdraw your interest from ${name}?`)) {
+        setSentInterestIds((prev) => { const s = new Set(prev); s.delete(profileId); return s; });
+        toast(`Interest withdrawn from ${name}`);
+      }
       return;
     }
     await sendInterestWithNotification(user.id, profileId, user.name);
@@ -1186,7 +1215,7 @@ function MatchesContent() {
                 paddingBottom: "4px",
               }}
             >
-                {/* Filter button with active-count badge */}
+              {/* Filter button with active-count badge */}
               <button
                 onClick={() => setFilterOpen((v) => !v)}
                 style={{
@@ -1276,26 +1305,47 @@ function MatchesContent() {
                   borderRadius: "6px",
                   padding: "1rem",
                   marginBottom: "0.875rem",
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-                  gap: "0.75rem",
                 }}
               >
-                {[
-                  { label: "Age From", opts: Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`) },
-                  { label: "Age To", opts: Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`) },
-                  { label: "Height From", opts: HEIGHTS.map((h) => h.label) },
-                  { label: "Height To", opts: HEIGHTS.map((h) => h.label) },
-                ].map(({ label, opts }) => (
-                  <div key={label}>
-                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>
-                      {label}
-                    </label>
-                    <select className="form-select" style={{ fontSize: "0.8125rem" }}>
-                      {opts.map((o) => <option key={o}>{o}</option>)}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem", marginBottom: "1rem" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Age From</label>
+                    <select className="form-select" style={{ fontSize: "0.8125rem" }} value={ageFrom} onChange={e => setAgeFrom(e.target.value)}>
+                      <option value="Any">Any</option>
+                      {Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`).map(o => <option key={o} value={o.split(" ")[0]}>{o}</option>)}
                     </select>
                   </div>
-                ))}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Age To</label>
+                    <select className="form-select" style={{ fontSize: "0.8125rem" }} value={ageTo} onChange={e => setAgeTo(e.target.value)}>
+                      <option value="Any">Any</option>
+                      {Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`).map(o => <option key={o} value={o.split(" ")[0]}>{o}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Height From</label>
+                    <select className="form-select" style={{ fontSize: "0.8125rem" }} value={heightFrom} onChange={e => setHeightFrom(e.target.value)}>
+                      <option value="Any">Any</option>
+                      {HEIGHTS.map(h => <option key={h.label} value={h.label}>{h.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Height To</label>
+                    <select className="form-select" style={{ fontSize: "0.8125rem" }} value={heightTo} onChange={e => setHeightTo(e.target.value)}>
+                      <option value="Any">Any</option>
+                      {HEIGHTS.map(h => <option key={h.label} value={h.label}>{h.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+                  <button onClick={() => {
+                    setAgeFrom("Any");
+                    setAgeTo("Any");
+                    setHeightFrom("Any");
+                    setHeightTo("Any");
+                  }} style={{ padding: "0.5rem 1rem", background: "none", border: "1.5px solid #ccc", borderRadius: "20px", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer", color: "#555" }}>Clear</button>
+                  <button onClick={() => setFilterOpen(false)} style={{ padding: "0.5rem 1rem", background: "#6B1A2A", color: "#fff", border: "none", borderRadius: "20px", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}>Apply Filters</button>
+                </div>
               </div>
             )}
 
@@ -1304,7 +1354,7 @@ function MatchesContent() {
               hiddenProfiles.length === 0 ? (
                 <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px", padding: "4rem 2rem", textAlign: "center" }}>
                   <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.2" style={{ margin: "0 auto 1rem", display: "block" }}>
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                   <p style={{ fontWeight: 700, color: "#555", fontSize: "1rem", margin: "0 0 0.5rem" }}>No hidden profiles</p>
                   <p style={{ color: "#aaa", fontSize: "0.875rem", margin: 0 }}>Profiles you hide using &ldquo;Don&apos;t Show&rdquo; will appear here.</p>
@@ -1318,13 +1368,13 @@ function MatchesContent() {
                     <div key={profile.id}>
                       <div style={{ opacity: 0.85, border: "1px solid #e0d0c0", borderRadius: "8px", marginBottom: "14px", overflow: "hidden", background: "#fafafa", position: "relative" }}>
                         <div style={{ position: "absolute", top: "8px", left: "8px", zIndex: 2, background: "rgba(80,80,80,0.85)", color: "#fff", borderRadius: "3px", padding: "3px 8px", fontSize: "0.6875rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
                           Hidden
                         </div>
                         <ProfileCard
                           profile={profile} index={idx}
                           onShortlist={() => handleShortlist(profile.id, profile.name)}
-                          onHide={() => {}}
+                          onHide={() => { }}
                           onSendInterest={() => handleSendInterest(profile.id, profile.name)}
                           shortlisted={shortlistedIds.has(profile.id)}
                           interestSent={sentInterestIds.has(profile.id)}
@@ -1333,7 +1383,7 @@ function MatchesContent() {
                         />
                         <div style={{ padding: "0 1rem 0.75rem", display: "flex", justifyContent: "flex-end" }}>
                           <button onClick={() => handleUnhide(profile.id, profile.name)} style={{ display: "flex", alignItems: "center", gap: "5px", padding: "0.4375rem 1rem", border: "1.5px solid #6B1A2A", borderRadius: "20px", background: "#fff", color: "#6B1A2A", fontSize: "0.8125rem", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-sans)" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                             Unhide
                           </button>
                         </div>
@@ -1346,115 +1396,115 @@ function MatchesContent() {
             ) : loading
               ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
               : starMissing
-              ? (
-                <div style={{ background: "#fff", border: "1px solid #E8D5B7", borderRadius: "8px", padding: "3rem 2rem", textAlign: "center" }}>
-                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  </div>
-                  <h3 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "0.5rem" }}>Star (Nakshatra) Not Set</h3>
-                  <p style={{ color: "#666", fontSize: "0.875rem", marginBottom: "1.5rem", maxWidth: "360px", margin: "0 auto 1.5rem", lineHeight: 1.6 }}>
-                    To view star matches, please update your Nakshatra (Star) in your profile. We use Tamil horoscope star compatibility to find the best matches for you.
-                  </p>
-                  <Link href="/profile/edit?section=religion" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#6B1A2A", color: "#fff", borderRadius: "20px", padding: "0.625rem 1.5rem", fontWeight: 700, fontSize: "0.875rem", textDecoration: "none" }}>
-                    Update Star Details →
-                  </Link>
-                </div>
-              )
-              : displayed.length === 0
-              ? (
-                <div
-                  style={{
-                    background: "#fff",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: "8px",
-                    padding: "4rem 2rem",
-                    textAlign: "center",
-                  }}
-                >
-                  <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.2" style={{ margin: "0 auto 1rem" }}>
-                    <circle cx="12" cy="7" r="4" /><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
-                  </svg>
-                  <p style={{ fontWeight: 700, color: "#555", fontSize: "1rem", margin: "0 0 0.5rem" }}>
-                    No profiles found
-                  </p>
-                  <p style={{ color: "#aaa", fontSize: "0.875rem", margin: "0 0 1.25rem" }}>
-                    No matches in this category yet. Try another section.
-                  </p>
-                  <button
-                    onClick={() => setActiveSection("your_matches")}
-                    style={{
-                      padding: "0.5rem 1.5rem",
-                      background: "#6B1A2A",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "20px",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      fontFamily: "var(--font-sans)",
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    View All Matches
-                  </button>
-                </div>
-              )
-              : (activeSection === "shortlisted_you" || activeSection === "viewed_you") && !isPremium ? (
-                <div style={{ padding: "4rem 2rem", textAlign: "center", background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px" }}>
-                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
-                    <Lock size={28} color="#fff" />
-                  </div>
-                  <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "0.5rem" }}>
-                    {activeSection === "shortlisted_you" ? "See Who Shortlisted You" : "See Who Viewed You"}
-                  </h3>
-                  {profiles.length > 0 && (
-                    <p style={{ color: "#6B1A2A", fontSize: "1.5rem", fontWeight: 800, margin: "0 0 0.5rem" }}>
-                      {profiles.length} members
+                ? (
+                  <div style={{ background: "#fff", border: "1px solid #E8D5B7", borderRadius: "8px", padding: "3rem 2rem", textAlign: "center" }}>
+                    <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                    </div>
+                    <h3 style={{ fontSize: "1.125rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "0.5rem" }}>Star (Nakshatra) Not Set</h3>
+                    <p style={{ color: "#666", fontSize: "0.875rem", marginBottom: "1.5rem", maxWidth: "360px", margin: "0 auto 1.5rem", lineHeight: 1.6 }}>
+                      To view star matches, please update your Nakshatra (Star) in your profile. We use Tamil horoscope star compatibility to find the best matches for you.
                     </p>
-                  )}
-                  <p style={{ color: "#666", fontSize: "0.875rem", marginBottom: "1.5rem", maxWidth: "400px", margin: "0 auto 1.5rem" }}>
-                    Upgrade to Gold or Prime to see exactly who {activeSection === "shortlisted_you" ? "shortlisted" : "viewed"} your profile and connect with them.
-                  </p>
-                  <Link href="/membership" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "linear-gradient(135deg, #C8973A 0%, #E8C060 100%)", color: "#fff", fontWeight: 700, fontSize: "0.9375rem", borderRadius: "30px", padding: "0.75rem 2rem", textDecoration: "none", boxShadow: "0 4px 16px rgba(200,151,58,0.35)" }}>
-                    <Crown size={16} />
-                    Upgrade to Gold — ₹999/mo
-                  </Link>
-                </div>
-              )
-              : displayed.map((profile, idx) => (
-                <div
-                  key={profile.id}
-                  onClick={() => {
-                    // Save the right-panel scroll + active section before navigating into profile detail
-                    if (rightPanelRef.current) {
-                      sessionStorage.setItem("matches_scroll", String(rightPanelRef.current.scrollTop));
-                    }
-                    sessionStorage.setItem("matches_section", activeSection);
-                  }}
-                >
-                  <ProfileCard
-                    profile={profile}
-                    index={idx}
-                    onShortlist={() => handleShortlist(profile.id, profile.name)}
-                    onHide={() => handleHide(profile.id)}
-                    onSendInterest={() => handleSendInterest(profile.id, profile.name)}
-                    shortlisted={shortlistedIds.has(profile.id)}
-                    interestSent={sentInterestIds.has(profile.id)}
-                    canMessage={canMessage}
-                    canViewContact={canViewContact}
-                  />
-                </div>
-              ))
+                    <Link href="/profile/edit?section=religion" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#6B1A2A", color: "#fff", borderRadius: "20px", padding: "0.625rem 1.5rem", fontWeight: 700, fontSize: "0.875rem", textDecoration: "none" }}>
+                      Update Star Details →
+                    </Link>
+                  </div>
+                )
+                : displayed.length === 0
+                  ? (
+                    <div
+                      style={{
+                        background: "#fff",
+                        border: "1px solid #e0e0e0",
+                        borderRadius: "8px",
+                        padding: "4rem 2rem",
+                        textAlign: "center",
+                      }}
+                    >
+                      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.2" style={{ margin: "0 auto 1rem" }}>
+                        <circle cx="12" cy="7" r="4" /><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+                      </svg>
+                      <p style={{ fontWeight: 700, color: "#555", fontSize: "1rem", margin: "0 0 0.5rem" }}>
+                        No profiles found
+                      </p>
+                      <p style={{ color: "#aaa", fontSize: "0.875rem", margin: "0 0 1.25rem" }}>
+                        No matches in this category yet. Try another section.
+                      </p>
+                      <button
+                        onClick={() => setActiveSection("your_matches")}
+                        style={{
+                          padding: "0.5rem 1.5rem",
+                          background: "#6B1A2A",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "20px",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          fontFamily: "var(--font-sans)",
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        View All Matches
+                      </button>
+                    </div>
+                  )
+                  : (activeSection === "shortlisted_you" || activeSection === "viewed_you") && !isPremium ? (
+                    <div style={{ padding: "4rem 2rem", textAlign: "center", background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px" }}>
+                      <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #6B1A2A 0%, #C8973A 100%)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+                        <Lock size={28} color="#fff" />
+                      </div>
+                      <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#1a1a1a", marginBottom: "0.5rem" }}>
+                        {activeSection === "shortlisted_you" ? "See Who Shortlisted You" : "See Who Viewed You"}
+                      </h3>
+                      {profiles.length > 0 && (
+                        <p style={{ color: "#6B1A2A", fontSize: "1.5rem", fontWeight: 800, margin: "0 0 0.5rem" }}>
+                          {profiles.length} members
+                        </p>
+                      )}
+                      <p style={{ color: "#666", fontSize: "0.875rem", marginBottom: "1.5rem", maxWidth: "400px", margin: "0 auto 1.5rem" }}>
+                        Upgrade to Gold or Prime to see exactly who {activeSection === "shortlisted_you" ? "shortlisted" : "viewed"} your profile and connect with them.
+                      </p>
+                      <Link href="/membership" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "linear-gradient(135deg, #C8973A 0%, #E8C060 100%)", color: "#fff", fontWeight: 700, fontSize: "0.9375rem", borderRadius: "30px", padding: "0.75rem 2rem", textDecoration: "none", boxShadow: "0 4px 16px rgba(200,151,58,0.35)" }}>
+                        <Crown size={16} />
+                        Upgrade to Gold — ₹999/mo
+                      </Link>
+                    </div>
+                  )
+                    : displayed.map((profile, idx) => (
+                      <div
+                        key={profile.id}
+                        onClick={() => {
+                          // Save the right-panel scroll + active section before navigating into profile detail
+                          if (rightPanelRef.current) {
+                            sessionStorage.setItem("matches_scroll", String(rightPanelRef.current.scrollTop));
+                          }
+                          sessionStorage.setItem("matches_section", activeSection);
+                        }}
+                      >
+                        <ProfileCard
+                          profile={profile}
+                          index={idx}
+                          onShortlist={() => handleShortlist(profile.id, profile.name)}
+                          onHide={() => handleHide(profile.id)}
+                          onSendInterest={() => handleSendInterest(profile.id, profile.name)}
+                          shortlisted={shortlistedIds.has(profile.id)}
+                          interestSent={sentInterestIds.has(profile.id)}
+                          canMessage={canMessage}
+                          canViewContact={canViewContact}
+                        />
+                      </div>
+                    ))
             }
 
             {/* Pagination */}
             {!loading && allFiltered.length > 0 && activeSection !== "hidden_profiles" &&
               !((activeSection === "shortlisted_you" || activeSection === "viewed_you") && !isPremium) && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={(p) => { setCurrentPage(p); rightPanelRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }}
-              />
-            )}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(p) => { setCurrentPage(p); rightPanelRef.current?.scrollTo({ top: 0, behavior: "smooth" }); }}
+                />
+              )}
           </div>
         </div>
       </main>

@@ -198,7 +198,7 @@ export default function Navbar() {
     return pathname.startsWith(href);
   };
 
-  const otherProfiles = storedProfiles.filter((p) => p.id !== user?.id && p.mobile === user?.mobile);
+  const otherProfiles = storedProfiles.filter((p) => p.id !== user?.id);
   const { can, isPremium, planName } = useMembership();
 
   // ── LOGGED-IN NAVBAR ──────────────────────────────────────────────────────

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 
 const FOOTER_LINKS = {
   "Help & Support": [
@@ -94,123 +95,144 @@ const SOCIAL_LINKS = [
 ];
 
 export default function Footer() {
+  const { user } = useAuth();
+
   return (
     <>
       {/* ── Pre-Footer CTA Band ─────────────────────────────────────────── */}
-      <section
-        style={{
-          background: "var(--bg-light)",
-          borderTop: "1px solid var(--border-color)",
-          borderBottom: "1px solid var(--border-color)",
-          padding: "2.5rem 0",
-        }}
-      >
-        <div className="container">
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              textAlign: "center",
-              gap: "0.875rem",
-            }}
-          >
-            {/* Kolam-inspired decorative line */}
+      {!user ? (
+        <section
+          style={{
+            background: "var(--bg-light)",
+            borderTop: "1px solid var(--border-color)",
+            borderBottom: "1px solid var(--border-color)",
+            padding: "2.5rem 0",
+          }}
+        >
+          <div className="container">
             <div
               style={{
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                gap: "0.75rem",
-                marginBottom: "0.25rem",
+                textAlign: "center",
+                gap: "0.875rem",
               }}
             >
-              <div style={{ width: "40px", height: "1px", background: "var(--secondary)" }} />
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.5 3.5,15 5,9.5 1,6 6,6" fill="var(--secondary)" />
-              </svg>
-              <div style={{ width: "40px", height: "1px", background: "var(--secondary)" }} />
-            </div>
-
-            <h2
-              style={{
-                fontSize: "clamp(1.0625rem, 2.5vw, 1.375rem)",
-                fontWeight: 700,
-                color: "var(--text-dark)",
-                margin: 0,
-                lineHeight: 1.3,
-              }}
-            >
-              Looking for a meaningful marriage relationship?
-            </h2>
-
-            <p
-              style={{
-                fontSize: "0.9375rem",
-                color: "var(--text-medium)",
-                maxWidth: "520px",
-                lineHeight: 1.6,
-                margin: 0,
-              }}
-            >
-              Create your profile, discover compatible matches, and take the first step toward finding your life partner.
-            </p>
-
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "0.75rem",
-                justifyContent: "center",
-                marginTop: "0.25rem",
-              }}
-            >
-              <Link
-                href="/register"
+              {/* Kolam-inspired decorative line */}
+              <div
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
-                  gap: "6px",
-                  background: "var(--primary)",
-                  color: "#fff",
-                  padding: "0.625rem 1.5rem",
-                  borderRadius: "4px",
-                  fontWeight: 700,
-                  fontSize: "0.9375rem",
-                  textDecoration: "none",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                  transition: "background 0.15s",
-                  minHeight: "44px",
+                  gap: "0.75rem",
+                  marginBottom: "0.25rem",
                 }}
               >
-                Register Free
-              </Link>
-              <Link
-                href="/search"
+                <div style={{ width: "40px", height: "1px", background: "var(--secondary)" }} />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <polygon points="8,1 10,6 15,6 11,9.5 12.5,15 8,11.5 3.5,15 5,9.5 1,6 6,6" fill="var(--secondary)" />
+                </svg>
+                <div style={{ width: "40px", height: "1px", background: "var(--secondary)" }} />
+              </div>
+
+              <h2
                 style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: "transparent",
-                  color: "var(--primary)",
-                  border: "1.5px solid var(--primary)",
-                  padding: "0.625rem 1.5rem",
-                  borderRadius: "4px",
+                  fontSize: "clamp(1.0625rem, 2.5vw, 1.375rem)",
                   fontWeight: 700,
-                  fontSize: "0.9375rem",
-                  textDecoration: "none",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.04em",
-                  transition: "background 0.15s, color 0.15s",
-                  minHeight: "44px",
+                  color: "var(--text-dark)",
+                  margin: 0,
+                  lineHeight: 1.3,
                 }}
               >
-                Search Profiles
-              </Link>
+                Looking for a meaningful marriage relationship?
+              </h2>
+
+              <p
+                style={{
+                  fontSize: "0.9375rem",
+                  color: "var(--text-medium)",
+                  maxWidth: "520px",
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                Create your profile, discover compatible matches, and take the first step toward finding your life partner.
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "0.75rem",
+                  justifyContent: "center",
+                  marginTop: "0.25rem",
+                }}
+              >
+                <Link
+                  href="/register"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    background: "var(--primary)",
+                    color: "#fff",
+                    padding: "0.625rem 1.5rem",
+                    borderRadius: "4px",
+                    fontWeight: 700,
+                    fontSize: "0.9375rem",
+                    textDecoration: "none",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    transition: "background 0.15s",
+                    minHeight: "44px",
+                  }}
+                >
+                  Register Free
+                </Link>
+                <Link
+                  href="/search"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    background: "transparent",
+                    color: "var(--primary)",
+                    border: "1.5px solid var(--primary)",
+                    padding: "0.625rem 1.5rem",
+                    borderRadius: "4px",
+                    fontWeight: 700,
+                    fontSize: "0.9375rem",
+                    textDecoration: "none",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    transition: "background 0.15s, color 0.15s",
+                    minHeight: "44px",
+                  }}
+                >
+                  Search Profiles
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <section
+          style={{
+            background: "var(--primary-light)",
+            borderTop: "1px solid var(--border-color)",
+            padding: "1.5rem 0",
+          }}
+        >
+          <div className="container" style={{ textAlign: "center" }}>
+            <h3 style={{ margin: 0, fontSize: "1rem", color: "var(--primary)", fontWeight: 700 }}>
+              Upgrade to Premium for direct messaging, contact access, and priority search.
+            </h3>
+            <Link href="/membership" style={{ color: "var(--text-dark)", fontSize: "0.875rem", textDecoration: "underline", marginTop: "0.5rem", display: "inline-block", fontWeight: 600 }}>
+              View Plans
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* ── Main Footer ─────────────────────────────────────────────────── */}
       <footer style={{ background: "var(--primary-dark)", color: "rgba(255,255,255,0.8)", marginTop: "auto" }}>

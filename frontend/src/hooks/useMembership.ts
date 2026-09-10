@@ -47,8 +47,8 @@ const PLAN_LEVEL: Record<string, PlanLevel> = {
 
 const FEATURE_MIN_LEVEL: Record<Feature, PlanLevel> = {
   messages:           1,
-  contacts:           0, // Free users can access up to limit
-  interests:          0,  // free to send, but capped at 10/mo
+  contacts:           1, // Gold+ only
+  interests:          0, // free to send, but capped at 10/mo
   who_viewed:         1,
   ai_score:           1,
   priority:           1,
@@ -168,12 +168,14 @@ export function useMembership() {
   // ── Resolve authoritative plan name ───────────────────────────────────────
   // Priority: DB plan > isPremium flag > localStorage cache > Free
   const dbPlan = user?.membershipPlan as PlanName | null | undefined;
-  const dbPlanValid = dbPlan && dbPlan !== "Free" && dbPlan in PLAN_LEVEL;
+  const dbExpiry = user?.membershipExpiry;
+  const isDbPlanExpired = dbExpiry ? new Date(dbExpiry) < new Date() : false;
+  const dbPlanValid = dbPlan && dbPlan !== "Free" && dbPlan in PLAN_LEVEL && !isDbPlanExpired;
 
   let planName: PlanName;
   if (dbPlanValid) {
     planName = dbPlan as PlanName;
-  } else if (user?.isPremium) {
+  } else if (user?.isPremium && !isDbPlanExpired) {
     // isPremium=true but membership_plan column may be null → treat as Gold minimum
     planName = (localPlan && localPlan !== "Free") ? localPlan : "Gold";
   } else if (localPlan && localPlan !== "Free") {
@@ -188,20 +190,20 @@ export function useMembership() {
     if (user?.id && dbPlanValid) {
       cacheActivePlan(user.id, dbPlan as PlanName, user.membershipExpiry);
       setLocalPlan(dbPlan as PlanName);
-    } else if (!user) {
+    } else if (!user || isDbPlanExpired) {
       clearCachedPlan();
       setLocalPlan(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, dbPlan, user?.membershipExpiry]);
+  }, [user?.id, dbPlan, user?.membershipExpiry, isDbPlanExpired]);
 
   const planLevel: PlanLevel = (PLAN_LEVEL[planName] ?? 0) as PlanLevel;
 
   /** Returns true if current plan supports the feature */
   const can = (feature: Feature): boolean => planLevel >= FEATURE_MIN_LEVEL[feature];
 
-  /** Monthly contact reveals: Free=40, Gold+=unlimited */
-  const contactLimit = planLevel >= 1 ? Infinity : 40;
+  /** Monthly contact reveals: Free=0, Gold=40, Diamond+=unlimited */
+  const contactLimit = planName === "Gold" ? 40 : planLevel >= 2 ? Infinity : 0;
 
   /** Monthly interest limit: Free=10, Gold+=unlimited */
   const interestLimit = planLevel >= 1 ? Infinity : 10;

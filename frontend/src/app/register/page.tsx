@@ -360,12 +360,12 @@ function RegisterWizard() {
     email: initEmail, // prefilled when coming from login "Create Account"
     // Step 1
     height: "",
-    physicalStatus: "Normal",
-    maritalStatus: MARITAL_STATUS[0].label,
+    physicalStatus: "",         // blank by default — user must select
+    maritalStatus: "",          // blank by default — user must select
     religion: "",
     caste: "",
     subcaste: "",
-    motherTongue: "Tamil",
+    motherTongue: "",            // blank by default — user must select
     // Step 2
     education: "",
     occupation: "",
@@ -386,6 +386,7 @@ function RegisterWizard() {
     photoUrl: "",
     about: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);  // ← prevents double-submit
 
@@ -588,12 +589,18 @@ function RegisterWizard() {
     if (dobErr) newErrors.dob = dobErr;
     if (!form.gender) newErrors.gender = "Please select your gender.";
     if (!otpVerified) newErrors.otp = "Please verify your mobile number.";
-    if (form.email) {
+    // Email is mandatory
+    if (!form.email.trim()) {
+      newErrors.email = "Email address is required.";
+    } else {
       const emailErr = validateEmail(form.email);
       if (emailErr) newErrors.email = emailErr;
       else if (!emailOtpVerified) newErrors.email = "Please verify your email address before continuing.";
     }
-    if (form.password) {
+    // Password is mandatory
+    if (!form.password) {
+      newErrors.password = "Password is required.";
+    } else {
       const pwErr = validatePassword(form.password);
       if (pwErr) newErrors.password = pwErr;
     }
@@ -642,6 +649,8 @@ function RegisterWizard() {
     if (!form.dob)                    { toast.error("Please enter your date of birth"); return; }
     if (!form.gender)                 { toast.error("Please select your gender"); return; }
     if (!otpVerified)                 { toast.error("Please verify your mobile number first"); return; }
+    if (!form.email.trim())           { toast.error("Please enter your email address"); return; }
+    if (!form.password)               { toast.error("Please set a password"); return; }
 
     setIsSubmitting(true);
     try {
@@ -650,7 +659,7 @@ function RegisterWizard() {
         name: form.name,
         mobile: form.mobile,
         email: form.email || undefined,
-        password: form.password || `ETM_${form.mobile}_2024`,
+        password: form.password,   // always user-set (validated above)
         dob: form.dob,                 // guaranteed non-empty by guard above
         gender: form.gender as "male" | "female",
         height: form.height,
@@ -700,7 +709,7 @@ function RegisterWizard() {
 
       await refresh();
       toast.success("Profile created successfully! Welcome to Elite Tamil Matrimony");
-      router.push("/matches");
+      router.push("/");   // redirect to Home after registration
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed";
       // Map Supabase rate-limit error to a user-friendly message
@@ -1068,32 +1077,60 @@ function RegisterWizard() {
                 {fieldErrors.otp && <FieldError msg={fieldErrors.otp} />}
               </div>
 
-              {/* Optional password */}
+              {/* Password — mandatory with eye toggle */}
               <div style={{ marginBottom: "1.5rem" }}>
-                <label className="form-label" htmlFor="password-input">Set Password <span style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--text-muted)" }}>(optional)</span></label>
-                <input
-                  id="password-input"
-                  type="password"
-                  className="form-input"
-                  placeholder="Create a login password (min 6 characters)"
-                  value={form.password}
-                  onChange={(e) => {
-                    set("password", e.target.value);
-                    const err = validatePassword(e.target.value);
-                    if (err) setFieldError("password", err);
-                    else clearFieldError("password");
-                  }}
-                  style={{ borderColor: fieldErrors.password ? "#D32F2F" : undefined }}
-                />
+                <label className="form-label" htmlFor="password-input">Set Password <span style={{ color: "var(--primary)", marginLeft: "2px" }}>*</span></label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    id="password-input"
+                    type={showPassword ? "text" : "password"}
+                    className="form-input"
+                    placeholder="Create a login password (min 6 characters)"
+                    value={form.password}
+                    onChange={(e) => {
+                      set("password", e.target.value);
+                      if (!e.target.value) setFieldError("password", "Password is required.");
+                      else {
+                        const err = validatePassword(e.target.value);
+                        if (err) setFieldError("password", err);
+                        else clearFieldError("password");
+                      }
+                    }}
+                    style={{ borderColor: fieldErrors.password ? "#D32F2F" : undefined, paddingRight: "2.5rem" }}
+                    aria-required="true"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    style={{
+                      position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)",
+                      background: "none", border: "none", cursor: "pointer", color: "#888", padding: "2px",
+                      display: "flex", alignItems: "center",
+                    }}
+                  >
+                    {showPassword ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
                 <FieldError msg={fieldErrors.password} />
               </div>
 
-              {/* ── Email with OTP Verification ── */}
+              {/* ── Email with OTP Verification (mandatory) ── */}
               <div style={{ marginBottom: "1.5rem", background: "var(--bg-page)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", padding: "1rem 1.125rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "0.625rem" }}>
                   <Mail size={15} style={{ color: "var(--primary)" }} />
                   <label className="form-label" style={{ margin: 0, fontSize: "0.9375rem" }}>
-                    Email Address <span style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--text-muted)" }}>(optional — get payment receipts)</span>
+                    Email Address <span style={{ color: "var(--primary)", marginLeft: "2px" }}>*</span>
                   </label>
                 </div>
 
@@ -1766,20 +1803,26 @@ function RegisterWizard() {
 
               <label
                 htmlFor="photo-upload"
+                title="Add photo"
+                aria-label="Add photo"
                 style={{
-                  display: "block",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "56px",
+                  height: "56px",
                   background: "var(--primary)",
                   color: "#fff",
-                  borderRadius: "var(--radius-full)",
-                  padding: "0.75rem",
-                  textAlign: "center",
-                  fontWeight: 700,
-                  fontSize: "0.9375rem",
+                  borderRadius: "50%",
                   cursor: "pointer",
-                  letterSpacing: "0.01em",
+                  fontSize: "2rem",
+                  fontWeight: 300,
+                  lineHeight: 1,
+                  boxShadow: "0 2px 8px rgba(107,26,42,0.25)",
+                  transition: "background 0.15s",
                 }}
               >
-                Add photo now
+                +
               </label>
               <input
                 id="photo-upload"

@@ -142,7 +142,7 @@ function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<Section>("account");
-  const [modal, setModal] = useState<string | null>(null);
+  const [modal, setModal] = useState<"phone" | "email" | "password" | "delete" | "logout" | null>(null);
 
   // Jump to section from URL param (e.g. /settings?section=preferences)
   useEffect(() => {
@@ -263,7 +263,7 @@ function SettingsContent() {
                 <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-dark)" }}>Logout</div>
                 <div style={{ fontSize: "0.75rem", color: "#aaa" }}>Sign out from this device</div>
               </div>
-              <button onClick={handleLogout} className="btn btn-ghost" style={{ border: "1.5px solid var(--border-color)", fontSize: "0.8125rem", display: "flex", alignItems: "center", gap: "5px" }}>
+              <button onClick={() => setModal("logout")} className="btn btn-ghost" style={{ border: "1.5px solid var(--border-color)", fontSize: "0.8125rem", display: "flex", alignItems: "center", gap: "5px" }}>
                 <LogOut size={14} /> Logout
               </button>
             </div>
@@ -373,7 +373,7 @@ function SettingsContent() {
                   </div>
                 </div>
                 {!session.current && (
-                  <button onClick={() => toast.success("Session terminated")} style={{ background: "none", border: "1px solid #ffcdd2", borderRadius: "var(--radius-full)", padding: "0.25rem 0.75rem", color: "#e53935", fontSize: "0.75rem", cursor: "pointer", fontFamily: "var(--font-sans)" }}>
+                  <button onClick={() => setModal("logout")} style={{ background: "none", border: "1px solid #ffcdd2", borderRadius: "var(--radius-full)", padding: "0.25rem 0.75rem", color: "#e53935", fontSize: "0.75rem", cursor: "pointer", fontFamily: "var(--font-sans)" }}>
                     Logout
                   </button>
                 )}
@@ -649,6 +649,28 @@ function SettingsContent() {
               </button>
               <button onClick={handleDeleteAccount} style={{ flex: 1, background: "#e53935", color: "#fff", border: "none", borderRadius: "var(--radius-full)", padding: "0.625rem", fontWeight: 700, fontSize: "0.875rem", cursor: "pointer", fontFamily: "var(--font-sans)" }}>
                 Delete Account
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {modal === "logout" && (
+        <Modal title="Confirm Logout" onClose={() => setModal(null)}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#fff5f5", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+              <LogOut size={28} style={{ color: "var(--primary)" }} />
+            </div>
+            <h3 style={{ color: "var(--text-dark)", fontSize: "1rem", fontWeight: 700, marginBottom: "0.5rem" }}>Are you sure you want to log out?</h3>
+            <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+              You will need to enter your credentials or verify OTP to sign in again.
+            </p>
+            <div style={{ display: "flex", gap: "0.75rem" }}>
+              <button onClick={() => setModal(null)} className="btn btn-ghost" style={{ flex: 1, border: "1.5px solid var(--border-color)", justifyContent: "center" }}>
+                Cancel
+              </button>
+              <button onClick={handleLogout} style={{ flex: 1, background: "var(--primary)", color: "#fff", border: "none", borderRadius: "var(--radius-full)", padding: "0.625rem", fontWeight: 700, fontSize: "0.875rem", cursor: "pointer", fontFamily: "var(--font-sans)" }}>
+                Logout
               </button>
             </div>
           </div>
