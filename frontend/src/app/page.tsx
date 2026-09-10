@@ -483,16 +483,6 @@ function AuthenticatedDashboard() {
 
   if (!user) return null;
 
-  const MALE_PHOTOS = [
-    "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200",
-    "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=200",
-    "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200",
-  ];
-  const FEMALE_PHOTOS = [
-    "https://images.pexels.com/photos/1587009/pexels-photo-1587009.jpeg?auto=compress&cs=tinysrgb&w=200",
-    "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200",
-    "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200",
-  ];
 
   // Profile completeness — which fields are missing
   const missing: { label: string; href: string; icon: React.ReactNode }[] = [];
@@ -918,7 +908,7 @@ function AuthenticatedDashboard() {
                     />
                   ))
                 : dailyRecs.slice(0, 10).map((p, idx) => {
-                    const photo = p.photoUrl || (p.gender === "female" ? FEMALE_PHOTOS[idx % 3] : MALE_PHOTOS[idx % 3]);
+                    const photo = p.photoUrl;
                     const age = p.dob
                       ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
                       : 0;
@@ -931,15 +921,31 @@ function AuthenticatedDashboard() {
                           display: "block", textDecoration: "none",
                         }}
                       >
-                        <img
-                          src={photo}
-                          alt={p.name}
-                          style={{
-                            width: "125px", height: "160px",
-                            objectFit: "cover", objectPosition: "top",
-                            borderRadius: "6px", display: "block",
-                          }}
-                        />
+                        {photo ? (
+                          <img
+                            src={photo}
+                            alt={p.name}
+                            style={{
+                              width: "125px", height: "160px",
+                              objectFit: "cover", objectPosition: "top",
+                              borderRadius: "6px", display: "block",
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: "125px", height: "160px",
+                              background: "#f5f5f5",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "6px",
+                              color: "#ccc"
+                            }}
+                          >
+                            <User size={48} strokeWidth={1.5} />
+                          </div>
+                        )}
                         <div style={{ marginTop: "5px", fontSize: "0.8125rem", fontWeight: 600, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {p.name}
                         </div>
