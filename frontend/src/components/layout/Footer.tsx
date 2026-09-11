@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
+import { useMembership } from "@/hooks/useMembership";
 
 const FOOTER_LINKS = {
   "Help & Support": [
@@ -96,6 +97,7 @@ const SOCIAL_LINKS = [
 
 export default function Footer() {
   const { user } = useAuth();
+  const { isPremium } = useMembership();
 
   return (
     <>
@@ -215,7 +217,7 @@ export default function Footer() {
             </div>
           </div>
         </section>
-      ) : (
+      ) : isPremium ? null : (
         <section
           style={{
             background: "var(--primary-light)",

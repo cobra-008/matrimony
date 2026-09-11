@@ -198,7 +198,9 @@ export default function Navbar() {
     return pathname.startsWith(href);
   };
 
-  const otherProfiles = storedProfiles.filter((p) => p.id !== user?.id);
+  const otherProfiles = storedProfiles.filter(
+    (p) => p.id !== user?.id && p.mobile && p.mobile === user?.mobile
+  );
   const { can, isPremium, planName } = useMembership();
 
   // ── LOGGED-IN NAVBAR ──────────────────────────────────────────────────────
@@ -491,7 +493,7 @@ export default function Navbar() {
                     >
                       <div style={{ fontWeight: 700, fontSize: "0.9375rem", color: "#222", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</div>
                       <div style={{ fontSize: "0.75rem", color: "#888", marginTop: "2px" }}>
-                        {user.mobile ? `+91 ${user.mobile}` : user.id.slice(0, 8).toUpperCase()}
+                        {user.id.slice(0, 8).toUpperCase()}
                       </div>
                       {/* Show plan badge in dropdown on mobile */}
                       <div className="show-mobile" style={{ marginTop: "6px" }}>
@@ -573,7 +575,7 @@ export default function Navbar() {
                             key={p.id}
                             onClick={() => {
                               setProfileMenuOpen(false);
-                              router.push(`/login?switchTo=${p.mobile || ""}&name=${encodeURIComponent(p.name)}`);
+                              router.push(`/login?mobile=${encodeURIComponent(p.mobile || "")}&name=${encodeURIComponent(p.name)}`);
                             }}
                             style={{
                               width: "100%",

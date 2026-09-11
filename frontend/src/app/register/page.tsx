@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ChevronDown, ChevronLeft, Phone, Upload, X, Check, AlertCircle, Mail } from "lucide-react";
+import { ChevronDown, ChevronLeft, Phone, Upload, X, Check, AlertCircle, Mail, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import { registerUser, saveCompatibilityAnswers } from "@/lib/auth-store";
 import { uploadProfilePhoto } from "@/lib/supabase";
@@ -1815,14 +1815,11 @@ function RegisterWizard() {
                   color: "#fff",
                   borderRadius: "50%",
                   cursor: "pointer",
-                  fontSize: "2rem",
-                  fontWeight: 300,
-                  lineHeight: 1,
                   boxShadow: "0 2px 8px rgba(107,26,42,0.25)",
                   transition: "background 0.15s",
                 }}
               >
-                +
+                <Plus size={28} strokeWidth={2.5} />
               </label>
               <input
                 id="photo-upload"
