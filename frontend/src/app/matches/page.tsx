@@ -796,6 +796,7 @@ function MatchesContent() {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(new Set());
   const [sentInterestIds, setSentInterestIds] = useState<Set<string>>(new Set());
+  const [confirmWithdraw, setConfirmWithdraw] = useState<{ id: string, name: string } | null>(null);
   const [nameSearch, setNameSearch] = useState("");
   const [starMissing, setStarMissing] = useState(false);
   const [activeChips, setActiveChips] = useState<string[]>([]);
@@ -1015,15 +1016,19 @@ function MatchesContent() {
   const handleSendInterest = async (profileId: string, name: string) => {
     if (!user) { toast.error("Please login"); return; }
     if (sentInterestIds.has(profileId)) {
-      if (window.confirm(`Are you sure you want to withdraw your interest from ${name}?`)) {
-        setSentInterestIds((prev) => { const s = new Set(prev); s.delete(profileId); return s; });
-        toast(`Interest withdrawn from ${name}`);
-      }
+      setConfirmWithdraw({ id: profileId, name });
       return;
     }
     await sendInterestWithNotification(user.id, profileId, user.name);
     setSentInterestIds(prev => new Set([...prev, profileId]));
     toast.success(`Interest sent to ${name}!`);
+  };
+
+  const confirmWithdrawInterest = () => {
+    if (!confirmWithdraw) return;
+    setSentInterestIds((prev) => { const s = new Set(prev); s.delete(confirmWithdraw.id); return s; });
+    toast(`Interest withdrawn from ${confirmWithdraw.name}`);
+    setConfirmWithdraw(null);
   };
 
   // Section label for heading — used in h1
@@ -1647,6 +1652,39 @@ function MatchesContent() {
           }
         }
       `}</style>
+      
+      {/* Withdraw Interest Modal */}
+      {confirmWithdraw && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.5)", zIndex: 9999,
+          display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <div style={{
+            background: "#fff", padding: "1.5rem", borderRadius: "16px",
+            width: "90%", maxWidth: "400px", boxShadow: "0 10px 25px rgba(0,0,0,0.2)"
+          }}>
+            <h3 style={{ margin: "0 0 1rem", fontSize: "1.125rem", color: "#111", fontWeight: 600 }}>www.elitetamilmatrimony.com says</h3>
+            <p style={{ margin: "0 0 1.5rem", color: "#333", fontSize: "0.9375rem" }}>
+              Are you sure you want to withdraw your interest from {confirmWithdraw.name}?
+            </p>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button 
+                onClick={confirmWithdrawInterest}
+                style={{ padding: "0.5rem 1.5rem", background: "#6B1A2A", color: "#fff", border: "2px solid #6B1A2A", borderRadius: "20px", cursor: "pointer", fontWeight: 600, fontSize: "0.875rem" }}
+              >
+                Yes
+              </button>
+              <button 
+                onClick={() => setConfirmWithdraw(null)}
+                style={{ padding: "0.5rem 1.5rem", background: "#FCE8E8", color: "#6B1A2A", border: "none", borderRadius: "20px", cursor: "pointer", fontWeight: 600, fontSize: "0.875rem" }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

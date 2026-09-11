@@ -152,7 +152,20 @@ function MessagesContent() {
   const [loadingConvs, setLoadingConvs] = useState(true);
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [sending, setSending] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setIsMoreMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const selectedConv = conversations.find((c) => c.partnerId === selectedId);
   const selectedProfile = selectedConv?.partnerProfile;
@@ -523,14 +536,10 @@ function MessagesContent() {
                     </div>
                     <div style={{ display: "flex", gap: "0.25rem", flexShrink: 0, position: "relative" }}>
                       {/* Three-dot dropdown */}
-                      <div style={{ position: "relative" }}>
+                      <div style={{ position: "relative" }} ref={moreMenuRef}>
                         <button
                           id="msg-more-btn"
-                          onClick={(e) => {
-                            const menu = document.getElementById("msg-more-menu");
-                            if (menu) menu.style.display = menu.style.display === "block" ? "none" : "block";
-                            e.stopPropagation();
-                          }}
+                          onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
                           style={{
                             background: "none", border: "1px solid #E8D5B7", borderRadius: "50%",
                             width: "36px", height: "36px", display: "flex", alignItems: "center",
@@ -540,16 +549,17 @@ function MessagesContent() {
                         >
                           <MoreVertical size={15} />
                         </button>
-                        <div
-                          id="msg-more-menu"
-                          style={{
-                            display: "none", position: "absolute", top: "calc(100% + 6px)", right: 0,
-                            background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px",
-                            boxShadow: "0 4px 16px rgba(0,0,0,0.12)", zIndex: 200, minWidth: "180px",
-                            overflow: "hidden",
-                          }}
-                          onClick={() => { const m = document.getElementById("msg-more-menu"); if(m) m.style.display="none"; }}
-                        >
+                        {isMoreMenuOpen && (
+                          <div
+                            id="msg-more-menu"
+                            style={{
+                              position: "absolute", top: "calc(100% + 6px)", right: 0,
+                              background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px",
+                              boxShadow: "0 4px 16px rgba(0,0,0,0.12)", zIndex: 200, minWidth: "180px",
+                              overflow: "hidden",
+                            }}
+                            onClick={() => setIsMoreMenuOpen(false)}
+                          >
                           <Link
                             href={`/profile/${selectedId}`}
                             style={{
@@ -575,7 +585,8 @@ function MessagesContent() {
                             <Flag size={16} />
                             Block / Report
                           </button>
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
