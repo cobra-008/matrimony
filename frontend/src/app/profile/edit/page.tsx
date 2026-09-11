@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect, Suspense } from "react";
+import BackButton from "@/components/ui/BackButton";
 import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -686,9 +687,12 @@ function EditProfileContent() {
           {user && (<>
           {/* ── Page header ── */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: "0.75rem" }}>
-            <div>
-              <h1 style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Edit Profile</h1>
-              <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginTop: "3px" }}>Update your information to get better matches</p>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
+              <div style={{ marginTop: "2px" }}><BackButton /></div>
+              <div>
+                <h1 style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Edit Profile</h1>
+                <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginTop: "3px" }}>Update your information to get better matches</p>
+              </div>
             </div>
             <div style={{ display: "flex", gap: "0.75rem" }}>
               <Link href={user ? `/profile/${user.id}` : "/matches"} className="btn btn-ghost" style={{ border: "1.5px solid var(--border-color)", display: "flex", alignItems: "center", gap: "5px" }}>
