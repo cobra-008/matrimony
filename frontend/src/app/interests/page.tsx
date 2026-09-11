@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import PlanTabs from "@/components/ui/PlanTabs";
 
@@ -753,9 +754,11 @@ export default function InterestsPage() {
                 </svg>
                 {headingMap[currentFilter]}
               </button>
-              <div>
-                <h1 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#111", margin: "0 0 3px" }}>
-                  {headingMap[currentFilter]}{" "}
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <div style={{ marginTop: "2px" }}><BackButton /></div>
+                <div>
+                  <h1 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#111", margin: "0 0 3px" }}>
+                    {headingMap[currentFilter]}{" "}
                   <span style={{ color: "#E8401A" }}>
                     ({section === "received"
                       ? receivedCounts[receivedFilter]
@@ -765,6 +768,7 @@ export default function InterestsPage() {
                 <p style={{ fontSize: "0.8125rem", color: "#888", margin: 0 }}>
                   {subtitleMap[section][currentFilter]}
                 </p>
+              </div>
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>

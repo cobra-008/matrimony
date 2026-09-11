@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import { CheckCircle2, Star, Heart, MapPin, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -62,6 +63,7 @@ export default function SuccessStoriesPage() {
           />
           <div className="container relative z-10 text-center text-white">
             <div className="flex items-center justify-center gap-2 mb-4">
+              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
               <Heart size={18} className="fill-white text-white" />
               <span className="text-sm font-semibold uppercase tracking-wider text-white/80">
                 Success Stories

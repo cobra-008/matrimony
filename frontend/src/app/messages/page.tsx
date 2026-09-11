@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import {
   Search, MoreVertical,
   Send, CheckCheck, Check, Crown, MessageCircle, ArrowLeft, UserCircle, Flag,
@@ -355,6 +356,11 @@ function MessagesContent() {
       <Navbar />
       <main style={{ background: "#FFF8F0", minHeight: "100vh", paddingTop: "1rem", paddingBottom: "1rem" }}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 0.75rem" }}>
+
+          <div style={{ display: "flex", alignItems: "center", marginBottom: "0.75rem", gap: "0.5rem" }}>
+            <BackButton />
+            <h1 style={{ fontSize: "1.375rem", fontWeight: 700, color: "#6B1A2A", margin: 0, fontFamily: "var(--font-sans)" }}>Messages</h1>
+          </div>
 
           {/* Search bar — visible only in list view on mobile */}
           <div style={{

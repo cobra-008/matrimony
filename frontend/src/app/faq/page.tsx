@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import { Search, ChevronDown, MessageCircle, HelpCircle, ShieldCheck, CreditCard, UserCircle, Heart } from "lucide-react";
 import Link from "next/link";
@@ -136,9 +137,12 @@ export default function FAQPage() {
           <div style={{ position: "absolute", bottom: "-100px", right: "-50px", width: "300px", height: "300px", background: "rgba(200,151,58,0.1)", borderRadius: "50%", filter: "blur(30px)" }} />
 
           <div style={{ maxWidth: "700px", margin: "0 auto", position: "relative", zIndex: 2 }}>
-            <h1 style={{ fontSize: "2.5rem", fontWeight: 800, marginBottom: "1rem", letterSpacing: "-0.02em" }}>
-              How can we help you?
-            </h1>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
+              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
+              <h1 style={{ fontSize: "2.5rem", fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>
+                How can we help you?
+              </h1>
+            </div>
             <p style={{ fontSize: "1.125rem", color: "rgba(255,255,255,0.8)", marginBottom: "2.5rem" }}>
               Search our knowledge base or browse categories below to find answers to your questions.
             </p>

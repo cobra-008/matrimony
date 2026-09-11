@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import {
   Check, Lock, Shield, Star, Award, Crown, ChevronLeft,
@@ -587,9 +588,7 @@ function PaymentPageInner() {
     <main style={{ background: "var(--bg-page)", minHeight: "calc(100vh - 120px)", padding: "2rem 0" }}>
       <div className="container">
         <div style={{ marginBottom: "1.75rem" }}>
-          <button onClick={() => router.push("/membership")} style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "none", cursor: "pointer", color: "var(--text-medium)", fontSize: "0.875rem", fontWeight: 600, fontFamily: "var(--font-sans)", marginBottom: "0.875rem", padding: 0 }}>
-            <ChevronLeft size={16} />Back to Plans
-          </button>
+          <BackButton label="Back to Plans" style={{ marginBottom: "0.875rem", padding: 0 }} />
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <h1 style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Complete Your {plan.name} Purchase</h1>
             <div style={{ padding: "0.25rem 0.75rem", borderRadius: "var(--radius-full)", background: "var(--primary-light)", color: "var(--primary)", fontSize: "0.75rem", fontWeight: 700 }}>{plan.period}</div>

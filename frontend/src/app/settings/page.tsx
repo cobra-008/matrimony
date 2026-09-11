@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import {
   Lock, Mail, Phone, Trash2, LogOut, Eye, EyeOff, Bell, BellOff,
@@ -561,7 +562,10 @@ function SettingsContent() {
 
           {/* Page Title */}
           <div style={{ marginBottom: "1.25rem" }}>
-            <h1 style={{ fontSize: "clamp(1.125rem, 4vw, 1.375rem)", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Settings</h1>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
+              <BackButton />
+              <h1 style={{ fontSize: "clamp(1.125rem, 4vw, 1.375rem)", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Settings</h1>
+            </div>
             <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "3px" }}>
               Manage your account, privacy, notifications and preferences
             </p>

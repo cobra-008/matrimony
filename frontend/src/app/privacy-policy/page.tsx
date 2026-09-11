@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 
 const LAST_UPDATED = "September 5, 2026";
@@ -453,6 +454,7 @@ export default function PrivacyPolicyPage() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8">
                 <path d="M16 3 L28 9 V17 C28 23 22 28 16 30 C10 28 4 23 4 17 V9 Z" />
                 <polyline points="11,16 14,19 21,13" strokeWidth="2.2" />

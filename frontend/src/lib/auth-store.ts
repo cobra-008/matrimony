@@ -1037,15 +1037,68 @@ export async function fetchMatchProfiles(
   let profiles = (data || []).map(dbToUser);
 
   if (currentUser) {
-    // Apply strict age filters
-    profiles = profiles.filter(p => {
+    // Helper: parse a height string to centimetres for range comparison
+    const parseCm = (h?: string | null): number | null => {
+      if (!h) return null;
+      if (/^\d+$/.test(h.trim())) return parseInt(h);
+      const cm = h.match(/(\d+)\s*cm/i);
+      if (cm) return parseInt(cm[1]);
+      const ft = h.match(/(\d+)[''′\s]*ft?\s*(\d*)/i);
+      if (ft) return Math.round(parseInt(ft[1]) * 30.48 + (ft[2] ? parseInt(ft[2]) * 2.54 : 0));
+      const num = parseInt(h.replace(/[^0-9]/g, ''));
+      return isNaN(num) ? null : num;
+    };
+
+    // Apply strict preference-based filters
+    const prefFiltered = profiles.filter(p => {
+      // Age range
       const theirAge = p.dob ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
       if (theirAge) {
         if (currentUser!.partnerAgeMin && theirAge < currentUser!.partnerAgeMin) return false;
         if (currentUser!.partnerAgeMax && theirAge > currentUser!.partnerAgeMax) return false;
       }
+
+      // Religion
+      if (currentUser!.partnerReligion && p.religion &&
+          currentUser!.partnerReligion.toLowerCase() !== p.religion.toLowerCase()) return false;
+
+      // Caste — only filter if user explicitly set a caste preference
+      if (currentUser!.partnerCaste && p.caste &&
+          !currentUser!.partnerCaste.toLowerCase().includes(p.caste.toLowerCase()) &&
+          !p.caste.toLowerCase().includes(currentUser!.partnerCaste.toLowerCase())) return false;
+
+      // Marital status (array preference)
+      if (currentUser!.partnerMaritalStatus && currentUser!.partnerMaritalStatus.length > 0 && p.maritalStatus) {
+        const prefS = currentUser!.partnerMaritalStatus.map(s => s.toLowerCase());
+        if (!prefS.includes(p.maritalStatus.toLowerCase())) return false;
+      }
+
+      // Mother tongue (array preference)
+      if (currentUser!.partnerMotherTongue && currentUser!.partnerMotherTongue.length > 0 && p.motherTongue) {
+        const prefT = currentUser!.partnerMotherTongue.map(t => t.toLowerCase());
+        if (!prefT.includes(p.motherTongue.toLowerCase())) return false;
+      }
+
+      // Height range
+      if ((currentUser!.partnerHeightMin || currentUser!.partnerHeightMax) && p.height) {
+        const pCm = parseCm(p.height);
+        if (pCm !== null) {
+          if (currentUser!.partnerHeightMin) {
+            const minCm = parseCm(currentUser!.partnerHeightMin);
+            if (minCm !== null && pCm < minCm) return false;
+          }
+          if (currentUser!.partnerHeightMax) {
+            const maxCm = parseCm(currentUser!.partnerHeightMax);
+            if (maxCm !== null && pCm > maxCm) return false;
+          }
+        }
+      }
+
       return true;
     });
+
+    // Use filtered list only if it yields enough profiles; otherwise show all (graceful degradation)
+    profiles = prefFiltered.length >= 3 ? prefFiltered : profiles;
 
     // Batch-load answers for current user + all candidates in 1 query
     const allIds = [currentUser.id, ...profiles.map(p => p.id)];

@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import ProfileCard from "@/components/ui/ProfileCard";
 import { BookmarkPlus, Trash2, Heart } from "lucide-react";
@@ -93,19 +94,22 @@ export default function ShortlistedPage() {
             marginBottom: "1.25rem",
             flexWrap: "wrap",
           }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
-                <BookmarkPlus size={18} style={{ color: "var(--gold-accent)" }} />
-                <span style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--gold-dark)" }}>
-                  Saved Profiles
-                </span>
-              </div>
-              <h1 style={{ fontSize: "clamp(1.125rem, 4vw, 1.5rem)", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+            <div style={{ display: "flex", gap: "0.75rem" }}>
+              <div style={{ marginTop: "14px" }}><BackButton /></div>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                  <BookmarkPlus size={18} style={{ color: "var(--gold-accent)" }} />
+                  <span style={{ fontSize: "0.6875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--gold-dark)" }}>
+                    Saved Profiles
+                  </span>
+                </div>
+                <h1 style={{ fontSize: "clamp(1.125rem, 4vw, 1.5rem)", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
                 Shortlisted
               </h1>
               <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", marginTop: "2px" }}>
                 {shortlisted.length} profile{shortlisted.length !== 1 ? "s" : ""} saved
               </p>
+            </div>
             </div>
             {shortlisted.length > 0 && (
               <button

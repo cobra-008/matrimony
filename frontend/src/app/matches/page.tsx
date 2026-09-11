@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { Crown, Lock } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
 import { useMembership } from "@/hooks/useMembership";
@@ -510,49 +511,39 @@ function ProfileCard({
 
           {/* Shortlist button (bottom row) */}
           {shortlisted ? (
-            /* Already shortlisted — show saved state + remove option */
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "0.4375rem 0.875rem",
-                  border: "1.5px solid #C8973A",
-                  borderRadius: "20px",
-                  background: "#FBF6EC",
-                  color: "#C8973A",
-                  fontSize: "0.8125rem",
-                  fontWeight: 700,
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="#C8973A" stroke="#C8973A" strokeWidth="2">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+            /* Already shortlisted — single pill button with X inside */
+            <button
+              onClick={onShortlist}
+              title="Remove from shortlist"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "0.4375rem 0.6rem 0.4375rem 0.875rem",
+                border: "1.5px solid #C8973A",
+                borderRadius: "20px",
+                background: "#FBF6EC",
+                color: "#C8973A",
+                fontSize: "0.8125rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#C8973A" stroke="#C8973A" strokeWidth="2">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+              </svg>
+              Saved
+              <span style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: "16px", height: "16px", borderRadius: "50%",
+                background: "rgba(200,151,58,0.18)", marginLeft: "2px",
+              }}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#C8973A" strokeWidth="3">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
-                Saved
-              </div>
-              <button
-                onClick={onShortlist}
-                title="Remove from shortlist"
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#aaa",
-                  fontSize: "0.75rem",
-                  fontFamily: "var(--font-sans)",
-                  padding: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
+              </span>
+            </button>
           ) : (
             <button
               onClick={onShortlist}
@@ -581,48 +572,39 @@ function ProfileCard({
 
           {/* Send Interest — dark maroon / Interest Sent state */}
           {interestSent ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "0.4375rem 1.125rem",
-                  border: "1.5px solid #6B1A2A",
-                  borderRadius: "20px",
-                  background: "#FEF0F0",
-                  color: "#6B1A2A",
-                  fontSize: "0.8125rem",
-                  fontWeight: 700,
-                }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="#6B1A2A">
-                  <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+            /* Interest already sent — single pill button with X inside */
+            <button
+              onClick={onSendInterest}
+              title="Withdraw interest"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "0.4375rem 0.6rem 0.4375rem 1.125rem",
+                border: "1.5px solid #6B1A2A",
+                borderRadius: "20px",
+                background: "#FEF0F0",
+                color: "#6B1A2A",
+                fontSize: "0.8125rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="#6B1A2A">
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+              </svg>
+              Interest Sent ✓
+              <span style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: "16px", height: "16px", borderRadius: "50%",
+                background: "rgba(107,26,42,0.12)", marginLeft: "2px",
+              }}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#6B1A2A" strokeWidth="3">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
-                Interest Sent ✓
-              </div>
-              <button
-                onClick={onSendInterest}
-                title="Remove interest"
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#aaa",
-                  fontSize: "0.75rem",
-                  fontFamily: "var(--font-sans)",
-                  padding: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
+              </span>
+            </button>
           ) : (
             <button
               onClick={onSendInterest}
@@ -769,14 +751,7 @@ function MatchesContent() {
   const [hiddenProfiles, setHiddenProfiles] = useState<RegisteredUser[]>([]);
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab");
-  const [activeSection, setActiveSection] = useState(() => {
-    // Restore the last-visited section from sessionStorage on back-navigation
-    if (typeof window !== "undefined") {
-      const saved = sessionStorage.getItem("matches_section");
-      if (saved) return saved;
-    }
-    return tab || "your_matches";
-  });
+  const [activeSection, setActiveSection] = useState("your_matches");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -796,6 +771,7 @@ function MatchesContent() {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(new Set());
   const [sentInterestIds, setSentInterestIds] = useState<Set<string>>(new Set());
+  const [viewedByMeIds, setViewedByMeIds] = useState<Set<string>>(new Set());
   const [confirmWithdraw, setConfirmWithdraw] = useState<{ id: string, name: string } | null>(null);
   const [nameSearch, setNameSearch] = useState("");
   const [starMissing, setStarMissing] = useState(false);
@@ -888,6 +864,16 @@ function MatchesContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  // Load viewed-by-me IDs for "Not seen" filter chip
+  useEffect(() => {
+    if (!user) return;
+    const oppGender = user.gender === "male" ? "female" : user.gender === "female" ? "male" : null;
+    getViewedByMe(user.id, oppGender).then(profiles => {
+      setViewedByMeIds(new Set(profiles.map(p => p.id)));
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   // Reload data whenever the user changes (account switch) or active section changes
   useEffect(() => {
     if (!user) {
@@ -931,6 +917,7 @@ function MatchesContent() {
     if (nameSearch.trim() && !p.name.toLowerCase().includes(nameSearch.toLowerCase())) return false;
     if (activeChips?.includes("Profiles with photo") && !p.photoUrl) return false;
     if (activeChips?.includes("Matches with horoscope") && !p.star && !p.rasi) return false;
+    if (activeChips?.includes("Not seen") && viewedByMeIds.has(p.id)) return false;
     if (activeChips?.includes("Newly joined")) {
       if (!p.createdAt || Date.now() - new Date(p.createdAt).getTime() > 30 * 24 * 60 * 60 * 1000) return false;
     }

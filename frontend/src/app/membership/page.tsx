@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
 import { useMembership, clearCachedPlan } from "@/hooks/useMembership";
@@ -400,9 +401,12 @@ export default function MembershipPage() {
               <Crown size={13} style={{ color: "#E8C060" }} />
               <span style={{ color: "#fff", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.04em" }}>PREMIUM MEMBERSHIP</span>
             </div>
-            <h1 style={{ color: "#fff", fontSize: "clamp(1.5rem, 4vw, 2.25rem)", fontWeight: 900, lineHeight: 1.2, marginBottom: "0.875rem" }}>
-              Find Your Perfect<br />Tamil Match Faster
-            </h1>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.875rem" }}>
+              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
+              <h1 style={{ color: "#fff", fontSize: "clamp(1.5rem, 4vw, 2.25rem)", fontWeight: 900, lineHeight: 1.2, margin: 0 }}>
+                Find Your Perfect<br />Tamil Match Faster
+              </h1>
+            </div>
             <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "1rem", lineHeight: 1.6 }}>
               Unlock unlimited phone numbers, verified profiles, and direct messaging.
             </p>

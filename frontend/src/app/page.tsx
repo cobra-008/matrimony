@@ -698,7 +698,7 @@ function AuthenticatedDashboard() {
           <div style={{ padding: "0.25rem 0 0.875rem" }}>
             {([
               { href: "/profile/edit", icon: <User size={15} color="#6B1A2A" />, label: "Edit profile" },
-              { href: "/settings", icon: <Settings2 size={15} color="#6B1A2A" />, label: "Edit preferences" },
+              { href: "/profile/edit?section=partner", icon: <Settings2 size={15} color="#6B1A2A" />, label: "Edit preferences" },
               { href: "/shortlisted", icon: <Heart size={15} color="#6B1A2A" />, label: "Shortlisted" },
               { href: "/interests", icon: <Mail size={15} color="#6B1A2A" />, label: "Interests" },
             ] as { href: string; icon: React.ReactNode; label: string }[]).map((item) => (

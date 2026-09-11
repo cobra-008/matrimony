@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import { Bell, Heart, Eye, MessageCircle, BookmarkPlus, Star, CheckCheck, Trash2, Settings } from "lucide-react";
 import Link from "next/link";
@@ -181,8 +182,10 @@ export default function NotificationsPage() {
         <div style={{ maxWidth: "780px", margin: "0 auto", padding: "1rem 0.875rem 4rem" }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-            <div>
-              <h1 style={{ fontSize: "1.375rem", fontWeight: 700, color: "#6B1A2A", margin: 0, fontFamily: "var(--font-sans)" }}>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <BackButton />
+              <div>
+                <h1 style={{ fontSize: "1.375rem", fontWeight: 700, color: "#6B1A2A", margin: 0, fontFamily: "var(--font-sans)" }}>
                 Notifications
               </h1>
               {unreadCount > 0 && (
@@ -191,6 +194,7 @@ export default function NotificationsPage() {
                   <strong style={{ color: "#6B1A2A" }}>{unreadCount}</strong> unread notifications
                 </span>
               )}
+            </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
