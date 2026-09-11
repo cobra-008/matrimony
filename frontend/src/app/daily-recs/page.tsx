@@ -141,6 +141,11 @@ export default function DailyRecsPage() {
             </div>
           ) : (
             <>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
+                <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-medium)" }}>
+                  Daily Pick {selectedIndex + 1} of {profiles.length}
+                </span>
+              </div>
               {/* Horizontal Avatar Carousel */}
               <div 
                 style={{
@@ -201,23 +206,35 @@ export default function DailyRecsPage() {
                       : <GenderAvatar gender={activeProfile.gender} />}
                     <div style={{ 
                       position: "absolute", 
-                      bottom: "1.5rem", 
-                      left: "0",
-                      right: "0",
+                      bottom: "1rem", 
+                      right: "1rem",
                       display: "flex",
-                      justifyContent: "center"
+                      justifyContent: "flex-end"
                     }}>
-                      <div style={{ 
-                        background: "rgba(0,0,0,0.6)", 
-                        color: "white", 
-                        padding: "4px 16px", 
-                        borderRadius: "20px", 
-                        fontSize: "0.875rem",
-                        fontWeight: 600,
-                        backdropFilter: "blur(4px)"
-                      }}>
-                        {selectedIndex + 1}/{profiles.length}
-                      </div>
+                      {(() => {
+                        const photoCount = activeProfile.photos?.length || (activeProfile.photoUrl ? 1 : 0);
+                        if (photoCount === 0) return null;
+                        return (
+                          <div style={{ 
+                            background: "rgba(0,0,0,0.6)", 
+                            color: "white", 
+                            padding: "4px 8px", 
+                            borderRadius: "12px", 
+                            fontSize: "0.75rem",
+                            fontWeight: 600,
+                            backdropFilter: "blur(4px)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px"
+                          }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                              <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
+                            {photoCount > 1 ? `1/${photoCount}` : "1/1"}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
 
