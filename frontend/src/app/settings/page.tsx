@@ -10,7 +10,7 @@ import {
   Briefcase, MapPin, DollarSign, CreditCard, FileText, HelpCircle,
   MessageSquare, AlertTriangle, ChevronRight, Check, X, Edit2,
   Smartphone, Activity, Key, Star, Calendar, BarChart2, Info,
-  UserX, BookOpen, Zap, Crown, CheckCircle2,
+  UserX, BookOpen, Zap, Crown, CheckCircle2, Copy,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
@@ -77,12 +77,12 @@ function ToggleRow({
 }
 
 // ── REUSABLE: FIELD ROW ───────────────────────────────────────────────
-function FieldRow({ label, value, onEdit, danger = false }: { label: string; value?: string; onEdit?: () => void; danger?: boolean }) {
+function FieldRow({ label, value, onEdit, danger = false, mono = false }: { label: string; value?: string; onEdit?: () => void; danger?: boolean; mono?: boolean }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 0", borderBottom: "1px solid var(--border-light)" }}>
       <div>
         <div style={{ fontSize: "0.8125rem", color: "#888" }}>{label}</div>
-        <div style={{ fontSize: "0.875rem", fontWeight: 600, color: danger ? "var(--error, #e53935)" : "var(--text-dark)", marginTop: "1px" }}>{value || "—"}</div>
+        <div style={{ fontSize: "0.875rem", fontWeight: 600, color: danger ? "var(--error, #e53935)" : "var(--text-dark)", marginTop: "1px", fontFamily: mono ? "monospace" : undefined }}>{value || "—"}</div>
       </div>
       {onEdit && (
         <button onClick={onEdit} style={{ display: "flex", alignItems: "center", gap: "4px", background: "var(--primary-light)", border: "none", borderRadius: "var(--radius-full)", padding: "4px 12px", fontSize: "0.75rem", fontWeight: 600, cursor: "pointer", color: "var(--primary)", fontFamily: "var(--font-sans)" }}>
@@ -136,6 +136,28 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   );
 }
 
+// ── PASSWORD STRENGTH ─────────────────────────────────────────────────
+function PasswordHint({ password }: { password: string }) {
+  if (!password) return null;
+  const tooShort = password.length < 8;
+  return (
+    <div style={{
+      marginTop: "0.375rem",
+      fontSize: "0.75rem",
+      color: tooShort ? "#e53935" : "#2e7d32",
+      display: "flex",
+      alignItems: "center",
+      gap: "5px",
+      fontWeight: 600,
+    }}>
+      {tooShort
+        ? <><X size={12} /> Password must be at least 8 characters (currently {password.length})</>
+        : <><Check size={12} /> Password length is valid</>
+      }
+    </div>
+  );
+}
+
 // ── MAIN ──────────────────────────────────────────────────────────────
 function SettingsContent() {
   const { user, setUser } = useAuth();
@@ -159,6 +181,16 @@ function SettingsContent() {
   const [newEmail, setNewEmail] = useState(user?.email || "");
   const [newPhone, setNewPhone] = useState(user?.mobile || "");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Track when password was last changed (persisted in localStorage)
+  const [passwordChangedAt, setPasswordChangedAt] = useState<string | null>(null);
+  useEffect(() => {
+    if (user?.id) {
+      const stored = localStorage.getItem(`pwChangedAt_${user.id}`);
+      setPasswordChangedAt(stored || null);
+    }
+  }, [user?.id]);
 
   // Privacy
   const [profileVisibility, setProfileVisibility] = useState<"public" | "logged_in" | "hidden">("public");
@@ -217,6 +249,11 @@ function SettingsContent() {
       const { supabase } = await import("@/lib/supabase");
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) { toast.error(error.message); return; }
+
+      // Persist the timestamp so "Last changed" shows accurate date
+      const now = new Date().toISOString();
+      localStorage.setItem(`pwChangedAt_${user.id}`, now);
+      setPasswordChangedAt(now);
     }
     toast.success("Password changed successfully");
     setModal(null);
@@ -231,6 +268,14 @@ function SettingsContent() {
     setModal(null);
   };
 
+  // Format password changed date
+  const passwordChangedLabel = passwordChangedAt
+    ? `Last changed: ${new Date(passwordChangedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
+    : "Last changed: Never";
+
+  // ETM profile code
+  const profileCode = user ? `ETM${user.id.replace(/-/g, "").slice(0, 7).toUpperCase()}` : "";
+
   // ── SECTION RENDERERS ─────────────────────────────────────────────
   const sections: Record<Section, React.ReactNode> = {
 
@@ -238,17 +283,46 @@ function SettingsContent() {
     account: (
       <>
         <SettingsCard title="Account Information">
+          {/* Profile UID — always visible */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 0", borderBottom: "1px solid var(--border-light)" }}>
+            <div>
+              <div style={{ fontSize: "0.8125rem", color: "#888" }}>Profile ID</div>
+              <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--primary)", marginTop: "1px", fontFamily: "monospace", letterSpacing: "0.04em" }}>{profileCode}</div>
+            </div>
+            <button
+              onClick={() => { navigator.clipboard?.writeText(profileCode); toast.success("Profile ID copied!"); }}
+              style={{ display: "flex", alignItems: "center", gap: "4px", background: "var(--primary-light)", border: "none", borderRadius: "var(--radius-full)", padding: "4px 12px", fontSize: "0.75rem", fontWeight: 600, cursor: "pointer", color: "var(--primary)", fontFamily: "var(--font-sans)" }}
+            >
+              <Copy size={11} /> Copy
+            </button>
+          </div>
+
           <FieldRow label="Full Name" value={user?.name || "—"} onEdit={() => toast("Edit name from Edit Profile")} />
           <FieldRow label="Mobile Number" value={user?.mobile || "—"} onEdit={() => setModal("phone")} />
           <FieldRow label="Email Address" value={user?.email || "Not set"} onEdit={() => setModal("email")} />
-          <FieldRow label="Member Since" value={user ? new Date(user.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long" }) : "—"} />
+
+          {/* Joined On — always shown (account creation date) */}
+          <FieldRow
+            label="Joined On"
+            value={user ? new Date(user.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }) : "—"}
+          />
+
+          {/* Member Since — only shown for paid members */}
+          {user?.membershipPlan && (
+            <FieldRow
+              label="Member Since"
+              value={user.membershipActivated
+                ? new Date(user.membershipActivated).toLocaleDateString("en-IN", { year: "numeric", month: "long" })
+                : new Date(user.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long" })}
+            />
+          )}
         </SettingsCard>
 
         <SettingsCard title="Security" subtitle="Manage your account security">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.75rem 0", borderBottom: "1px solid var(--border-light)" }}>
             <div>
               <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-dark)" }}>Password</div>
-              <div style={{ fontSize: "0.75rem", color: "#aaa" }}>Last changed: Never</div>
+              <div style={{ fontSize: "0.75rem", color: "#aaa" }}>{passwordChangedLabel}</div>
             </div>
             <button onClick={() => setModal("password")} className="btn btn-outline" style={{ fontSize: "0.8125rem" }}>
               Change
@@ -532,7 +606,8 @@ function SettingsContent() {
                   {user?.name?.[0]?.toUpperCase() || "?"}
                 </div>
                 <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--text-dark)" }}>{user?.name || "My Account"}</div>
-                <div style={{ fontSize: "0.6875rem", color: "#aaa", marginTop: "2px" }}>{user?.id}</div>
+                {/* Profile ID badge */}
+                <div style={{ fontSize: "0.6875rem", color: "var(--primary)", marginTop: "3px", fontFamily: "monospace", fontWeight: 700, letterSpacing: "0.04em", background: "var(--primary-light)", borderRadius: "4px", padding: "2px 6px", display: "inline-block" }}>{profileCode}</div>
               </div>
               {/* Nav */}
               <nav>
@@ -583,22 +658,70 @@ function SettingsContent() {
 
       {/* ── MODALS ── */}
       {modal === "password" && (
-        <Modal title="Change Password" onClose={() => setModal(null)}>
+        <Modal title="Change Password" onClose={() => { setModal(null); setNewPassword(""); setConfirmPassword(""); }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div>
               <label style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-medium)", display: "block", marginBottom: "0.375rem" }}>New Password</label>
               <div style={{ position: "relative" }}>
-                <input type={showPassword ? "text" : "password"} value={newPassword} onChange={e => setNewPassword(e.target.value)} className="form-input" placeholder="Min. 8 characters" />
-                <button onClick={() => setShowPassword(v => !v)} style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  className="form-input"
+                  placeholder="Min. 8 characters"
+                  style={{ paddingRight: "2.5rem" }}
+                />
+                <button
+                  onClick={() => setShowPassword(v => !v)}
+                  style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", display: "flex", alignItems: "center" }}
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {/* Live validation hint */}
+              <PasswordHint password={newPassword} />
+              <div style={{ marginTop: "0.25rem", fontSize: "0.75rem", color: "#aaa" }}>Minimum 8 characters</div>
             </div>
             <div>
               <label style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-medium)", display: "block", marginBottom: "0.375rem" }}>Confirm Password</label>
-              <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="form-input" placeholder="Repeat password" />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  className="form-input"
+                  placeholder="Repeat password"
+                  style={{ paddingRight: "2.5rem" }}
+                />
+                <button
+                  onClick={() => setShowConfirmPassword(v => !v)}
+                  style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", display: "flex", alignItems: "center" }}
+                  type="button"
+                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              {/* Mismatch hint */}
+              {confirmPassword && newPassword !== confirmPassword && (
+                <div style={{ marginTop: "0.375rem", fontSize: "0.75rem", color: "#e53935", fontWeight: 600, display: "flex", alignItems: "center", gap: "5px" }}>
+                  <X size={12} /> Passwords do not match
+                </div>
+              )}
+              {confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 && (
+                <div style={{ marginTop: "0.375rem", fontSize: "0.75rem", color: "#2e7d32", fontWeight: 600, display: "flex", alignItems: "center", gap: "5px" }}>
+                  <Check size={12} /> Passwords match
+                </div>
+              )}
             </div>
-            <button onClick={handleChangePassword} className="btn btn-primary" style={{ width: "100%", justifyContent: "center", marginTop: "0.5rem" }}>
+            <button
+              onClick={handleChangePassword}
+              className="btn btn-primary"
+              style={{ width: "100%", justifyContent: "center", marginTop: "0.5rem" }}
+              disabled={newPassword.length < 8 || newPassword !== confirmPassword}
+            >
               Update Password
             </button>
           </div>

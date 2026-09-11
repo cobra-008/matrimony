@@ -54,6 +54,10 @@ export default function DailyRecsPage() {
   const [profiles, setProfiles] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showAll, setShowAll] = useState(false);
+
+  // Profiles shown in carousel — 4 initially, all when expanded
+  const visibleProfiles = showAll ? profiles : profiles.slice(0, 4);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -121,15 +125,42 @@ export default function DailyRecsPage() {
       <main style={{ flex: 1, padding: "1.25rem 0" }}>
         <div className="container" style={{ maxWidth: "1060px" }}>
           {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", marginBottom: "1.5rem" }}>
-            <Link href="/" style={{ marginRight: "1rem", color: "var(--text-primary)", display: "flex", alignItems: "center" }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </Link>
-            <h1 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
-              Daily Recommendations ({profiles.length > 0 ? `${selectedIndex + 1}/${profiles.length}` : "0/0"})
-            </h1>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <Link href="/" style={{ color: "var(--text-primary)", display: "flex", alignItems: "center" }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </Link>
+              <div>
+                <h1 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
+                  Daily Recommendations
+                </h1>
+                <p style={{ margin: 0, fontSize: "0.8125rem", color: "#888" }}>
+                  {profiles.length > 0 ? `${profiles.length} profiles for today` : "Loading…"}
+                </p>
+              </div>
+            </div>
+            {/* View All / Collapse button */}
+            {!loading && profiles.length > 4 && (
+              <button
+                onClick={() => setShowAll(v => !v)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "4px",
+                  background: "none", border: "none", cursor: "pointer",
+                  fontSize: "0.875rem", fontWeight: 700,
+                  color: "var(--primary)", fontFamily: "var(--font-sans)",
+                  padding: "0.25rem 0",
+                }}
+              >
+                {showAll ? "Show Less" : `View All (${profiles.length})`}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  {showAll
+                    ? <polyline points="18 15 12 9 6 15" />
+                    : <polyline points="6 9 12 15 18 9" />}
+                </svg>
+              </button>
+            )}
           </div>
 
           {loading ? (
@@ -145,6 +176,11 @@ export default function DailyRecsPage() {
                 <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-medium)" }}>
                   Daily Pick {selectedIndex + 1} of {profiles.length}
                 </span>
+                {profiles.length > 4 && (
+                  <span style={{ fontSize: "0.8125rem", color: "#888" }}>
+                    Showing {visibleProfiles.length} of {profiles.length}
+                  </span>
+                )}
               </div>
               {/* Horizontal Avatar Carousel */}
               <div 
@@ -157,7 +193,7 @@ export default function DailyRecsPage() {
                   scrollbarWidth: "thin"
                 }}
               >
-                {profiles.map((p, idx) => (
+                {visibleProfiles.map((p, idx) => (
                   <div
                     key={p.id}
                     onClick={() => setSelectedIndex(idx)}

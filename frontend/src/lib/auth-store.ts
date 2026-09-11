@@ -1324,8 +1324,9 @@ export async function isShortlisted(userId: string, targetId: string): Promise<b
 
 /**
  * Get today's daily recommendations for a user.
- * Returns 10 profiles from the opposite gender, seeded by today's date so they're
- * consistent all day but change each morning.
+ * Returns up to 10 profiles from the opposite gender, seeded by today's date
+ * so they're consistent all day but change each morning at midnight.
+ * Applies the current user's saved partner preferences for filtering.
  */
 export async function getDailyRecommendations(
   userId: string,
@@ -1333,12 +1334,13 @@ export async function getDailyRecommendations(
 ): Promise<RegisteredUser[]> {
   const oppositeGender = gender === 'male' ? 'female' : gender === 'female' ? 'male' : null;
 
+  // Fetch a larger pool so partner-pref filtering still yields enough results
   let query = supabase
     .from('profiles')
     .select('*')
     .neq('id', userId)
     .order('created_at', { ascending: false })
-    .limit(50);
+    .limit(200);
 
   if (oppositeGender) {
     query = query.eq('gender', oppositeGender);
@@ -1347,16 +1349,112 @@ export async function getDailyRecommendations(
   const { data } = await query;
   if (!data || data.length === 0) return [];
 
-  // Seed shuffle by today's date so recommendations change daily
+  // Fetch current user's partner preferences (cast to any to bypass Supabase generic typing)
+  const meRowResult = await supabase
+    .from('profiles')
+    .select(
+      'partner_age_min,partner_age_max,partner_religion,' +
+      'partner_height_min,partner_height_max,' +
+      'partner_marital_status,partner_mother_tongue'
+    )
+    .eq('id', userId)
+    .maybeSingle();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const meRow = meRowResult.data as Record<string, any> | null;
+
+  // Helper: parse height string to cm
+  const parseCm = (h?: string | null): number | null => {
+    if (!h) return null;
+    if (/^\d+$/.test(h.trim())) return parseInt(h);
+    const cm = h.match(/(\d+)\s*cm/i);
+    if (cm) return parseInt(cm[1]);
+    const ft = h.match(/(\d+)[''′\s]*ft?\s*(\d*)/i);
+    if (ft) return Math.round(parseInt(ft[1]) * 30.48 + (ft[2] ? parseInt(ft[2]) * 2.54 : 0));
+    const num = parseInt(h.replace(/[^0-9]/g, ''));
+    return isNaN(num) ? null : num;
+  };
+
+  // Apply partner preference filters in JS
+  let filtered = data;
+  if (meRow) {
+    const now = Date.now();
+    const MS_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+
+    const prefFiltered = data.filter(p => {
+      // Age range
+      if ((meRow.partner_age_min || meRow.partner_age_max) && p.dob) {
+        const age = Math.floor((now - new Date(p.dob).getTime()) / MS_YEAR);
+        if (meRow.partner_age_min && age < meRow.partner_age_min) return false;
+        if (meRow.partner_age_max && age > meRow.partner_age_max) return false;
+      }
+      // Religion
+      if (meRow.partner_religion && p.religion &&
+          meRow.partner_religion.toLowerCase() !== p.religion.toLowerCase()) return false;
+      // Mother tongue (array preference)
+      if (meRow.partner_mother_tongue?.length > 0 && p.mother_tongue) {
+        const prefT = (meRow.partner_mother_tongue as string[]).map(t => t.toLowerCase());
+        if (!prefT.includes(p.mother_tongue.toLowerCase())) return false;
+      }
+      // Marital status (array preference)
+      if (meRow.partner_marital_status?.length > 0 && p.marital_status) {
+        const prefS = (meRow.partner_marital_status as string[]).map(s => s.toLowerCase());
+        if (!prefS.includes(p.marital_status.toLowerCase())) return false;
+      }
+      // Height range
+      if ((meRow.partner_height_min || meRow.partner_height_max) && p.height) {
+        const pCm = parseCm(p.height);
+        if (pCm !== null) {
+          if (meRow.partner_height_min && pCm < (parseCm(meRow.partner_height_min) ?? 0)) return false;
+          if (meRow.partner_height_max) {
+            const maxCm = parseCm(meRow.partner_height_max);
+            if (maxCm !== null && pCm > maxCm) return false;
+          }
+        }
+      }
+      return true;
+    });
+
+    // Only use filtered list if it yields enough profiles; otherwise fall back
+    filtered = prefFiltered.length >= 5 ? prefFiltered : data;
+  }
+
+  // Seed shuffle by today's date so recommendations change daily (midnight reset)
   const today = new Date().toISOString().slice(0, 10); // "2026-08-04"
   const seed = today.split('-').reduce((acc, n) => acc + parseInt(n), 0);
-  const shuffled = [...data].sort((a, b) => {
+  const shuffled = [...filtered].sort((a, b) => {
     const ha = (parseInt(a.id.replace(/-/g, '').slice(0, 8), 16) + seed) % 997;
     const hb = (parseInt(b.id.replace(/-/g, '').slice(0, 8), 16) + seed) % 997;
     return ha - hb;
   });
 
   return shuffled.slice(0, 10).map(dbToUser);
+}
+
+// ── PROFILE COMPLETION UTILITY ────────────────────────────────────────
+
+/**
+ * Compute a consistent profile completion percentage (0–100).
+ * Uses the same 10 fields everywhere (home dashboard, edit profile, etc.)
+ * to avoid showing different percentages in different parts of the app.
+ *
+ * Fields: name, gender, dob, religion, caste, education, occupation, city, about, photoUrl
+ */
+export function computeProfileCompletion(user: RegisteredUser | null): number {
+  if (!user) return 0;
+  const fields = [
+    !!user.name?.trim(),
+    !!user.gender,
+    !!user.dob,
+    !!user.religion,
+    !!user.caste,
+    !!user.education,
+    !!user.occupation,
+    !!user.city,
+    !!user.about,
+    !!user.photoUrl,
+  ];
+  const filled = fields.filter(Boolean).length;
+  return Math.round((filled / fields.length) * 100);
 }
 
 // ── BACKWARD-COMPAT SHIMS ─────────────────────────────────────────────

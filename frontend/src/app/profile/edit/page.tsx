@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
-import { updateProfile, addProfilePhoto, deleteProfilePhoto, setProfilePhotoPrimary, type ProfilePhoto } from "@/lib/auth-store";
+import { updateProfile, addProfilePhoto, deleteProfilePhoto, setProfilePhotoPrimary, type ProfilePhoto, computeProfileCompletion } from "@/lib/auth-store";
 import { uploadProfilePhoto } from "@/lib/supabase";
 import Link from "next/link";
 import {
@@ -481,10 +481,25 @@ function EditProfileContent() {
   }, [user]);
   // ─────────────────────────────────────────────────────────────────────────
 
-  // Compute profile completion
-  const fields = [firstName, gender, dob, religion, caste, education, occupation, city, about, gallery.some(p => p.isPrimary)];
-  const filled = fields.filter(Boolean).length;
-  const pct = Math.round((filled / fields.length) * 100);
+  // Compute profile completion using the shared utility (consistent across app)
+  // Note: gallery is checked locally since it's not yet saved to DB at this point
+  const pct = (() => {
+    // Use shared utility but override photoUrl with local gallery state
+    const hasPrimaryPhoto = gallery.some(p => p.isPrimary) || !!user?.photoUrl;
+    const fields = [
+      !!firstName.trim(),
+      !!gender,
+      !!dob,
+      !!religion,
+      !!caste,
+      !!education,
+      !!occupation,
+      !!city,
+      !!about,
+      hasPrimaryPhoto,
+    ];
+    return Math.round((fields.filter(Boolean).length / fields.length) * 100);
+  })();
 
   // Available castes/subcastes from selection
   const availCastes = religion && RELIGION_TO_CASTES[religion]
@@ -687,7 +702,20 @@ function EditProfileContent() {
 
           <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
             {/* ── Sticky Left Nav ── */}
-            <aside style={{ width: "220px", flexShrink: 0, background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", overflow: "hidden", boxShadow: "var(--shadow-sm)", position: "sticky", top: "80px" }}>
+            <aside style={{
+              width: "220px",
+              flexShrink: 0,
+              background: "#fff",
+              border: "1px solid var(--border-color)",
+              borderRadius: "var(--radius-xl)",
+              overflow: "hidden",
+              boxShadow: "var(--shadow-sm)",
+              position: "sticky",
+              top: "80px",
+              alignSelf: "flex-start",
+              maxHeight: "calc(100vh - 100px)",
+              overflowY: "auto",
+            }}>
               <div style={{ padding: "1rem", borderBottom: "1px solid var(--border-light)" }}>
                 <ProfileProgress pct={pct} />
               </div>

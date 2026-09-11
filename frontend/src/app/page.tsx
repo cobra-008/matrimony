@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import ProfileCard from "@/components/ui/ProfileCard";
 import { PROFILE_FOR_OPTIONS } from "@/data/matrimony-data";
-import { fetchMatchProfiles, fetchLatestProfiles, type RegisteredUser } from "@/lib/auth-store";
+import { fetchMatchProfiles, fetchLatestProfiles, type RegisteredUser, computeProfileCompletion } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase";
 
 // Helper: compute age from dob
@@ -484,19 +484,17 @@ function AuthenticatedDashboard() {
   if (!user) return null;
 
 
-  // Profile completeness — which fields are missing
+  // Profile completeness — which fields are missing (for chip display only)
+  // NOTE: Add Photo and Set Partner Preferences are NOT shown on home page directly
   const missing: { label: string; href: string; icon: React.ReactNode }[] = [];
-  if (!user.photoUrl) missing.push({ label: "Add Photo", href: "/profile/edit?section=photo", icon: <Camera size={16} color="#6B1A2A" /> });
   if (!user.email || user.email.endsWith("@etm.app")) missing.push({ label: "Add Email", href: "/profile/edit?section=contact", icon: <Mail size={16} color="#6B1A2A" /> });
   if (!user.education && !user.occupation) missing.push({ label: "Professional Details", href: "/profile/edit?section=professional", icon: <Briefcase size={16} color="#6B1A2A" /> });
   if (!user.star && !user.rasi) missing.push({ label: "Horoscope Details", href: "/profile/edit?section=religion", icon: <Star size={16} color="#C8973A" /> });
   if (!user.about) missing.push({ label: "About Me", href: "/profile/edit?section=about", icon: <FileText size={16} color="#6B1A2A" /> });
   if (!user.city) missing.push({ label: "Location", href: "/profile/edit?section=location", icon: <MapPin size={16} color="#6B1A2A" /> });
-  const hasSavedPartnerPrefs = !!(user.partnerReligion || user.partnerCaste || user.partnerEducation || user.partnerOccupation || user.partnerHeightMin || (user.partnerAgeMin && user.partnerAgeMin !== 22));
-  if (!hasSavedPartnerPrefs) missing.push({ label: "Set Partner Preferences", href: "/profile/edit?section=partner", icon: <Heart size={16} color="#C8973A" /> });
 
-  const totalFields = 10;
-  const pct = Math.round(((totalFields - missing.length) / totalFields) * 100);
+  // Use the shared computeProfileCompletion for a consistent percentage everywhere
+  const pct = computeProfileCompletion(user);
 
   const profileCode = `ETM${user.id.replace(/-/g, "").slice(0, 7).toUpperCase()}`;
   const userPhoto = user.photoUrl || null;
@@ -862,28 +860,44 @@ function AuthenticatedDashboard() {
               padding: "1rem 1.125rem",
             }}
           >
-            {/* Heading row */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "0.75rem" }}>
-              <div>
+            {/* Heading row with countdown + View All */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "0.75rem", gap: "0.5rem" }}>
+              <div style={{ minWidth: 0 }}>
                 <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#111", margin: "0 0 2px" }}>Daily Recommendations</h2>
                 <p style={{ fontSize: "0.8125rem", color: "#888", margin: 0 }}>Recommended matches for today</p>
               </div>
 
-              {/* Countdown */}
-              <div
-                style={{
-                  background: "#2e7d32",
-                  color: "#fff",
-                  padding: "0.25rem 0.625rem",
-                  borderRadius: "4px",
-                  fontSize: "0.6875rem",
-                  fontWeight: 700,
-                  textAlign: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <div style={{ fontSize: "0.5625rem", fontWeight: 400, letterSpacing: "0.03em" }}>Time left to view</div>
-                {timeLeft}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", flexShrink: 0 }}>
+                {/* View All link */}
+                {!loadingRecs && dailyRecs.length > 0 && (
+                  <Link
+                    href="/daily-recs"
+                    style={{
+                      fontSize: "0.8125rem", fontWeight: 700,
+                      color: "var(--primary)", textDecoration: "none",
+                      whiteSpace: "nowrap",
+                      display: "flex", alignItems: "center", gap: "3px",
+                    }}
+                  >
+                    View All <ArrowRight size={13} />
+                  </Link>
+                )}
+                {/* Countdown */}
+                <div
+                  style={{
+                    background: "#2e7d32",
+                    color: "#fff",
+                    padding: "0.25rem 0.625rem",
+                    borderRadius: "4px",
+                    fontSize: "0.6875rem",
+                    fontWeight: 700,
+                    textAlign: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <div style={{ fontSize: "0.5625rem", fontWeight: 400, letterSpacing: "0.03em" }}>Refreshes in</div>
+                  {timeLeft}
+                </div>
               </div>
             </div>
 
@@ -897,7 +911,7 @@ function AuthenticatedDashboard() {
               }}
             >
               {loadingRecs
-                ? Array.from({ length: 5 }).map((_, i) => (
+                ? Array.from({ length: 4 }).map((_, i) => (
                     <div
                       key={i}
                       style={{
@@ -907,7 +921,7 @@ function AuthenticatedDashboard() {
                       }}
                     />
                   ))
-                : dailyRecs.slice(0, 10).map((p, idx) => {
+                : dailyRecs.slice(0, 4).map((p, idx) => {
                     const photo = p.photoUrl;
                     const age = p.dob
                       ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
@@ -957,8 +971,8 @@ function AuthenticatedDashboard() {
                   })
               }
 
-              {/* "More" arrow button */}
-              {!loadingRecs && dailyRecs.length > 0 && (
+              {/* Arrow button to daily-recs — shown when more than 4 profiles exist */}
+              {!loadingRecs && dailyRecs.length > 4 && (
                 <Link
                   href="/daily-recs"
                   style={{
@@ -976,28 +990,6 @@ function AuthenticatedDashboard() {
                 </Link>
               )}
             </div>
-
-            {/* View all button */}
-            {!loadingRecs && dailyRecs.length > 0 && (
-              <div style={{ marginTop: "0.875rem", textAlign: "center" }}>
-                <Link
-                  href="/daily-recs"
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: "5px",
-                    padding: "0.4375rem 1.5rem",
-                    border: "1.5px solid #E8401A",
-                    borderRadius: "20px",
-                    color: "#E8401A",
-                    textDecoration: "none",
-                    fontSize: "0.875rem", fontWeight: 700,
-                    fontFamily: "var(--font-sans)",
-                  }}
-                >
-                  View all
-                  <ArrowRight size={14} />
-                </Link>
-              </div>
-            )}
           </div>
         </div>
       </div>
