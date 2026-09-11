@@ -88,6 +88,7 @@ const SIDEBAR = [
   {
     group: "MATCHES BASED ON\nPREFERENCES",
     items: [
+      { id: "partner_preference", label: "Partner preference", sub: "Profiles matching your taste" },
       { id: "education_pref", label: "Education preference", sub: "Profiles matching your preferred\neducation" },
       { id: "professional_pref", label: "Professional preference", sub: "Profiles matching your preferred\nprofession" },
       { id: "location_pref", label: "City/location preference", sub: "Profiles in your preferred city or\nstate" },
@@ -107,6 +108,7 @@ const SidebarIcon = ({ id, active }: { id: string; active: boolean }) => {
   const color = active ? "#6B1A2A" : id === "hidden_profiles" ? "#888" : "#aaa";
   const icons: Record<string, React.ReactElement> = {
     your_matches: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+    partner_preference: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>,
     shortlisted_by_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>,
     viewed_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>,
     shortlisted_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
@@ -778,6 +780,10 @@ function MatchesContent() {
     try {
       switch (sectionId) {
         case "your_matches": result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined); break;
+        case "partner_preference": 
+          result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined);
+          result = result.filter(p => (p.compatibilityScore ?? 0) >= 60);
+          break;
         case "shortlisted_by_you": {
           const all = await getShortlistedProfiles(currentUser.id);
           const og = currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null;
@@ -804,6 +810,10 @@ function MatchesContent() {
         case "horoscope_matches": result = await getHoroscopeMatches(currentUser.id, currentUser.rasi, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "mutual_matches": result = await getMutualMatches(currentUser); break;
         case "looking_for_you": result = await getLookingForMe(currentUser); break;
+        case "partner_preference": 
+          result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined);
+          result = result.filter(p => (p.compatibilityScore ?? 0) >= 60);
+          break;
         case "education_pref": result = await getByEducationPref(currentUser.id, currentUser.partnerEducation, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "professional_pref": result = await getByProfessionPref(currentUser.id, currentUser.partnerOccupation, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "location_pref": result = await getByLocationPref(currentUser.id, currentUser.city, currentUser.state, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;

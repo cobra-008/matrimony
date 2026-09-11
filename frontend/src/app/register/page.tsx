@@ -1732,11 +1732,12 @@ function RegisterWizard() {
             <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.75rem" }}>
               {/* Avatar preview */}
               <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: "1.25rem" }}>
-                <div
+                <label
+                  htmlFor="photo-upload"
                   style={{
                     width: "100px",
                     height: "110px",
-                    border: "2px solid var(--primary)",
+                    border: form.photoUrl ? "2px solid var(--primary)" : "2px dashed var(--primary)",
                     borderRadius: "var(--radius-lg)",
                     display: "flex",
                     alignItems: "center",
@@ -1744,32 +1745,23 @@ function RegisterWizard() {
                     background: "var(--primary-light)",
                     position: "relative",
                     overflow: "hidden",
+                    cursor: "pointer",
                   }}
                 >
                   {form.photoUrl ? (
                     <>
                       <img src={form.photoUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       <button
-                        onClick={() => set("photoUrl", "")}
+                        onClick={(e) => { e.preventDefault(); set("photoUrl", "") }}
                         style={{ position: "absolute", top: "4px", right: "4px", background: "rgba(0,0,0,0.5)", border: "none", borderRadius: "50%", width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", padding: 0, color: "#fff" }}
                       >
                         <X size={12} />
                       </button>
                     </>
                   ) : (
-                    /* Avatar illustration — brand maroon/gold colors */
-                    <svg width="64" height="72" viewBox="0 0 64 72" fill="none">
-                      <circle cx="32" cy="22" r="16" fill="#6B1A2A" opacity="0.12" />
-                      <circle cx="32" cy="22" r="12" fill="#6B1A2A" opacity="0.30" />
-                      <path d="M8 72 C8 52 20 44 32 44 C44 44 56 52 56 72" fill="#6B1A2A" opacity="0.25" />
-                      <circle cx="32" cy="22" r="8" fill="#6B1A2A" />
-                      <circle cx="29" cy="20" r="1.5" fill="white" />
-                      <circle cx="35" cy="20" r="1.5" fill="white" />
-                      <path d="M28 26 Q32 29 36 26" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                      <rect x="22" y="30" width="20" height="16" rx="2" fill="#C8973A" opacity="0.6" />
-                    </svg>
+                    <Plus size={36} color="var(--primary)" strokeWidth={2.5} />
                   )}
-                </div>
+                </label>
               </div>
 
               <h3 style={{ fontWeight: 700, fontSize: "1.0625rem", color: "var(--text-dark)", marginBottom: "0.875rem" }}>
@@ -1797,30 +1789,7 @@ function RegisterWizard() {
                 </div>
               </div>
 
-              <p style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "1.25rem" }}>
-                Members prefer viewing profiles with photos
-              </p>
 
-              <label
-                htmlFor="photo-upload"
-                title="Add photo"
-                aria-label="Add photo"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "56px",
-                  height: "56px",
-                  background: "var(--primary)",
-                  color: "#fff",
-                  borderRadius: "50%",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 8px rgba(107,26,42,0.25)",
-                  transition: "background 0.15s",
-                }}
-              >
-                <Plus size={28} strokeWidth={2.5} />
-              </label>
               <input
                 id="photo-upload"
                 type="file"
