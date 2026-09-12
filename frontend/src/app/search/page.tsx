@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import {
   RELIGIONS,
@@ -404,7 +405,9 @@ function SearchContent() {
             textAlign: "center",
           }}
         >
-          <h1
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
+            <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
+            <h1
             style={{
               color: "#fff",
               fontSize: "clamp(1.25rem, 2.5vw, 1.625rem)",
@@ -415,6 +418,7 @@ function SearchContent() {
           >
             Find Your Perfect Tamil Match
           </h1>
+          </div>
           <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.875rem", margin: "0.375rem 0 0" }}>
             Search verified Tamil profiles and find your perfect match
           </p>

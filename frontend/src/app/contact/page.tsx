@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 import { Mail, Phone, MapPin, MessageCircle, Clock, Send, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -44,9 +45,12 @@ export default function ContactPage() {
         {/* Hero */}
         <section className="section" style={{ background: "var(--gradient-hero)" }}>
           <div className="container text-center text-white">
-            <h1 className="text-heading-xl text-white mb-3" style={{ fontFamily: "var(--font-serif)" }}>
-              Contact Us
-            </h1>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", marginBottom: "0.75rem" }}>
+              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
+              <h1 className="text-heading-xl text-white" style={{ fontFamily: "var(--font-serif)", margin: 0 }}>
+                Contact Us
+              </h1>
+            </div>
             <p className="text-white/70 max-w-md mx-auto text-sm">
               Our team is here to help. Reach out with questions, feedback, or support requests.
             </p>

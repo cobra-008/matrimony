@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
 
 const LAST_UPDATED = "September 5, 2026";
@@ -471,6 +472,7 @@ export default function TermsPage() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8">
                 <rect x="6" y="2" width="20" height="28" rx="2" />
                 <line x1="11" y1="9" x2="21" y2="9" />

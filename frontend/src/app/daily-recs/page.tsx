@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PlanTabs from "@/components/ui/PlanTabs";
+import BackButton from "@/components/ui/BackButton";
 import { useAuth } from "@/context/AuthContext";
 import { getDailyRecommendations, sendInterest, shortlistProfile, type RegisteredUser } from "@/lib/auth-store";
 import Link from "next/link";
@@ -127,11 +128,7 @@ export default function DailyRecsPage() {
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <Link href="/" style={{ color: "var(--text-primary)", display: "flex", alignItems: "center" }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </Link>
+              <BackButton />
               <div>
                 <h1 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
                   Daily Recommendations
@@ -434,20 +431,44 @@ export default function DailyRecsPage() {
                     borderBottom: "1px solid var(--border-light)",
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.75rem"
+                    justifyContent: "space-between"
                   }}>
-                    <div style={{ 
-                      width: "32px", height: "32px", borderRadius: "50%", 
-                      background: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center",
-                      color: "var(--primary)"
-                    }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                      </svg>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                      <div style={{ 
+                        width: "32px", height: "32px", borderRadius: "50%", 
+                        background: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center",
+                        color: "var(--primary)"
+                      }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                      </div>
+                      <h3 style={{ margin: 0, fontSize: "1.125rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                        Personal Information
+                      </h3>
                     </div>
-                    <h3 style={{ margin: 0, fontSize: "1.125rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                      Personal Information
-                    </h3>
+                    
+                    <Link
+                      href={`/profile/${activeProfile.id}`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontSize: "0.875rem",
+                        fontWeight: 600,
+                        color: "var(--primary)",
+                        textDecoration: "none",
+                        padding: "0.5rem 1rem",
+                        borderRadius: "20px",
+                        background: "#fff",
+                        border: "1px solid var(--primary)"
+                      }}
+                    >
+                      View Full Profile
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </Link>
                   </div>
                   
                   <div style={{ padding: "2rem" }}>

@@ -1,6 +1,7 @@
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Link from 'next/link';
+import BackButton from '@/components/ui/BackButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -22,17 +23,20 @@ export default function AboutPage() {
           }}
         >
           <div className="container">
-            <h1
-              style={{
-                fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
-                fontWeight: 900,
-                color: '#fff',
-                margin: '0 0 0.75rem',
-                lineHeight: 1.2,
-              }}
-            >
-              About Elite Tamil Matrimony
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+              <BackButton style={{ color: '#fff', background: 'rgba(255,255,255,0.1)' }} />
+              <h1
+                style={{
+                  fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
+                  fontWeight: 900,
+                  color: '#fff',
+                  margin: 0,
+                  lineHeight: 1.2,
+                }}
+              >
+                About Elite Tamil Matrimony
+              </h1>
+            </div>
             <p
               style={{
                 fontSize: '1.0625rem',
