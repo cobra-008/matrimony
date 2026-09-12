@@ -278,6 +278,130 @@ function FloatSearchableCombobox({ label, value, onChange, options, placeholder 
   );
 }
 
+// ---- Multi-Select Tags (for Languages, etc.) ----
+function MultiSelectTags({ label, values, onChange, options, placeholder = "Select or type..." }: {
+  label: string;
+  values: string[];
+  onChange: (v: string[]) => void;
+  options: string[];
+  placeholder?: string;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const unselected = options.filter(o => !values.includes(o));
+  const filtered = query
+    ? unselected.filter(o => o.toLowerCase().includes(query.toLowerCase())).slice(0, 30)
+    : unselected.slice(0, 30);
+
+  const select = (v: string) => {
+    if (!values.includes(v)) onChange([...values, v]);
+    setQuery("");
+    setOpen(false);
+  };
+
+  const remove = (v: string) => {
+    onChange(values.filter(x => x !== v));
+  };
+
+  return (
+    <div ref={ref} style={{ position: "relative", marginBottom: "1rem" }}>
+      <div
+        className="form-input"
+        style={{
+          minHeight: "48px", height: "auto", display: "flex", flexWrap: "wrap", gap: "0.375rem",
+          paddingTop: values.length > 0 ? "1.375rem" : "0.75rem", paddingBottom: "0.375rem",
+          alignItems: "center", cursor: "text",
+        }}
+        onClick={() => { document.getElementById(`multi-input-${label}`)?.focus(); setOpen(true); }}
+      >
+        {values.map(val => (
+          <span
+            key={val}
+            style={{
+              background: "var(--primary-light)", color: "var(--primary)",
+              padding: "2px 8px", borderRadius: "var(--radius-full)",
+              fontSize: "0.75rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px"
+            }}
+          >
+            {val}
+            <span
+              onClick={(e) => { e.stopPropagation(); remove(val); }}
+              style={{ cursor: "pointer", opacity: 0.7, padding: "2px" }}
+            >
+              ×
+            </span>
+          </span>
+        ))}
+        <input
+          id={`multi-input-${label}`}
+          type="text"
+          value={query}
+          placeholder={values.length === 0 ? placeholder : ""}
+          style={{
+            border: "none", outline: "none", background: "transparent",
+            flex: 1, minWidth: "60px", fontSize: "0.875rem", color: "var(--text-dark)",
+          }}
+          onChange={e => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          autoComplete="off"
+        />
+      </div>
+      {(values.length > 0 || query) && (
+        <span style={{ position: "absolute", top: "0.3125rem", left: "0.875rem", fontSize: "0.6875rem", color: "var(--primary)", fontWeight: 700, pointerEvents: "none", letterSpacing: "0.02em" }}>
+          {label}
+        </span>
+      )}
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+          background: "#fff", border: "1px solid var(--border-color)",
+          borderRadius: "var(--radius-md)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+          maxHeight: "200px", overflowY: "auto", zIndex: 200,
+        }}>
+          {filtered.length === 0 && !query && (
+            <div style={{ padding: "0.625rem 0.875rem", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
+              No options available
+            </div>
+          )}
+          {filtered.map(opt => (
+            <div
+              key={opt}
+              onMouseDown={(e) => { e.preventDefault(); select(opt); }}
+              style={{ padding: "0.5rem 0.875rem", fontSize: "0.875rem", cursor: "pointer", color: "var(--text-dark)" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#f5f5f5")}
+              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            >
+              {opt}
+            </div>
+          ))}
+          {query.trim() && !filtered.includes(query) && !values.includes(query) && (
+            <div
+              onMouseDown={(e) => { e.preventDefault(); select(query.trim()); }}
+              style={{
+                padding: "0.5rem 0.875rem", fontSize: "0.8125rem", cursor: "pointer",
+                borderTop: filtered.length > 0 ? "1px solid var(--border-light)" : "none",
+                color: "var(--primary)", fontWeight: 600,
+              }}
+            >
+              + Add &ldquo;{query}&rdquo;
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ---- Step progress bar ----
 function StepProgressBar({ step, total }: { step: number; total: number }) {
   const pct = Math.round(((step) / total) * 100);
@@ -382,9 +506,10 @@ function RegisterWizard() {
     partnerReligion: "",
     partnerMaritalStatus: [] as string[],
     partnerState: "",
-    // Step 5 — Photo
+    // Step 5 — Photo / About
     photoUrl: "",
     about: "",
+    languages: [] as string[],
   });
   const [showPassword, setShowPassword] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -900,8 +1025,8 @@ function RegisterWizard() {
         {/* ===== STEP 0: Basic Info ===== */}
         {step === 0 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={1} total={5} />
-            <StepHeader step={1} total={5} title="Create your profile" />
+            <StepProgressBar step={1} total={6} />
+            <StepHeader step={1} total={6} title="Create your profile" />
             <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.5rem" }}>
               {/* Profile for */}
               <div style={{ marginBottom: "1.25rem" }}>
@@ -1258,8 +1383,8 @@ function RegisterWizard() {
         {/* ===== STEP 1: Personal & Religious Details ===== */}
         {step === 1 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={2} total={5} />
-            <StepHeader step={2} total={5} title="Personal and Religious Details" onBack={() => setStep(step - 1)} />
+            <StepProgressBar step={2} total={6} />
+            <StepHeader step={2} total={6} title="Personal and Religious Details" onBack={() => setStep(step - 1)} />
             <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.5rem" }}>
               <h3 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: "1px solid var(--border-light)" }}>
                 Personal Details
@@ -1327,43 +1452,31 @@ function RegisterWizard() {
               )}
 
               {/* ── SUB-CASTE SECTION ── */}
-              {form.caste && (() => {
-                const subcasteList = CASTE_TO_SUBCASTE[form.caste] || [];
-                // Show searchable dropdown whenever there are sub-caste options
-                const hasOptions = subcasteList.length >= 1;
-
-                return (
-                  <div style={{ marginBottom: "1rem" }}>
-                    {hasOptions ? (
-                      <SearchableSelect
-                        label="Sub-caste (optional)"
-                        value={form.subcaste}
-                        onChange={(v) => set("subcaste", v)}
-                        options={subcasteList}
-                        disabled={!form.caste}
-                        placeholder="Select sub-caste"
-                      />
-                    ) : (
-                      // No sub-caste data for this caste — show disabled field
-                      <div>
-                        <label className="form-label">
-                          Sub-caste <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(not applicable)</span>
-                        </label>
-                        <div
-                          className="form-input"
-                          style={{ color: "var(--text-muted)", background: "#F7F7F7", cursor: "not-allowed" }}
-                          aria-label="No sub-castes available"
-                        >
-                          No sub-castes available for {form.caste}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
+              {form.caste && (
+                <div style={{ marginBottom: "1rem" }}>
+                  <label className="form-label">
+                    Sub-caste <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={form.subcaste}
+                    onChange={(e) => set("subcaste", e.target.value)}
+                    placeholder="Enter your sub-caste"
+                    disabled={!form.caste}
+                  />
+                </div>
+              )}
 
               <FloatSelect label="Mother Tongue" value={form.motherTongue} onChange={(v) => set("motherTongue", v)} options={MOTHER_TONGUES} />
-
+              
+              <MultiSelectTags
+                label="Other Languages Known"
+                values={form.languages}
+                onChange={(vals) => setForm(f => ({ ...f, languages: vals }))}
+                options={MOTHER_TONGUES}
+                placeholder="Type or select languages..."
+              />
               <h3 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: "1px solid var(--border-light)", marginTop: "0.5rem" }}>
                 Horoscope Details
               </h3>
@@ -1396,15 +1509,48 @@ function RegisterWizard() {
 
               {/* Dhosham */}
               <div style={{ marginBottom: "1rem" }}>
-                <label className="form-label">Dhosham</label>
-                <select
-                  className="form-select"
-                  value={form.dhosham}
-                  onChange={(e) => set("dhosham", e.target.value)}
-                >
-                  <option value="">Select dhosham</option>
-                  {DHOSHAM_OPTIONS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
-                </select>
+                <label style={{ display: "block", fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "0.625rem" }}>
+                  Dhosham
+                </label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                  {DHOSHAM_OPTIONS.map((d) => {
+                    const selected = form.dhosham.split(', ').includes(d.value);
+                    return (
+                      <button
+                        key={d.value}
+                        type="button"
+                        onClick={() => {
+                          const arr = form.dhosham ? form.dhosham.split(', ') : [];
+                          let newArr;
+                          if (selected) {
+                            newArr = arr.filter(x => x !== d.value);
+                          } else {
+                            if (d.value === 'none' || d.value === 'unknown') {
+                              newArr = [d.value];
+                            } else {
+                              newArr = arr.filter(x => x !== 'none' && x !== 'unknown').concat(d.value);
+                            }
+                          }
+                          set("dhosham", newArr.join(', '));
+                        }}
+                        style={{
+                          padding: "0.4375rem 1rem",
+                          borderRadius: "var(--radius-full)",
+                          border: `1.5px solid ${selected ? "var(--primary)" : "var(--border-color)"}`,
+                          background: selected ? "var(--primary)" : "#fff",
+                          color: selected ? "#fff" : "var(--text-dark)",
+                          fontWeight: selected ? 700 : 400,
+                          fontSize: "0.875rem",
+                          cursor: "pointer",
+                          fontFamily: "var(--font-sans)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {d.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <button
@@ -1422,8 +1568,8 @@ function RegisterWizard() {
         {/* ===== STEP 2: Education & Career / Location ===== */}
         {step === 2 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={3} total={5} />
-            <StepHeader step={3} total={5} title="Education and Career" onBack={() => setStep(1)} />
+            <StepProgressBar step={3} total={6} />
+            <StepHeader step={3} total={6} title="Education and Career" onBack={() => setStep(1)} />
             <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.5rem" }}>
               <FloatSelect
                 label="Highest Education"
@@ -1452,19 +1598,20 @@ function RegisterWizard() {
 
               <div style={{ marginBottom: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border-light)" }}>
                 <h3 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "1rem" }}>Location</h3>
-                <FloatSelect
+                <FloatSearchableCombobox
                   label="State"
                   value={form.state}
                   onChange={(v) => { set("state", v); set("city", ""); }}
                   options={INDIAN_STATES}
+                  placeholder="Search or select state..."
                 />
                 {form.state && CITIES_BY_STATE[form.state] ? (
-                  <FloatSelect
+                  <FloatSearchableCombobox
                     label="City"
                     value={form.city}
                     onChange={(v) => set("city", v)}
                     options={CITIES_BY_STATE[form.state]}
-                    placeholder="Select city"
+                    placeholder="Search or select city..."
                   />
                 ) : form.state ? (
                   <div style={{ marginBottom: "1rem" }}>
@@ -1501,7 +1648,7 @@ function RegisterWizard() {
         {/* ===== STEP 3: Partner Preferences ===== */}
         {step === 3 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={4} total={5} />
+            <StepProgressBar step={4} total={6} />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                 <button onClick={() => setStep(2)} style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
@@ -1584,6 +1731,7 @@ function RegisterWizard() {
                           fontSize: "0.875rem",
                           cursor: "pointer",
                           fontFamily: "var(--font-sans)",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {m.label}
@@ -1710,7 +1858,7 @@ function RegisterWizard() {
 
         {step === 4 && (
           <div className="animate-fade-in-up">
-            <StepProgressBar step={5} total={5} />
+            <StepProgressBar step={5} total={6} />
             {/* Header row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -1720,12 +1868,11 @@ function RegisterWizard() {
                 <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>Add photo</h2>
               </div>
               <button
-                onClick={handleComplete}
-                disabled={isSubmitting}
-                style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "none", cursor: isSubmitting ? "not-allowed" : "pointer", color: isSubmitting ? "#aaa" : "var(--primary)", fontWeight: 700, fontSize: "0.875rem", fontFamily: "var(--font-sans)", opacity: isSubmitting ? 0.5 : 1 }}
+                onClick={() => { setStep(5); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                style={{ display: "flex", alignItems: "center", gap: "4px", background: "none", border: "none", cursor: "pointer", color: "var(--primary)", fontWeight: 700, fontSize: "0.875rem", fontFamily: "var(--font-sans)" }}
               >
-                {isSubmitting ? "Creating..." : "Skip for now"}
-                {!isSubmitting && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>}
+                Skip
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
             </div>
 
@@ -1807,28 +1954,53 @@ function RegisterWizard() {
                 }}
               />
 
-              {form.photoUrl && (
-                <button
-                  onClick={handleComplete}
-                  disabled={isSubmitting}
-                  className="btn btn-primary"
-                  style={{ width: "100%", justifyContent: "center", marginTop: "0.75rem", opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? "not-allowed" : "pointer" }}
-                >
-                  {isSubmitting ? "Creating your profile..." : "Complete Registration"}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => { setStep(5); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className="btn btn-primary"
+                style={{ width: "100%", justifyContent: "center", marginTop: "0.75rem" }}
+              >
+                {form.photoUrl ? "Save & Continue" : "Continue without photo"}
+              </button>
+            </div>
+          </div>
+        )}
 
-              {/* Always show a complete button (even without photo) */}
-              {!form.photoUrl && (
-                <button
-                  onClick={handleComplete}
-                  disabled={isSubmitting}
-                  className="btn btn-primary"
-                  style={{ width: "100%", justifyContent: "center", marginTop: "0.75rem", opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? "not-allowed" : "pointer" }}
-                >
-                  {isSubmitting ? "Creating your profile..." : "Continue without photo"}
-                </button>
-              )}
+        {/* ===== STEP 5: About Me ===== */}
+        {step === 5 && (
+          <div className="animate-fade-in-up">
+            <StepProgressBar step={6} total={6} />
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.25rem" }}>
+              <button onClick={() => setStep(4)} aria-label="Go back" style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", color: "var(--text-dark)", display: "flex" }}>
+                <ChevronLeft size={20} />
+              </button>
+              <h2 style={{ fontSize: "1.125rem", fontWeight: 700, color: "var(--text-dark)", margin: 0 }}>About You</h2>
+            </div>
+
+            <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.75rem" }}>
+              <h3 style={{ fontWeight: 700, fontSize: "1.0625rem", color: "var(--text-dark)", marginBottom: "0.875rem" }}>
+                Write a few words about yourself
+              </h3>
+              <p style={{ fontSize: "0.875rem", color: "var(--text-medium)", marginBottom: "1.25rem", lineHeight: 1.5 }}>
+                A good bio tells prospects about your personality, upbringing, and what you are looking for in a partner.
+              </p>
+
+              <textarea
+                className="form-input"
+                placeholder="E.g. I am a software engineer working in Chennai. I come from a traditional nuclear family..."
+                value={form.about}
+                onChange={e => set("about", e.target.value)}
+                style={{ minHeight: "120px", resize: "vertical", fontSize: "0.875rem", padding: "1rem", marginBottom: "1.5rem" }}
+              />
+
+              <button
+                onClick={handleComplete}
+                disabled={isSubmitting}
+                className="btn btn-primary"
+                style={{ width: "100%", justifyContent: "center", opacity: isSubmitting ? 0.7 : 1, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+              >
+                {isSubmitting ? "Creating your profile..." : "Complete Registration"}
+              </button>
             </div>
           </div>
         )}

@@ -607,7 +607,7 @@ function LoginContent() {
 
                       {/* ── OTP: Step 1 — enter email or phone ── */}
                       {mode === "otp" && !otpSent && (
-                        <form onSubmit={handleSendOtp}>
+                        <form onSubmit={(e) => e.preventDefault()}>
                           <div style={{ marginBottom: "1.125rem" }}>
                             <label className="form-label">Email Address or Mobile Number</label>
                             <input
@@ -630,7 +630,7 @@ function LoginContent() {
                               </p>
                             )}
                           </div>
-                          <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+                          <button type="button" onClick={handleSendOtp} disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
                             {loading ? "Sending..." : "Send OTP"}
                           </button>
                         </form>
@@ -638,7 +638,7 @@ function LoginContent() {
 
                       {/* ── OTP: Step 2 — enter OTP ── */}
                       {mode === "otp" && otpSent && !notRegistered && (
-                        <form onSubmit={handleVerifyOtp}>
+                        <form onSubmit={(e) => e.preventDefault()}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
                             <p style={{ fontSize: "0.875rem", color: "var(--text-medium)" }}>
                               OTP sent to <strong>{otpType === "phone" ? `+91 ${otpIdentifier.replace(/\D/g, "")}` : otpIdentifier}</strong>
@@ -691,7 +691,7 @@ function LoginContent() {
                               </button>
                             )}
                           </div>
-                          <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+                          <button type="button" onClick={handleVerifyOtp} disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
                             {loading ? "Verifying..." : "Verify & Login"}
                           </button>
                         </form>
@@ -735,7 +735,7 @@ function LoginContent() {
 
                       {/* ── Password login ── */}
                       {mode === "password" && (
-                        <form onSubmit={handlePasswordLogin}>
+                        <form onSubmit={(e) => e.preventDefault()}>
                           {/* Rate-limit lockout banner */}
                           {pwLocked && (
                             <div
@@ -814,7 +814,8 @@ function LoginContent() {
                             <Link href="/forgot-password" style={{ fontSize: "0.8125rem", color: "var(--bm-orange)", textDecoration: "none", fontWeight: 600 }}>Forgot Password?</Link>
                           </div>
                           <button
-                            type="submit"
+                            type="button"
+                            onClick={handlePasswordLogin}
                             disabled={loading || pwLocked}
                             className="btn btn-primary"
                             style={{ width: "100%", justifyContent: "center", opacity: (loading || pwLocked) ? 0.6 : 1, cursor: (loading || pwLocked) ? "not-allowed" : "pointer" }}

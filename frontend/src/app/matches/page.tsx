@@ -35,12 +35,18 @@ import {
   getInterestsSent,
   type RegisteredUser,
 } from "@/lib/auth-store";
+import DailyMatchesCarousel from "@/components/matches/DailyMatchesCarousel";
 
 // ── Sidebar section definitions (matching screenshot exactly) ─────────────────
 const SIDEBAR = [
   {
     group: null,
     items: [
+      {
+        id: "daily_matches",
+        label: "Daily Matches",
+        sub: "Your curated recommendations for today",
+      },
       {
         id: "your_matches",
         label: "Your Matches",
@@ -108,6 +114,7 @@ const SIDEBAR = [
 const SidebarIcon = ({ id, active }: { id: string; active: boolean }) => {
   const color = active ? "#6B1A2A" : id === "hidden_profiles" ? "#888" : "#aaa";
   const icons: Record<string, React.ReactElement> = {
+    daily_matches: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>,
     your_matches: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
     partner_preference: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>,
     shortlisted_by_you: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>,
@@ -805,6 +812,10 @@ function MatchesContent() {
     setCurrentPage(1);
     let result: RegisteredUser[] = [];
     try {
+      if (sectionId === "daily_matches") {
+        setLoading(false);
+        return;
+      }
       switch (sectionId) {
         case "your_matches": result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined); break;
         case "partner_preference": 
@@ -1205,11 +1216,12 @@ function MatchesContent() {
                   flex: 1,
                 }}
               >
-                {loading ? "Loading…" : activeSection === "hidden_profiles" ? `${hiddenProfiles.length} hidden profiles` : `${allFiltered.length} matches`}
+                {loading ? "Loading…" : activeSection === "hidden_profiles" ? `${hiddenProfiles.length} hidden profiles` : activeSection === "daily_matches" ? "Daily Matches" : `${allFiltered.length} matches`}
               </h1>
             </div>
 
             {/* Name Search Bar */}
+            {activeSection !== "daily_matches" && (
             <div style={{ marginBottom: "0.75rem", position: "relative" }}>
               <svg
                 width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"
@@ -1251,8 +1263,10 @@ function MatchesContent() {
                 </button>
               )}
             </div>
+            )}
 
             {/* Filter / Sort / Chips row */}
+            {activeSection !== "daily_matches" && (
             <div
               ref={chipRowRef}
               style={{
@@ -1347,9 +1361,10 @@ function MatchesContent() {
 
               {/* Scroll arrows removed — chips row is touch-scrollable */}
             </div>
+            )}
 
             {/* Expandable filter panel */}
-            {filterOpen && (
+            {filterOpen && activeSection !== "daily_matches" && (
               <div
                 style={{
                   background: "#fff",
@@ -1402,7 +1417,9 @@ function MatchesContent() {
             )}
 
             {/* Profile cards */}
-            {activeSection === "hidden_profiles" ? (
+            {activeSection === "daily_matches" ? (
+              <DailyMatchesCarousel />
+            ) : activeSection === "hidden_profiles" ? (
               hiddenProfiles.length === 0 ? (
                 <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px", padding: "4rem 2rem", textAlign: "center" }}>
                   <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ddd" strokeWidth="1.2" style={{ margin: "0 auto 1rem", display: "block" }}>

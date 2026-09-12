@@ -10,6 +10,7 @@ interface SearchableSelectProps {
   options: string[];
   placeholder?: string;
   disabled?: boolean;
+  hideLabel?: boolean;
 }
 
 export default function SearchableSelect({
@@ -19,6 +20,7 @@ export default function SearchableSelect({
   options,
   placeholder,
   disabled = false,
+  hideLabel = false,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -42,7 +44,6 @@ export default function SearchableSelect({
   // Focus search input when opened
   useEffect(() => {
     if (isOpen) {
-      setSearch("");
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 50);
@@ -62,7 +63,10 @@ export default function SearchableSelect({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) setSearch("");
+          setIsOpen(!isOpen);
+        }}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={label}
@@ -94,7 +98,7 @@ export default function SearchableSelect({
       </button>
 
       {/* Floating Label */}
-      {value && (
+      {value && !hideLabel && (
         <span
           style={{
             position: "absolute",

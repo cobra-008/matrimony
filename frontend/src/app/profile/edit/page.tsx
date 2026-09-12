@@ -20,9 +20,10 @@ import {
   OCCUPATIONS, INCOME_RANGES, INDIAN_STATES, COUNTRIES,
   EATING_HABITS, SMOKING_OPTIONS, DRINKING_OPTIONS,
   STARS, RAASI_LIST, DHOSHAM_OPTIONS, HEIGHTS,
-  RELIGION_TO_CASTES, CASTE_TO_SUBCASTE,
+  RELIGION_TO_CASTES, HOBBIES_LIST, INTERESTS_LIST, LANG_LIST
 } from "@/data/matrimony-data";
 import citiesData from "@/data/cities.json";
+import SearchableSelect from "@/components/ui/SearchableSelect";
 
 // ── SECTION META ─────────────────────────────────────────────────────
 const SECTIONS = [
@@ -97,104 +98,6 @@ function FormSelect({ value, onChange, options, placeholder = "Select" }: {
   );
 }
 
-// ── SEARCHABLE COMBOBOX ───────────────────────────────────────────────
-function SearchableCombobox({ value, onChange, options, placeholder = "Search or type your own..." }: {
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-  placeholder?: string;
-}) {
-  const [query, setQuery] = useState(value);
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  // Sync external value changes back into the input
-  useEffect(() => { setQuery(value); }, [value]);
-
-  // Close on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const filtered = query === value
-    ? options.slice(0, 60)
-    : options.filter(o => o.toLowerCase().includes(query.toLowerCase())).slice(0, 60);
-
-  const select = (v: string) => {
-    setQuery(v);
-    onChange(v);
-    setOpen(false);
-  };
-
-  return (
-    <div ref={ref} style={{ position: "relative" }}>
-      <input
-        type="text"
-        value={query}
-        placeholder={placeholder}
-        className="form-input"
-        style={{ fontSize: "0.875rem" }}
-        onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
-        autoComplete="off"
-      />
-      {open && (
-        <div style={{
-          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
-          background: "#fff", border: "1px solid var(--border-color)",
-          borderRadius: "var(--radius-md)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-          maxHeight: "220px", overflowY: "auto", zIndex: 200,
-        }}>
-          {filtered.length === 0 && (
-            <div
-              style={{ padding: "0.625rem 0.875rem", fontSize: "0.8125rem", color: "var(--text-muted)" }}
-              onMouseDown={() => select(query)}
-            >
-              Use &ldquo;{query}&rdquo; as custom occupation
-            </div>
-          )}
-          {filtered.map(opt => (
-            <div
-              key={opt}
-              onMouseDown={() => select(opt)}
-              style={{
-                padding: "0.5rem 0.875rem",
-                fontSize: "0.875rem",
-                cursor: "pointer",
-                background: opt === value ? "var(--primary-light)" : "transparent",
-                color: opt === value ? "var(--primary)" : "var(--text-dark)",
-                fontWeight: opt === value ? 600 : 400,
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = "#f5f5f5")}
-              onMouseLeave={e => (e.currentTarget.style.background = opt === value ? "var(--primary-light)" : "transparent")}
-            >
-              {opt}
-            </div>
-          ))}
-          {filtered.length > 0 && !filtered.includes(query) && query.trim() && (
-            <div
-              onMouseDown={() => select(query)}
-              style={{
-                padding: "0.5rem 0.875rem",
-                fontSize: "0.8125rem",
-                cursor: "pointer",
-                borderTop: "1px solid var(--border-light)",
-                color: "var(--primary)",
-                fontWeight: 600,
-              }}
-            >
-              + Use &ldquo;{query}&rdquo; as custom entry
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── SECTION CARD ─────────────────────────────────────────────────────
 function SectionCard({ id, title, icon, children }: {
@@ -266,35 +169,121 @@ function ProfileProgress({ pct }: { pct: number }) {
   );
 }
 
-// ── MULTI-SELECT CHIPS ────────────────────────────────────────────────
-function ChipSelect({ options, selected, onToggle }: {
+// ── MULTI-SELECT TAGS ────────────────────────────────────────────────
+function MultiSelectTags({ label, values, onChange, options, placeholder = "Select or type..." }: {
+  label: string;
+  values: string[];
+  onChange: (v: string[]) => void;
   options: string[];
-  selected: string[];
-  onToggle: (v: string) => void;
+  placeholder?: string;
 }) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const unselected = options.filter(o => !values.includes(o));
+  const filtered = query
+    ? unselected.filter(o => o.toLowerCase().includes(query.toLowerCase())).slice(0, 30)
+    : unselected.slice(0, 30);
+
+  const select = (v: string) => {
+    if (!values.includes(v)) onChange([...values, v]);
+    setQuery("");
+    setOpen(false);
+  };
+
+  const remove = (v: string) => {
+    onChange(values.filter(x => x !== v));
+  };
+
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-      {options.map(o => (
-        <button
-          key={o}
-          type="button"
-          onClick={() => onToggle(o)}
+    <div ref={ref} style={{ position: "relative" }}>
+      <div
+        className="form-input"
+        style={{
+          minHeight: "48px", height: "auto", display: "flex", flexWrap: "wrap", gap: "0.375rem",
+          padding: "0.625rem 0.875rem", alignItems: "center", cursor: "text",
+        }}
+        onClick={() => { document.getElementById(`multi-input-${label}`)?.focus(); setOpen(true); }}
+      >
+        {values.map(val => (
+          <span
+            key={val}
+            style={{
+              background: "var(--primary-light)", color: "var(--primary)",
+              padding: "2px 8px", borderRadius: "var(--radius-full)",
+              fontSize: "0.75rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px",
+              whiteSpace: "nowrap"
+            }}
+          >
+            {val}
+            <span
+              onClick={(e) => { e.stopPropagation(); remove(val); }}
+              style={{ cursor: "pointer", opacity: 0.7, padding: "2px" }}
+            >
+              ×
+            </span>
+          </span>
+        ))}
+        <input
+          id={`multi-input-${label}`}
+          type="text"
+          value={query}
+          placeholder={values.length === 0 ? placeholder : ""}
           style={{
-            padding: "0.3125rem 0.875rem",
-            border: selected.includes(o) ? "1.5px solid var(--primary)" : "1px solid var(--border-color)",
-            borderRadius: "var(--radius-full)",
-            background: selected.includes(o) ? "var(--primary-light)" : "#fff",
-            color: selected.includes(o) ? "var(--primary)" : "var(--text-medium)",
-            fontSize: "0.8125rem",
-            fontWeight: selected.includes(o) ? 600 : 400,
-            cursor: "pointer",
-            fontFamily: "var(--font-sans)",
-            transition: "all 0.12s ease",
+            border: "none", outline: "none", background: "transparent",
+            flex: 1, minWidth: "60px", fontSize: "0.875rem", color: "var(--text-dark)",
           }}
-        >
-          {o}
-        </button>
-      ))}
+          onChange={e => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          autoComplete="off"
+        />
+      </div>
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+          background: "#fff", border: "1px solid var(--border-color)",
+          borderRadius: "var(--radius-md)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+          maxHeight: "200px", overflowY: "auto", zIndex: 200,
+        }}>
+          {filtered.length === 0 && !query && (
+            <div style={{ padding: "0.625rem 0.875rem", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
+              No options available
+            </div>
+          )}
+          {filtered.map(opt => (
+            <div
+              key={opt}
+              onMouseDown={(e) => { e.preventDefault(); select(opt); }}
+              style={{ padding: "0.5rem 0.875rem", fontSize: "0.875rem", cursor: "pointer", color: "var(--text-dark)" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#f5f5f5")}
+              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            >
+              {opt}
+            </div>
+          ))}
+          {query.trim() && !filtered.includes(query) && !values.includes(query) && (
+            <div
+              onMouseDown={(e) => { e.preventDefault(); select(query.trim()); }}
+              style={{
+                padding: "0.5rem 0.875rem", fontSize: "0.8125rem", cursor: "pointer",
+                borderTop: filtered.length > 0 ? "1px solid var(--border-light)" : "none",
+                color: "var(--primary)", fontWeight: 600,
+              }}
+            >
+              + Add &ldquo;{query}&rdquo;
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -502,21 +491,11 @@ function EditProfileContent() {
     return Math.round((fields.filter(Boolean).length / fields.length) * 100);
   })();
 
-  // Available castes/subcastes from selection
-  const availCastes = religion && RELIGION_TO_CASTES[religion]
-    ? RELIGION_TO_CASTES[religion].map(c => ({ value: c, label: c }))
-    : [];
-  const availSubCastes = caste && CASTE_TO_SUBCASTE[caste]
-    ? CASTE_TO_SUBCASTE[caste].map(s => ({ value: s, label: s }))
-    : [];
+  // Caste and Subcaste are now immutable and only displayed.
 
   const HEIGHT_OPTS = HEIGHTS.map(h => ({ value: String(h.value), label: h.label }));
   const AGE_OPTS = Array.from({ length: 43 }, (_, i) => ({ value: String(i + 18), label: `${i + 18} yrs` }));
 
-  const HOBBIES_LIST = ["Reading", "Music", "Dance", "Travel", "Cooking", "Movies", "Sports", "Art", "Yoga", "Photography", "Gaming", "Trekking"];
-  const INTERESTS_LIST = ["Carnatic Music", "Classical Dance", "Temple Visits", "Spirituality", "Volunteering", "Gardening", "Coding", "Fashion", "Food Blog", "Fitness"];
-  const LANG_LIST = ["Tamil", "English", "Hindi", "Telugu", "Malayalam", "Kannada", "Sanskrit"];
-  
   const ALL_CITIES = Array.from(new Set(citiesData.map(c => c.city))).sort();
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -836,37 +815,57 @@ function EditProfileContent() {
               ───────────────────────────────────────────────────── */}
               <SectionCard id="religion" title="Religious Information" icon={<span style={{ fontSize: 14 }}>🕉️</span>}>
                 <FieldGrid>
-                  <FormField label="Religion" required>
-                    <FormSelect value={religion} onChange={v => { setReligion(v); setCaste(""); setSubCaste(""); }} options={RELIGIONS} placeholder="Select religion" />
+                  <FormField label="Religion">
+                    <div
+                      style={{
+                        border: "1.5px solid var(--border-color)",
+                        borderRadius: "var(--radius-md)",
+                        padding: "0.625rem 0.875rem",
+                        background: "#F5F5F5",
+                        fontSize: "0.9375rem",
+                        color: "var(--text-dark)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {religion || "—"}
+                    </div>
                   </FormField>
                   <FormField label="Caste / Community">
-                    {(user?.casteChangeCount ?? 0) >= 1 ? (
-                      <div>
-                        <div
-                          style={{
-                            border: "1.5px solid var(--border-color)",
-                            borderRadius: "var(--radius-md)",
-                            padding: "0.625rem 0.875rem",
-                            background: "#F5F5F5",
-                            fontSize: "0.9375rem",
-                            color: "var(--text-dark)",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {caste || "—"}
-                        </div>
-                        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.375rem", display: "flex", alignItems: "center", gap: "4px" }}>
-                          🔒 Caste can only be changed once. Contact{" "}
-                          <a href="mailto:support@elitetamilmatrimony.com" style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 600 }}>support</a>{" "}
-                          if you need to update it.
-                        </p>
+                    <div>
+                      <div
+                        style={{
+                          border: "1.5px solid var(--border-color)",
+                          borderRadius: "var(--radius-md)",
+                          padding: "0.625rem 0.875rem",
+                          background: "#F5F5F5",
+                          fontSize: "0.9375rem",
+                          color: "var(--text-dark)",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {caste || "—"}
                       </div>
-                    ) : (
-                      <FormSelect value={caste} onChange={v => { setCaste(v); setSubCaste(""); }} options={availCastes} placeholder={religion ? "Select caste" : "Select religion first"} />
-                    )}
+                      <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.375rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                        🔒 Caste details cannot be changed after registration. Contact{" "}
+                        <a href="mailto:support@elitetamilmatrimony.com" style={{ color: "var(--primary)", textDecoration: "none", fontWeight: 600 }}>support</a>{" "}
+                        if you need to update them.
+                      </p>
+                    </div>
                   </FormField>
-                  <FormField label="Sub Caste" hint="Type your sub-caste (optional)">
-                    <FormInput value={subCaste} onChange={setSubCaste} placeholder="e.g. Mudaliar, Pillai, Vellalar..." />
+                  <FormField label="Sub Caste" hint="Optional">
+                    <div
+                      style={{
+                        border: "1.5px solid var(--border-color)",
+                        borderRadius: "var(--radius-md)",
+                        padding: "0.625rem 0.875rem",
+                        background: "#F5F5F5",
+                        fontSize: "0.9375rem",
+                        color: "var(--text-dark)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {subCaste || "—"}
+                    </div>
                   </FormField>
                   <FormField label="Gothram">
                     <FormInput value={gothram} onChange={setGothram} placeholder="Enter gothram (optional)" />
@@ -878,7 +877,45 @@ function EditProfileContent() {
                     <FormSelect value={rasi} onChange={setRasi} options={RAASI_LIST} placeholder="Select raasi" />
                   </FormField>
                   <FormField label="Dhosham" required>
-                    <FormSelect value={dhosham} onChange={setDhosham} options={DHOSHAM_OPTIONS} placeholder="Select" />
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.25rem" }}>
+                      {DHOSHAM_OPTIONS.map((d) => {
+                        const selected = dhosham ? dhosham.split(', ').includes(d.value) : false;
+                        return (
+                          <button
+                            key={d.value}
+                            type="button"
+                            onClick={() => {
+                              const arr = dhosham ? dhosham.split(', ') : [];
+                              let newArr;
+                              if (selected) {
+                                newArr = arr.filter(x => x !== d.value);
+                              } else {
+                                if (d.value === 'none' || d.value === 'unknown') {
+                                  newArr = [d.value];
+                                } else {
+                                  newArr = arr.filter(x => x !== 'none' && x !== 'unknown').concat(d.value);
+                                }
+                              }
+                              setDhosham(newArr.join(', '));
+                            }}
+                            style={{
+                              padding: "0.4375rem 1rem",
+                              borderRadius: "var(--radius-full)",
+                              border: `1.5px solid ${selected ? "var(--primary)" : "var(--border-color)"}`,
+                              background: selected ? "var(--primary)" : "#fff",
+                              color: selected ? "#fff" : "var(--text-dark)",
+                              fontWeight: selected ? 700 : 400,
+                              fontSize: "0.875rem",
+                              cursor: "pointer",
+                              fontFamily: "var(--font-sans)",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {d.label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </FormField>
                   <FormField label="Time of Birth" hint="Used for jathagam matching">
                     <FormInput type="time" value={timeOfBirth} onChange={setTimeOfBirth} placeholder="e.g. 10:30" />
@@ -907,11 +944,13 @@ function EditProfileContent() {
                     <FormInput value={college} onChange={setCollege} placeholder="e.g. IIT Madras" />
                   </FormField>
                   <FormField label="Occupation" required>
-                    <SearchableCombobox
+                    <SearchableSelect
+                      label="Occupation"
+                      hideLabel
                       value={occupation}
                       onChange={setOccupation}
                       options={(OCCUPATIONS as (string | { value: string; label: string })[]).map(o => typeof o === "string" ? o : o.label)}
-                      placeholder="Search or type your occupation..."
+                      placeholder="Search occupation..."
                     />
                   </FormField>
                   <FormField label="Company / Organisation">
@@ -973,19 +1012,19 @@ function EditProfileContent() {
 
                 <div style={{ marginTop: "1.25rem" }}>
                   <FormField label="Languages Known">
-                    <ChipSelect options={LANG_LIST} selected={languages} onToggle={v => setLanguages(prev => prev.includes(v) ? prev.filter(l => l !== v) : [...prev, v])} />
+                    <MultiSelectTags label="languages" options={LANG_LIST} values={languages} onChange={setLanguages} placeholder="Search or add languages..." />
                   </FormField>
                 </div>
 
                 <div style={{ marginTop: "1.25rem" }}>
                   <FormField label="Hobbies">
-                    <ChipSelect options={HOBBIES_LIST} selected={hobbies} onToggle={v => setHobbies(prev => prev.includes(v) ? prev.filter(h => h !== v) : [...prev, v])} />
+                    <MultiSelectTags label="hobbies" options={HOBBIES_LIST} values={hobbies} onChange={setHobbies} placeholder="Search or add hobbies..." />
                   </FormField>
                 </div>
 
                 <div style={{ marginTop: "1.25rem" }}>
                   <FormField label="Interests">
-                    <ChipSelect options={INTERESTS_LIST} selected={interests} onToggle={v => setInterests(prev => prev.includes(v) ? prev.filter(i => i !== v) : [...prev, v])} />
+                    <MultiSelectTags label="interests" options={INTERESTS_LIST} values={interests} onChange={setInterests} placeholder="Search or add interests..." />
                   </FormField>
                 </div>
               </SectionCard>
@@ -996,13 +1035,15 @@ function EditProfileContent() {
               <SectionCard id="location" title="Location" icon={<MapPin size={16} />}>
                 <FieldGrid>
                   <FormField label="Country" required>
-                    <FormSelect value={country} onChange={setCountry} options={COUNTRIES} />
+                    <SearchableSelect label="Country" hideLabel value={country} onChange={setCountry} options={COUNTRIES} placeholder="Search country..." />
                   </FormField>
                   <FormField label="State">
-                    <FormSelect value={state} onChange={setState} options={INDIAN_STATES} placeholder="Select state" />
+                    <SearchableSelect label="State" hideLabel value={state} onChange={setState} options={INDIAN_STATES} placeholder="Search state..." />
                   </FormField>
                   <FormField label="City" required>
-                    <SearchableCombobox
+                    <SearchableSelect
+                      label="City"
+                      hideLabel
                       value={city}
                       onChange={v => {
                         setCity(v);
@@ -1010,11 +1051,11 @@ function EditProfileContent() {
                         if (match && match.state && !state) setState(match.state);
                       }}
                       options={ALL_CITIES}
-                      placeholder="Search or type your city..."
+                      placeholder="Search city..."
                     />
                   </FormField>
                   <FormField label="Native Place">
-                    <FormInput value={nativePlace} onChange={setNativePlace} placeholder="e.g. Madurai" />
+                    <SearchableSelect label="Native Place" hideLabel value={nativePlace} onChange={setNativePlace} options={ALL_CITIES} placeholder="Search native place..." />
                   </FormField>
                   <FullWidth>
                     <FormField label="Current Address">
@@ -1111,16 +1152,18 @@ function EditProfileContent() {
 
                 <div style={{ marginTop: "1.25rem" }}>
                   <FormField label="Mother Tongue">
-                    <ChipSelect options={LANG_LIST} selected={pMotherTongue} onToggle={v => setPMotherTongue(prev => prev.includes(v) ? prev.filter(l => l !== v) : [...prev, v])} />
+                    <MultiSelectTags label="partner-languages" options={LANG_LIST} values={pMotherTongue} onChange={setPMotherTongue} placeholder="Select languages..." />
                   </FormField>
                 </div>
 
                 <div style={{ marginTop: "1.25rem" }}>
                   <FormField label="Marital Status">
-                    <ChipSelect
+                    <MultiSelectTags
+                      label="partner-marital"
                       options={MARITAL_STATUS.map(m => m.label)}
-                      selected={pMaritalStatus}
-                      onToggle={v => setPMaritalStatus(prev => prev.includes(v) ? prev.filter(m => m !== v) : [...prev, v])}
+                      values={pMaritalStatus}
+                      onChange={setPMaritalStatus}
+                      placeholder="Select marital status..."
                     />
                   </FormField>
                 </div>
@@ -1143,7 +1186,7 @@ function EditProfileContent() {
           zIndex: 50, boxShadow: "0 -4px 16px rgba(0,0,0,0.06)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+        <div className="save-bar-progress" style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
           <div style={{ fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
             Profile completion: <strong style={{ color: "var(--primary)" }}>{pct}%</strong>
           </div>
@@ -1151,15 +1194,15 @@ function EditProfileContent() {
             <div style={{ height: "100%", width: `${pct}%`, background: "var(--gradient-hero)", borderRadius: "3px", transition: "width 0.4s" }} />
           </div>
         </div>
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          <Link href="/matches" className="btn btn-ghost" style={{ border: "1.5px solid var(--border-color)" }}>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <Link href="/matches" className="btn btn-ghost hide-mobile" style={{ border: "1.5px solid var(--border-color)", whiteSpace: "nowrap" }}>
             Cancel
           </Link>
-          <Link href={user ? `/profile/${user.id}` : "/matches"} className="btn btn-outline" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <Eye size={13} /> Preview Profile
+          <Link href={user ? `/profile/${user.id}` : "/matches"} className="btn btn-outline" style={{ display: "flex", alignItems: "center", gap: "5px", whiteSpace: "nowrap" }}>
+            <Eye size={13} /> <span className="hide-mobile-text">Preview</span>
           </Link>
-          <button onClick={handleSave} disabled={saving} className="btn btn-primary" style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: "150px", justifyContent: "center" }}>
-            {saving ? "Saving…" : <><Save size={14} /> Save Changes</>}
+          <button onClick={handleSave} disabled={saving} className="btn btn-primary save-btn" style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "center", whiteSpace: "nowrap" }}>
+            {saving ? "Saving…" : <><Save size={14} /> Save</>}
           </button>
         </div>
       </div>
@@ -1169,6 +1212,11 @@ function EditProfileContent() {
         @media (max-width: 640px) {
           .edit-grid-2 { grid-template-columns: 1fr !important; }
           aside { display: none; }
+          .hide-mobile { display: none !important; }
+          .hide-mobile-text { display: none !important; }
+          .save-bar-progress { display: none !important; }
+          .edit-save-bar { padding: 0.75rem 1rem !important; justify-content: flex-end !important; }
+          .save-btn { min-width: auto !important; flex: 1; }
         }
         .edit-nav-item:hover { background: var(--primary-light); color: var(--primary); }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

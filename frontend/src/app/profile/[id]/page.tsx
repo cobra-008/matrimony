@@ -554,6 +554,10 @@ function ProfileDetailPage({
   if (!profile) return null;
 
   const photo = profile.photoUrl || null;
+  const galleryPhotos = profile.photos && profile.photos.length > 0
+    ? profile.photos
+    : (photo ? [{ id: 'main', url: photo, sortOrder: 0, isPrimary: true }] : []);
+
   // Compute age from DOB if age field is missing (dob only exists on RegisteredUser, not ProfileData)
   const dobStr = "dob" in profile ? (profile as { dob?: string }).dob : undefined;
   const profileAge = profile.age ||
@@ -764,7 +768,12 @@ function ProfileDetailPage({
                     <div className="my-profile-photo-wrap" style={{ flexShrink: 0, width: "140px" }}>
                       <div style={{ width: "100%", height: "175px", borderRadius: "var(--radius-lg)", overflow: "hidden", background: "#f5f0f0", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--border-color)", marginBottom: "0.75rem" }}>
                         {photo ? (
-                          <img src={photo} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <img 
+                            src={photo} 
+                            alt={profile.name} 
+                            onClick={() => { setLightboxPhoto(photo); setLightboxIndex(0); }}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }} 
+                          />
                         ) : (
                           <UserCircle size={64} style={{ color: "var(--text-light)" }} />
                         )}
@@ -833,7 +842,12 @@ function ProfileDetailPage({
                     <div style={{ flexShrink: 0, width: "140px", margin: "0 auto" }}>
                       <div style={{ width: "140px", height: "175px", borderRadius: "var(--radius-lg)", overflow: "hidden", background: "#F8F0F0", border: "2px solid var(--border-light)", position: "relative" }}>
                         {photo ? (
-                          <img src={photo} alt={profile.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                          <img 
+                            src={photo} 
+                            alt={profile.name} 
+                            onClick={() => { setLightboxPhoto(photo); setLightboxIndex(0); }}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", cursor: "pointer" }} 
+                          />
                         ) : (
                           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--primary-light)" }}>
                              <UserCircle size={48} color="var(--primary)" opacity={0.5} />
@@ -963,15 +977,15 @@ function ProfileDetailPage({
                   PHOTO GALLERY
                   ══════════════════════════════════════════════════ */}
               {/* Show gallery section always for own profile (with empty state), or when others have photos */}
-              {(isOwnProfile || (profile.photos && profile.photos.length > 0)) && (
+              {(isOwnProfile || galleryPhotos.length > 0) && (
                 <SectionCard
                   id="section-Photo-Gallery"
-                  title={profile.photos && profile.photos.length > 0 ? `Photo Gallery (${profile.photos.length})` : "Photo Gallery"}
+                  title={galleryPhotos.length > 0 ? `Photo Gallery (${galleryPhotos.length})` : "Photo Gallery"}
                   onEdit={isOwnProfile ? () => router.push("/profile/edit?section=photo") : undefined}
                 >
-                  {profile.photos && profile.photos.length > 0 ? (
+                  {galleryPhotos.length > 0 ? (
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "1rem" }}>
-                      {profile.photos.sort((a, b) => a.sortOrder - b.sortOrder).map((ph, phIdx) => (
+                      {galleryPhotos.sort((a, b) => a.sortOrder - b.sortOrder).map((ph, phIdx) => (
                         <div
                           key={ph.id}
                           onClick={() => { setLightboxPhoto(ph.url); setLightboxIndex(phIdx); }}
