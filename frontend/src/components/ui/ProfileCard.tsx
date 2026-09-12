@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import { sendInterest } from "@/lib/auth-store";
 import { useRouter } from "next/navigation";
+import ConfirmDialog from "./ConfirmDialog";
 
 export interface ProfileData {
   id: string;
@@ -68,6 +69,9 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
   const [interested, setInterested] = useState(false);
   const [shortlisted, setShortlisted] = useState(false);
   const [sendingInterest, setSendingInterest] = useState(false);
+  
+  const [showInterestConfirm, setShowInterestConfirm] = useState(false);
+  const [showShortlistConfirm, setShowShortlistConfirm] = useState(false);
 
   const isLoggedIn = !!user;
   const photo = profile.photoUrl || null;
@@ -83,8 +87,13 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
       toast("Interest withdrawn");
       return;
     }
+    setShowInterestConfirm(true);
+  };
+
+  const confirmSendInterest = async () => {
+    setShowInterestConfirm(false);
     setSendingInterest(true);
-    const { error } = await sendInterest(user.id, profile.id);
+    const { error } = await sendInterest(user?.id || "", profile.id);
     setSendingInterest(false);
     if (error) {
       toast.error("Failed to send interest");
@@ -92,6 +101,26 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
       setInterested(true);
       toast.success(`Interest sent to ${profile.name}!`);
     }
+  };
+
+  const handleShortlistClick = () => {
+    if (!user) {
+      toast.error("Please login to shortlist");
+      router.push("/login");
+      return;
+    }
+    if (shortlisted) {
+      setShortlisted(false);
+      toast.success("Removed from shortlist");
+      return;
+    }
+    setShowShortlistConfirm(true);
+  };
+
+  const confirmShortlist = () => {
+    setShowShortlistConfirm(false);
+    setShortlisted(true);
+    toast.success("Added to shortlist");
   };
 
   const handleMessage = () => {
@@ -190,6 +219,20 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
             </div>
           </div>
         )}
+        <ConfirmDialog
+          isOpen={showInterestConfirm}
+          title="Send Interest"
+          message={`Are you sure you want to send interest to ${profile.name}?`}
+          onConfirm={confirmSendInterest}
+          onCancel={() => setShowInterestConfirm(false)}
+        />
+        <ConfirmDialog
+          isOpen={showShortlistConfirm}
+          title="Shortlist Profile"
+          message={`Are you sure you want to shortlist ${profile.name}?`}
+          onConfirm={confirmShortlist}
+          onCancel={() => setShowShortlistConfirm(false)}
+        />
       </div>
     );
   }
@@ -293,7 +336,7 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
       </div>
 
       {/* Info section */}
-      <div style={{ padding: "1rem" }}>
+      <div className="profile-card-info">
         {/* Name + Verified */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", marginBottom: "2px" }}>
           <Link
@@ -373,7 +416,7 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
             </button>
 
             <button
-              onClick={() => { setShortlisted((v) => !v); toast.success(shortlisted ? "Removed from shortlist" : "Added to shortlist"); }}
+              onClick={handleShortlistClick}
               aria-label={shortlisted ? "Remove from shortlist" : "Add to shortlist"}
               aria-pressed={shortlisted}
               style={{
@@ -435,6 +478,20 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
           </div>
         )}
       </div>
+      <ConfirmDialog
+        isOpen={showInterestConfirm}
+        title="Send Interest"
+        message={`Are you sure you want to send interest to ${profile.name}?`}
+        onConfirm={confirmSendInterest}
+        onCancel={() => setShowInterestConfirm(false)}
+      />
+      <ConfirmDialog
+        isOpen={showShortlistConfirm}
+        title="Shortlist Profile"
+        message={`Are you sure you want to shortlist ${profile.name}?`}
+        onConfirm={confirmShortlist}
+        onCancel={() => setShowShortlistConfirm(false)}
+      />
     </div>
   );
 }

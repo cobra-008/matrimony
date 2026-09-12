@@ -13,6 +13,7 @@ import { useMembership } from "@/hooks/useMembership";
 import { ProfileViewSkeleton } from "@/components/ui/Skeleton";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 const ALL_PROFILES = [...MOCK_PROFILES, ...MOCK_GROOM_PROFILES];
 
@@ -382,6 +383,15 @@ function ProfileDetailPage({
 
   const [interested, setInterested] = useState(false);
   const [shortlisted, setShortlisted] = useState(false);
+
+  // Modals state
+  const [confirmAction, setConfirmAction] = useState<{
+    isOpen: boolean;
+    title?: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, message: "", onConfirm: () => {} });
+
   const [activeSection, setActiveSection] = useState("Basic Information");
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -471,7 +481,16 @@ function ProfileDetailPage({
   const handleSendInterest = async () => {
     if (!user) { toast.error("Please login"); return; }
     if (interested) {
-      toast("You have already sent an interest to this profile.");
+      setConfirmAction({
+        isOpen: true,
+        title: "Withdraw Interest",
+        message: "Are you sure you want to withdraw your interest from this profile?",
+        onConfirm: async () => {
+          setConfirmAction(prev => ({ ...prev, isOpen: false }));
+          setInterested(false);
+          toast.success("Interest withdrawn");
+        }
+      });
       return;
     }
     const result = await sendInterestWithNotification(user.id, id, user.name);
@@ -485,9 +504,22 @@ function ProfileDetailPage({
 
   const handleShortlist = async () => {
     if (!user) { toast.error("Please login"); return; }
-    if (!shortlisted) await shortlistProfileWithNotification(user.id, id, user.name);
-    setShortlisted(v => !v);
-    toast.success(shortlisted ? "Removed from shortlist" : "Added to shortlist");
+    if (shortlisted) {
+      setConfirmAction({
+        isOpen: true,
+        title: "Remove from Shortlist",
+        message: "Are you sure you want to remove this profile from your shortlist?",
+        onConfirm: async () => {
+          setConfirmAction(prev => ({ ...prev, isOpen: false }));
+          setShortlisted(false);
+          toast.success("Removed from shortlist");
+        }
+      });
+      return;
+    }
+    await shortlistProfileWithNotification(user.id, id, user.name);
+    setShortlisted(true);
+    toast.success("Added to shortlist");
   };
 
   // Record profile view once the profile is loaded and viewer ≠ owner
@@ -573,6 +605,12 @@ function ProfileDetailPage({
     <>
       <Navbar />
       <style>{`
+        .hide-mobile { display: block; }
+        .show-mobile { display: none; }
+        @media (max-width: 640px) {
+          .hide-mobile { display: none !important; }
+          .show-mobile { display: block !important; }
+        }
         @media (max-width: 899px) {
           .profile-main-wrap { overflow-x: hidden !important; padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
           .profile-layout-row { flex-direction: column !important; }
@@ -887,10 +925,14 @@ function ProfileDetailPage({
                       
                       {/* Interaction Buttons */}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginTop: "1rem" }}>
-                        <button onClick={() => { setInterested((v) => !v); toast.success(interested ? "Interest withdrawn" : `Interest sent to ${profile.name}!`); }} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: interested ? "var(--primary)" : "#fff", border: "1.5px solid var(--primary)", borderRadius: "var(--radius-full)", color: interested ? "#fff" : "var(--primary)", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" }}>
+                        <button 
+                          onClick={handleSendInterest}
+                          style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: interested ? "var(--primary)" : "#fff", border: "1.5px solid var(--primary)", borderRadius: "var(--radius-full)", color: interested ? "#fff" : "var(--primary)", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", whiteSpace: "nowrap" }}>
                           <Heart size={14} fill={interested ? "white" : "none"} /> {interested ? "Interest Sent" : "Send Interest"}
                         </button>
-                        <button onClick={() => { setShortlisted((v) => !v); toast.success(shortlisted ? "Removed from shortlist" : "Added to shortlist"); }} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: shortlisted ? "var(--success)" : "#fff", border: "1.5px solid var(--success)", borderRadius: "var(--radius-full)", color: shortlisted ? "#fff" : "var(--success)", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" }}>
+                        <button 
+                          onClick={handleShortlist}
+                          style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: shortlisted ? "var(--success)" : "#fff", border: "1.5px solid var(--success)", borderRadius: "var(--radius-full)", color: shortlisted ? "#fff" : "var(--success)", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", whiteSpace: "nowrap" }}>
                           <BookmarkPlus size={14} /> {shortlisted ? "Shortlisted" : "Shortlist"}
                         </button>
                         {canMessage ? (

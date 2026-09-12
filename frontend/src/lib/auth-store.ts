@@ -287,7 +287,11 @@ function userToDb(data: Partial<RegisteredUser>): Record<string, unknown> {
  */
 export async function registerUser(payload: RegisterPayload): Promise<RegisteredUser> {
   const baseEmail = payload.email || `${payload.mobile}@etm.app`;
-  const passwordToUse = payload.password || `ETM_${payload.mobile}_2024`;
+  const passwordToUse = payload.password;
+
+  if (!passwordToUse) {
+    throw new Error('Password is required for registration');
+  }
 
   // Try signing up; if the email is taken, append _2, _3, etc.
   let emailToUse = baseEmail;
@@ -318,11 +322,9 @@ export async function registerUser(payload: RegisterPayload): Promise<Registered
         ? `${payload.mobile}_${suffix}@etm.app`
         : `${baseEmail.replace('@', `_${suffix}@`)}`;
 
-      const passwordSuffixed = `ETM_${payload.mobile}_${suffix}_2024`;
-
       const attempt = await supabase.auth.signUp({
         email: emailToUse,
-        password: passwordSuffixed,
+        password: passwordToUse,
         options: {
           emailRedirectTo: undefined,
           data: {
@@ -472,6 +474,7 @@ export async function loginWithPassword(
 
   if (error || !data.user) return null;
 
+  await recordUserSession(data.user.id);
   return fetchProfile(data.user.id);
 }
 
@@ -627,7 +630,29 @@ export async function loginWithOtpSession(
 ): Promise<RegisteredUser | null> {
   const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
   if (error || !data.user) return null;
+  await recordUserSession(data.user.id);
   return fetchProfile(data.user.id);
+}
+
+export async function recordUserSession(userId: string) {
+  try {
+    let ipAddress = 'unknown';
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      ipAddress = data.ip;
+    } catch (e) {}
+    
+    const device = typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown';
+    
+    await supabase.from('user_sessions').insert({
+      profile_id: userId,
+      ip_address: ipAddress,
+      device: device
+    });
+  } catch (err) {
+    console.error("Failed to record session", err);
+  }
 }
 
 /**

@@ -81,7 +81,7 @@ const LOGGED_IN_NAV = [
     preview: {
       title: "Advanced Search",
       desc: "Filter by caste, city, education, income and 25+ filters.",
-      stats: [{ label: "Profiles", val: "25L+" }, { label: "Filters", val: "25+" }],
+      stats: [{ label: "Filters", val: "25+" }],
       locked: false,
     },
   },

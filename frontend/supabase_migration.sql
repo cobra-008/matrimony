@@ -470,5 +470,37 @@ WHERE table_schema = 'public'
   AND table_name IN ('profiles','profile_photos','otp_store','profile_views',
                      'shortlists','interests','interests_sent','messages','horoscopes',
                      'verification_requests','notifications','compatibility_answers',
-                     'success_stories','membership_transactions', 'contact_reveals')
+                     'success_stories','membership_transactions', 'contact_reveals',
+                     'user_sessions', 'notification_preferences')
 ORDER BY table_name;
+
+-- ── 17. USER SESSIONS ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.user_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    profile_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    ip_address TEXT,
+    device TEXT,
+    login_time TIMESTAMPTZ DEFAULT NOW(),
+    is_active BOOLEAN DEFAULT TRUE
+);
+ALTER TABLE public.user_sessions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users access own sessions" ON public.user_sessions;
+CREATE POLICY "Users access own sessions" ON public.user_sessions FOR ALL USING (auth.uid() = profile_id) WITH CHECK (auth.uid() = profile_id);
+DROP POLICY IF EXISTS "Public access sessions" ON public.user_sessions;
+CREATE POLICY "Public access sessions" ON public.user_sessions FOR ALL USING (true) WITH CHECK (true);
+
+-- ── 18. NOTIFICATION PREFERENCES ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.notification_preferences (
+    profile_id UUID PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
+    email_matches BOOLEAN DEFAULT TRUE,
+    email_messages BOOLEAN DEFAULT TRUE,
+    email_promotions BOOLEAN DEFAULT FALSE,
+    inapp_matches BOOLEAN DEFAULT TRUE,
+    inapp_messages BOOLEAN DEFAULT TRUE,
+    inapp_promotions BOOLEAN DEFAULT TRUE
+);
+ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users access own notification preferences" ON public.notification_preferences;
+CREATE POLICY "Users access own notification preferences" ON public.notification_preferences FOR ALL USING (auth.uid() = profile_id) WITH CHECK (auth.uid() = profile_id);
+DROP POLICY IF EXISTS "Public access notifications prefs" ON public.notification_preferences;
+CREATE POLICY "Public access notifications prefs" ON public.notification_preferences FOR ALL USING (true) WITH CHECK (true);

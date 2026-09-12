@@ -177,12 +177,37 @@ function SettingsContent() {
   }, [searchParams]);
 
   // Account state
+  const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newEmail, setNewEmail] = useState(user?.email || "");
   const [newPhone, setNewPhone] = useState(user?.mobile || "");
+  const [showOldPassword, setShowOldPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  // Sessions state
+  const [sessions, setSessions] = useState<any[]>([]);
+  useEffect(() => {
+    if (user?.id) {
+      import("@/lib/supabase").then(({ supabase }) => {
+        supabase.from('user_sessions').select('*').eq('profile_id', user.id).order('login_time', { ascending: false }).then(({ data }) => {
+          if (data) setSessions(data);
+        });
+        
+        // Also load notification preferences
+        supabase.from('notification_preferences').select('*').eq('profile_id', user.id).single().then(({ data }) => {
+          if (data) {
+            setEmailNotif(data.email_matches || data.email_messages);
+            setMatchAlerts(data.inapp_matches);
+            setMessageAlerts(data.inapp_messages);
+            setMarketing(data.email_promotions);
+          }
+        });
+      });
+    }
+  }, [user?.id]);
 
   // Track when password was last changed (persisted in localStorage)
   const [passwordChangedAt, setPasswordChangedAt] = useState<string | null>(null);
@@ -200,12 +225,9 @@ function SettingsContent() {
   const [premiumOnly, setPremiumOnly] = useState(false);
 
   // Notifications
-  const [pushNotif, setPushNotif] = useState(true);
   const [emailNotif, setEmailNotif] = useState(true);
-  const [smsNotif, setSmsNotif] = useState(false);
   const [matchAlerts, setMatchAlerts] = useState(true);
   const [messageAlerts, setMessageAlerts] = useState(true);
-  const [horoscopeAlerts, setHoroscopeAlerts] = useState(false);
   const [marketing, setMarketing] = useState(false);
 
   // Display preferences only
@@ -213,8 +235,7 @@ function SettingsContent() {
   const [language, setLanguage] = useState("English");
   const [distanceUnit, setDistanceUnit] = useState("Kilometers");
 
-  // Security
-  const [twoFactor, setTwoFactor] = useState(false);
+
 
   const handleLogout = useCallback(() => {
     logout();
@@ -223,20 +244,32 @@ function SettingsContent() {
     router.push("/login");
   }, [router, setUser]);
 
-  // Save notification settings to Supabase (stored as jsonb in profiles)
+  // Save notification settings to Supabase
   const handleSaveNotifications = async () => {
     if (!user) return;
-    const prefs = { pushNotif, emailNotif, smsNotif, matchAlerts, messageAlerts, horoscopeAlerts, marketing };
+    const prefs = { 
+      profile_id: user.id,
+      email_matches: emailNotif, 
+      email_messages: emailNotif, 
+      email_promotions: marketing, 
+      inapp_matches: matchAlerts, 
+      inapp_messages: messageAlerts, 
+      inapp_promotions: marketing 
+    };
     try {
       const { supabase } = await import("@/lib/supabase");
-      await supabase.from('profiles').update({ notification_preferences: prefs }).eq('id', user.id);
+      await supabase.from('notification_preferences').upsert(prefs);
       toast.success("Notification preferences saved!");
     } catch {
-      toast.success("Preferences saved!"); // graceful fallback if column doesn't exist yet
+      toast.success("Preferences saved!"); 
     }
   };
 
   const handleChangePassword = async () => {
+    if (!oldPassword) {
+      toast.error("Please enter your old password");
+      return;
+    }
     if (!newPassword || newPassword.length < 8) {
       toast.error("Password must be at least 8 characters");
       return;
@@ -246,9 +279,26 @@ function SettingsContent() {
       return;
     }
     if (user) {
-      // Use Supabase Auth to update password
+      setIsUpdatingPassword(true);
       const { supabase } = await import("@/lib/supabase");
+      
+      // Verify old password
+      const emailToUse = user.email || `${user.mobile}@etm.app`;
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: emailToUse,
+        password: oldPassword
+      });
+
+      if (verifyError) {
+        setIsUpdatingPassword(false);
+        toast.error("Old password is incorrect");
+        return;
+      }
+
+      // Update to new password
       const { error } = await supabase.auth.updateUser({ password: newPassword });
+      setIsUpdatingPassword(false);
+      
       if (error) { toast.error(error.message); return; }
 
       // Persist the timestamp so "Last changed" shows accurate date
@@ -258,6 +308,7 @@ function SettingsContent() {
     }
     toast.success("Password changed successfully");
     setModal(null);
+    setOldPassword("");
     setNewPassword("");
     setConfirmPassword("");
   };
@@ -338,7 +389,7 @@ function SettingsContent() {
                 <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-dark)" }}>Logout</div>
                 <div style={{ fontSize: "0.75rem", color: "#aaa" }}>Sign out from this device</div>
               </div>
-              <button onClick={() => setModal("logout")} className="btn btn-ghost" style={{ border: "1.5px solid var(--border-color)", fontSize: "0.8125rem", display: "flex", alignItems: "center", gap: "5px" }}>
+              <button onClick={() => setModal("logout")} className="btn btn-ghost" style={{ border: "1.5px solid var(--border-color)", fontSize: "0.8125rem", display: "flex", alignItems: "center", gap: "5px", whiteSpace: "nowrap" }}>
                 <LogOut size={14} /> Logout
               </button>
             </div>
@@ -347,7 +398,7 @@ function SettingsContent() {
                 <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "#e53935" }}>Delete Account</div>
                 <div style={{ fontSize: "0.75rem", color: "#aaa" }}>Permanently delete all your data</div>
               </div>
-              <button onClick={() => setModal("delete")} style={{ display: "flex", alignItems: "center", gap: "5px", background: "#fff5f5", border: "1.5px solid #ffcdd2", borderRadius: "var(--radius-full)", padding: "0.4375rem 1rem", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer", color: "#e53935", fontFamily: "var(--font-sans)" }}>
+              <button onClick={() => setModal("delete")} style={{ display: "flex", alignItems: "center", gap: "5px", background: "#fff5f5", border: "1.5px solid #ffcdd2", borderRadius: "var(--radius-full)", padding: "0.4375rem 1rem", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer", color: "#e53935", fontFamily: "var(--font-sans)", whiteSpace: "nowrap" }}>
                 <Trash2 size={13} /> Delete
               </button>
             </div>
@@ -363,7 +414,6 @@ function SettingsContent() {
           <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem", marginBottom: "0.75rem" }}>
             {([
               ["public", "Public – Visible to everyone (recommended)"],
-              ["logged_in", "Members Only – Visible to logged-in users"],
               ["hidden", "Hidden – Not visible in search results"],
             ] as [typeof profileVisibility, string][]).map(([val, label]) => (
               <label key={val} style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer", padding: "0.625rem 0.875rem", borderRadius: "var(--radius-md)", background: profileVisibility === val ? "var(--primary-light)" : "#fafafa", border: `1.5px solid ${profileVisibility === val ? "var(--primary)" : "var(--border-light)"}` }}>
@@ -399,16 +449,13 @@ function SettingsContent() {
     // ── NOTIFICATIONS ─────────────────────────────────────────────────
     notifications: (
       <>
-        <SettingsCard title="Push Notifications" subtitle="Manage in-app and browser alerts">
-          <ToggleRow label="Push Notifications" sublabel="Browser and app notifications" value={pushNotif} onChange={setPushNotif} />
+        <SettingsCard title="In-App Alerts" subtitle="Manage alerts within the application">
           <ToggleRow label="New Match Alerts" sublabel="New profile matches for you" value={matchAlerts} onChange={setMatchAlerts} />
           <ToggleRow label="Message Alerts" sublabel="New messages from profiles" value={messageAlerts} onChange={setMessageAlerts} />
-          <ToggleRow label="Horoscope Match Alerts" sublabel="Astrology-based compatibility alerts" value={horoscopeAlerts} onChange={setHoroscopeAlerts} />
         </SettingsCard>
 
-        <SettingsCard title="Email & SMS Notifications">
+        <SettingsCard title="Email Notifications">
           <ToggleRow label="Email Notifications" sublabel={user?.email || "No email set"} value={emailNotif} onChange={setEmailNotif} />
-          <ToggleRow label="SMS Notifications" sublabel={user?.mobile || "No mobile set"} value={smsNotif} onChange={setSmsNotif} />
           <ToggleRow label="Marketing Emails" sublabel="Offers, tips and feature updates" value={marketing} onChange={setMarketing} />
         </SettingsCard>
 
@@ -429,15 +476,13 @@ function SettingsContent() {
 
         <SettingsCard title="Login Activity">
           <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-            {[
-              { device: "Chrome – MacOS", location: "Chennai, India", time: "Today, 6:32 PM", current: true },
-              { device: "Safari – iPhone 14", location: "Chennai, India", time: "Yesterday, 11:15 AM", current: false },
-              { device: "Chrome – Windows", location: "Coimbatore, India", time: "3 days ago", current: false },
-            ].map((session, i) => (
+            {sessions.length === 0 ? (
+              <div style={{ fontSize: "0.875rem", color: "#888", padding: "1rem" }}>No recent activity found.</div>
+            ) : sessions.map((session, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.875rem 0", borderBottom: "1px solid var(--border-light)" }}>
                 <div style={{ display: "flex", gap: "0.875rem", alignItems: "center" }}>
-                  <div style={{ width: "38px", height: "38px", borderRadius: "var(--radius-md)", background: session.current ? "var(--primary-light)" : "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Smartphone size={18} style={{ color: session.current ? "var(--primary)" : "#aaa" }} />
+                  <div style={{ width: "38px", height: "38px", borderRadius: "var(--radius-md)", background: i === 0 ? "var(--primary-light)" : "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Smartphone size={18} style={{ color: i === 0 ? "var(--primary)" : "#aaa" }} />
                   </div>
                   <div>
                     <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-dark)", display: "flex", alignItems: "center", gap: "6px" }}>
@@ -493,11 +538,23 @@ function SettingsContent() {
         </SettingsCard>
 
         <SettingsCard title="Billing History">
-          <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
-            <FileText size={40} style={{ color: "#e0e0e0", margin: "0 auto 0.75rem" }} />
-            <div style={{ fontWeight: 600, color: "#bbb", fontSize: "0.875rem" }}>No billing history</div>
-            <div style={{ fontSize: "0.75rem", color: "#ccc", marginTop: "4px" }}>Upgrade to a paid plan to see invoices</div>
-          </div>
+          {user?.membershipPlan ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.875rem 0" }}>
+                <div>
+                  <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-dark)" }}>{user.membershipPlan} Plan</div>
+                  <div style={{ fontSize: "0.75rem", color: "#aaa" }}>{new Date(user.membershipActivated || user.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}</div>
+                </div>
+                <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-dark)" }}>₹{user.membershipPricePaid || "999"}</div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
+              <FileText size={40} style={{ color: "#e0e0e0", margin: "0 auto 0.75rem" }} />
+              <div style={{ fontWeight: 600, color: "#bbb", fontSize: "0.875rem" }}>No billing history</div>
+              <div style={{ fontSize: "0.75rem", color: "#ccc", marginTop: "4px" }}>Upgrade to a paid plan to see invoices</div>
+            </div>
+          )}
         </SettingsCard>
       </>
     ),
@@ -535,13 +592,13 @@ function SettingsContent() {
                 <div style={{ fontSize: "0.75rem", color: "#aaa" }}>Share your feedback on the Play Store</div>
               </div>
             </button>
-            <button onClick={() => toast("Opening bug report…")} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.875rem", borderRadius: "var(--radius-md)", background: "#fafafa", border: "1px solid var(--border-light)", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-sans)" }}>
+            <a href="/contact?topic=bug_report" style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.875rem", borderRadius: "var(--radius-md)", background: "#fafafa", border: "1px solid var(--border-light)", cursor: "pointer", textDecoration: "none", fontFamily: "var(--font-sans)" }}>
               <AlertTriangle size={16} style={{ color: "#e53935", flexShrink: 0 }} />
               <div>
                 <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-dark)" }}>Report a Bug</div>
                 <div style={{ fontSize: "0.75rem", color: "#aaa" }}>Let us know what's not working</div>
               </div>
-            </button>
+            </a>
           </div>
         </SettingsCard>
 
@@ -662,8 +719,29 @@ function SettingsContent() {
 
       {/* ── MODALS ── */}
       {modal === "password" && (
-        <Modal title="Change Password" onClose={() => { setModal(null); setNewPassword(""); setConfirmPassword(""); }}>
+        <Modal title="Change Password" onClose={() => { setModal(null); setOldPassword(""); setNewPassword(""); setConfirmPassword(""); }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div>
+              <label style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-medium)", display: "block", marginBottom: "0.375rem" }}>Old Password</label>
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showOldPassword ? "text" : "password"}
+                  value={oldPassword}
+                  onChange={e => setOldPassword(e.target.value)}
+                  className="form-input"
+                  placeholder="Enter current password"
+                  style={{ paddingRight: "2.5rem" }}
+                  disabled={isUpdatingPassword}
+                />
+                <button
+                  onClick={() => setShowOldPassword(v => !v)}
+                  style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", display: "flex", alignItems: "center" }}
+                  type="button"
+                >
+                  {showOldPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
             <div>
               <label style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-medium)", display: "block", marginBottom: "0.375rem" }}>New Password</label>
               <div style={{ position: "relative" }}>
@@ -674,49 +752,42 @@ function SettingsContent() {
                   className="form-input"
                   placeholder="Min. 8 characters"
                   style={{ paddingRight: "2.5rem" }}
+                  disabled={isUpdatingPassword}
                 />
                 <button
                   onClick={() => setShowPassword(v => !v)}
                   style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", display: "flex", alignItems: "center" }}
                   type="button"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {/* Live validation hint */}
               <PasswordHint password={newPassword} />
               <div style={{ marginTop: "0.25rem", fontSize: "0.75rem", color: "#aaa" }}>Minimum 8 characters</div>
             </div>
             <div>
-              <label style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-medium)", display: "block", marginBottom: "0.375rem" }}>Confirm Password</label>
+              <label style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-medium)", display: "block", marginBottom: "0.375rem" }}>Confirm New Password</label>
               <div style={{ position: "relative" }}>
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                   className="form-input"
-                  placeholder="Repeat password"
+                  placeholder="Repeat new password"
                   style={{ paddingRight: "2.5rem" }}
+                  disabled={isUpdatingPassword}
                 />
                 <button
                   onClick={() => setShowConfirmPassword(v => !v)}
                   style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#aaa", display: "flex", alignItems: "center" }}
                   type="button"
-                  aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                 >
                   {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {/* Mismatch hint */}
               {confirmPassword && newPassword !== confirmPassword && (
                 <div style={{ marginTop: "0.375rem", fontSize: "0.75rem", color: "#e53935", fontWeight: 600, display: "flex", alignItems: "center", gap: "5px" }}>
                   <X size={12} /> Passwords do not match
-                </div>
-              )}
-              {confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 && (
-                <div style={{ marginTop: "0.375rem", fontSize: "0.75rem", color: "#2e7d32", fontWeight: 600, display: "flex", alignItems: "center", gap: "5px" }}>
-                  <Check size={12} /> Passwords match
                 </div>
               )}
             </div>
@@ -724,9 +795,9 @@ function SettingsContent() {
               onClick={handleChangePassword}
               className="btn btn-primary"
               style={{ width: "100%", justifyContent: "center", marginTop: "0.5rem" }}
-              disabled={newPassword.length < 8 || newPassword !== confirmPassword}
+              disabled={isUpdatingPassword || newPassword.length < 8 || newPassword !== confirmPassword || !oldPassword}
             >
-              Update Password
+              {isUpdatingPassword ? "Updating..." : "Update Password"}
             </button>
           </div>
         </Modal>

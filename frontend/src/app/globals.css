@@ -1964,3 +1964,6 @@ select {
   .search-grid { grid-template-columns: 1fr !important; }
 }
 
+
+.profile-card-info { padding: 1rem; }
+@media (max-width: 480px) { .profile-card-info { padding: 0.5rem 0.75rem; } }

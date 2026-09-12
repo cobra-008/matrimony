@@ -7,7 +7,7 @@ import Footer from "@/components/layout/Footer";
 import {
   ChevronDown, ArrowRight, CheckCircle, Shield, Users, Star,
   Crown, Camera, Briefcase, FileText, MapPin, Heart,
-  Users2, Sparkles, Eye, Search, User, Settings2, Mail,
+  Users2, Sparkles, Eye, Search, User, Settings2, Mail, X
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
@@ -564,6 +564,7 @@ function AuthenticatedDashboard() {
         @media (min-width: 900px) {
           .dashboard-sidebar { display: block !important; }
           .dashboard-stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .mobile-quick-access { display: none !important; }
         }
       `}</style>
 
@@ -722,6 +723,43 @@ function AuthenticatedDashboard() {
         {/* ── RIGHT MAIN ──────────────────────────────────────── */}
         <div style={{ flex: 1, minWidth: 0 }}>
 
+          {/* ── MOBILE QUICK ACCESS BAR (HIDDEN ON DESKTOP) ── */}
+          <div
+            className="mobile-quick-access"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "1rem",
+              background: "#fff",
+              border: "1px solid #E8D5B7",
+              borderRadius: "6px",
+              padding: "0.75rem 1rem",
+              marginBottom: "1rem",
+            }}
+          >
+            <Link href={`/profile/${user.id}`}
+              style={{
+                width: "48px", height: "48px", borderRadius: "50%",
+                border: "2px solid #E8D5B7",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                overflow: "hidden", background: userPhoto ? "transparent" : "#DFDFDF",
+                flexShrink: 0
+              }}
+            >
+              {userPhoto
+                ? <img src={userPhoto} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
+                : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "-4px" }}><circle cx="12" cy="8" r="5" fill="#FFFFFF" /><path d="M4 22c0-4.5 3.5-8 8-8s8 3.5 8 8" fill="#FFFFFF" /></svg>
+              }
+            </Link>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: "1rem", color: "#111" }}>{user.name}</div>
+              <div style={{ fontSize: "0.75rem", color: "#5C3040", marginTop: "2px" }}>{profileCode}</div>
+            </div>
+            <Link href="/settings" style={{ padding: "0.5rem", color: "#6B1A2A" }}>
+              <Settings2 size={22} />
+            </Link>
+          </div>
+
           {/* ── Match Stat Tiles ── */}
           <div
             className="dashboard-stats-grid"
@@ -813,9 +851,10 @@ function AuthenticatedDashboard() {
                 ))}
               </div>
             </div>
-          ) : (
+          ) : !hideCompleteBanner ? (
             <div
               style={{
+                position: "relative",
                 background: "linear-gradient(135deg, #E8F5E9, #F1F8E9)",
                 border: "1.5px solid #A5D6A7",
                 borderRadius: "6px",
@@ -826,6 +865,12 @@ function AuthenticatedDashboard() {
                 gap: "1rem",
               }}
             >
+              <button 
+                onClick={() => { setHideCompleteBanner(true); localStorage.setItem('hideCompleteBanner', 'true'); }} 
+                style={{ position: "absolute", top: "8px", right: "8px", background: "none", border: "none", cursor: "pointer", color: "#388E3C" }}
+              >
+                <X size={16} />
+              </button>
               <div style={{
                 width: "44px", height: "44px", borderRadius: "50%",
                 background: "#2E7D32", display: "flex", alignItems: "center",
@@ -849,7 +894,7 @@ function AuthenticatedDashboard() {
                 View Profile
               </Link>
             </div>
-          )}
+          ) : null}
 
           {/* Daily Recommendations */}
           <div
@@ -1133,6 +1178,14 @@ function GuestLatestProfiles() {
 
 // ── Guest Success Stories (DB-backed, shown only if stories exist) ─────────────
 function GuestSuccessStories() {
+  const [storyModal, setStoryModal] = useState<any>(null);
+  const [hideCompleteBanner, setHideCompleteBanner] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('hideCompleteBanner') === 'true') {
+      setHideCompleteBanner(true);
+    }
+  }, []);
   const [stories, setStories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
