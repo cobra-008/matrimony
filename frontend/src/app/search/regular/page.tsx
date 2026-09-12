@@ -116,15 +116,15 @@ function SearchContent() {
               )}
 
               {/* Search input */}
-              <div style={{ flex: 1, position: "relative" }}>
+              <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
                 <Search size={15} style={{ position: "absolute", left: "0.75rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="Search by name, location, community, occupation..."
+                  placeholder="Search by name, location..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  style={{ paddingLeft: "2.25rem", paddingRight: query ? "2.25rem" : "0.875rem" }}
+                  style={{ width: "100%", paddingLeft: "2.25rem", paddingRight: query ? "2.25rem" : "0.875rem" }}
                 />
                 {query && (
                   <button
@@ -137,9 +137,9 @@ function SearchContent() {
                 )}
               </div>
 
-              <button type="submit" className="btn btn-primary" style={{ flexShrink: 0 }}>
+              <button type="submit" className="btn btn-primary" style={{ flexShrink: 0, padding: "0.4375rem 1rem" }}>
                 <Search size={14} />
-                Search
+                <span className="hide-mobile">Search</span>
               </button>
             </form>
           </div>

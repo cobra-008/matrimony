@@ -676,23 +676,25 @@ function SearchContent() {
                   Search profiles by entering a first or full name.
                 </p>
                 <div className="search-by-name-bar" style={{ display: "flex", gap: "0.75rem", alignItems: "center", maxWidth: "420px", marginBottom: "1.5rem" }}>
-                  <input
-                    type="text"
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") handleNameSearch(); }}
-                    placeholder="Enter name (e.g., Priya, Karthik…)"
-                    className="form-input"
-                    style={{ flex: 1 }}
-                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <input
+                      type="text"
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleNameSearch(); }}
+                      placeholder="Enter name (e.g., Priya, Karthik…)"
+                      className="form-input"
+                      style={{ width: "100%" }}
+                    />
+                  </div>
                   <button
                     onClick={handleNameSearch}
                     disabled={nameLoading}
                     className="btn btn-primary"
-                    style={{ flexShrink: 0 }}
+                    style={{ flexShrink: 0, padding: "0.4375rem 1rem" }}
                   >
                     <Search size={15} />
-                    {nameLoading ? "Searching…" : "Search"}
+                    <span className="hide-mobile">{nameLoading ? "Searching…" : "Search"}</span>
                   </button>
                 </div>
 

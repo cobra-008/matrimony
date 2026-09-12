@@ -1621,13 +1621,14 @@ function MatchesContent() {
             transition: transform 0.25s ease !important;
           }
         }
-        /* Smallest screens: full-width stacked card */
+        /* Smallest screens: horizontal split mini card */
         @media (max-width: 479px) {
-          .match-card-horizontal { flex-direction: column !important; }
+          .match-card-horizontal { flex-direction: row !important; }
           .match-card-photo-wrap {
-            width: 100% !important;
-            aspect-ratio: 4/5 !important;
-            max-height: 340px !important;
+            width: 140px !important;
+            aspect-ratio: unset !important;
+            max-height: 220px !important;
+            min-height: 180px !important;
             overflow: hidden !important;
           }
           .match-card-photo {
@@ -1635,7 +1636,8 @@ function MatchesContent() {
             height: 100% !important;
             object-fit: cover !important;
             object-position: top center !important;
-            max-height: 340px !important;
+            min-height: 180px !important;
+            max-height: 220px !important;
           }
         }
         /* Medium phones: side-by-side */
