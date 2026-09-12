@@ -254,16 +254,14 @@ function ProfileCard({
         border: "1px solid #e8e8e8",
         borderRadius: "8px",
         overflow: "visible",
-        display: "flex",
-        flexDirection: "column",
         marginBottom: "14px",
         position: "relative",
         boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
       }}
-      className="match-card-horizontal"
+      className="match-card-grid"
     >
       {/* LEFT — Photo column */}
-      <div style={{ width: "100%", flexShrink: 0, position: "relative" }} className="match-card-photo-wrap">
+      <div style={{ gridArea: "photo", width: "100%", position: "relative" }} className="match-card-photo-wrap">
         <Link href={`/profile/${profile.id}`} style={{ display: "block", lineHeight: 0, height: "100%" }}>
           {photo ? (
             <img
@@ -378,12 +376,13 @@ function ProfileCard({
       {/* RIGHT — Info column */}
       <div
         style={{
-          flex: 1,
-          padding: "1rem 1.125rem 1rem 1.125rem",
+          gridArea: "info",
+          padding: "1rem 1.125rem 0.5rem 1.125rem",
           display: "flex",
           flexDirection: "column",
           minWidth: 0,
         }}
+        className="match-card-info-wrap"
       >
         {/* Top row: Verified + name / phone+whatsapp */}
         <div
@@ -469,9 +468,15 @@ function ProfileCard({
           style={{
             fontSize: "0.8125rem",
             color: "#444",
-            margin: "0.5rem 0 0.75rem",
+            margin: "0.5rem 0 0",
             lineHeight: 1.55,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
+          className="match-card-attrs"
         >
           {attrs.map((a, i) => (
             <span key={i}>
@@ -483,18 +488,20 @@ function ProfileCard({
           ))}
         </p>
 
-        {/* Action buttons row */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.375rem",
-            marginTop: "auto",
-            flexWrap: "wrap",
-            paddingTop: "0.5rem",
-          }}
-          className="match-card-actions"
-        >
+      </div>
+
+      {/* Action buttons row */}
+      <div
+        style={{
+          gridArea: "actions",
+          padding: "0.5rem 1.125rem 1rem 1.125rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.375rem",
+          flexWrap: "wrap",
+        }}
+        className="match-card-actions"
+      >
           {/* Don't Show */}
           <button
             onClick={onHide}
@@ -720,7 +727,6 @@ function ProfileCard({
           </Link>
 
         </div>
-      </div>
     </div>
   );
 }
@@ -1626,7 +1632,11 @@ function MatchesContent() {
         }
         /* Smallest screens: horizontal split mini card */
         @media (max-width: 479px) {
-          .match-card-horizontal { flex-direction: row !important; }
+          .match-card-grid { 
+            display: grid !important; 
+            grid-template-columns: 140px 1fr !important;
+            grid-template-areas: "photo info" "actions actions" !important;
+          }
           .match-card-photo-wrap {
             width: 140px !important;
             aspect-ratio: unset !important;
@@ -1645,7 +1655,11 @@ function MatchesContent() {
         }
         /* Medium phones: side-by-side */
         @media (min-width: 480px) {
-          .match-card-horizontal { flex-direction: row !important; }
+          .match-card-grid { 
+            display: grid !important; 
+            grid-template-columns: 165px 1fr !important;
+            grid-template-areas: "photo info" "photo actions" !important;
+          }
           .match-card-photo-wrap {
             width: 165px !important;
             aspect-ratio: unset !important;
@@ -1658,6 +1672,9 @@ function MatchesContent() {
           }
         }
         @media (min-width: 768px) {
+          .match-card-grid {
+            grid-template-columns: 190px 1fr !important;
+          }
           .match-card-photo-wrap { width: 190px !important; min-height: 230px !important; }
           .match-card-photo { min-height: 230px !important; max-height: 340px !important; }
         }
