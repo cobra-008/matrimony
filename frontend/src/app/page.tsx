@@ -420,6 +420,13 @@ function AuthenticatedDashboard() {
   const [dailyRecs, setDailyRecs] = useState<RegisteredUser[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(true);
   const [timeLeft, setTimeLeft] = useState("");
+  const [hideCompleteBanner, setHideCompleteBanner] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('hideCompleteBanner') === 'true') {
+      setHideCompleteBanner(true);
+    }
+  }, []);
   const [matchCounts, setMatchCounts] = useState({
     allMatches: 0,
     newMatches: 0,
@@ -1179,13 +1186,6 @@ function GuestLatestProfiles() {
 // ── Guest Success Stories (DB-backed, shown only if stories exist) ─────────────
 function GuestSuccessStories() {
   const [storyModal, setStoryModal] = useState<any>(null);
-  const [hideCompleteBanner, setHideCompleteBanner] = useState(false);
-
-  useEffect(() => {
-    if (localStorage.getItem('hideCompleteBanner') === 'true') {
-      setHideCompleteBanner(true);
-    }
-  }, []);
   const [stories, setStories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

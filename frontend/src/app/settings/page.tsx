@@ -470,10 +470,6 @@ function SettingsContent() {
     // ── SECURITY ──────────────────────────────────────────────────────
     security: (
       <>
-        <SettingsCard title="Two-Factor Authentication" subtitle="Add an extra layer of security">
-          <ToggleRow label="Two-Factor Authentication" sublabel="Verify your identity via SMS/OTP on login" value={twoFactor} onChange={(v) => { setTwoFactor(v); toast.success(v ? "2FA enabled" : "2FA disabled"); }} />
-        </SettingsCard>
-
         <SettingsCard title="Login Activity">
           <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
             {sessions.length === 0 ? (

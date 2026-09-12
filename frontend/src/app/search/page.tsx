@@ -675,7 +675,7 @@ function SearchContent() {
                 <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: "1.25rem" }}>
                   Search profiles by entering a first or full name.
                 </p>
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", maxWidth: "420px", marginBottom: "1.5rem" }}>
+                <div className="search-by-name-bar" style={{ display: "flex", gap: "0.75rem", alignItems: "center", maxWidth: "420px", marginBottom: "1.5rem" }}>
                   <input
                     type="text"
                     value={nameInput}
@@ -843,6 +843,14 @@ function SearchContent() {
         @media (max-width: 599px) {
           .search-form-grid {
             grid-template-columns: 1fr !important;
+          }
+          .search-by-name-bar {
+            flex-direction: column;
+            align-items: stretch !important;
+          }
+          .search-by-name-bar input,
+          .search-by-name-bar button {
+            width: 100% !important;
           }
         }
       `}</style>
