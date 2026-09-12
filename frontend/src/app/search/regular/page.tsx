@@ -85,12 +85,6 @@ function SearchContent() {
           <style>{`
             @media (max-width: 900px) {
               .search-regular-sticky { top: 60px !important; }
-              .search-layout { flex-direction: column !important; }
-              .search-sidebar { display: none !important; }
-              .search-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important; }
-            }
-            @media (max-width: 480px) {
-              .search-grid { grid-template-columns: 1fr !important; }
             }
           `}</style>
           <div className="container">
@@ -151,7 +145,7 @@ function SearchContent() {
           </div>
         </div>
 
-        <div className="container" style={{ paddingTop: "1.25rem", paddingBottom: "2.5rem" }}>
+        <div className="container search-page-container" style={{ paddingTop: "1.25rem", paddingBottom: "2.5rem" }}>
           <div className="search-layout" style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
             {/* Sidebar filters */}
             <aside
@@ -165,7 +159,7 @@ function SearchContent() {
                 position: "sticky",
                 top: "160px",
               }}
-              className="search-sidebar"
+              className="search-sidebar hidden lg:block"
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
                 <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-dark)", display: "flex", alignItems: "center", gap: "5px" }}>

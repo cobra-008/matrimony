@@ -1953,3 +1953,14 @@ select {
   .text-display { font-size: 1.5rem !important; }
   .container, .container-sm { padding: 0 0.75rem !important; }
 }
+
+/* Search page mobile tweaks */
+@media (max-width: 900px) {
+  .search-layout { flex-direction: column !important; }
+  .search-sidebar { display: none !important; }
+  .search-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important; }
+}
+@media (max-width: 480px) {
+  .search-grid { grid-template-columns: 1fr !important; }
+}
+
