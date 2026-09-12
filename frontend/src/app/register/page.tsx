@@ -605,7 +605,7 @@ function RegisterWizard() {
       if (pwErr) newErrors.password = pwErr;
     }
     if (Object.keys(newErrors).length > 0) {
-      setFieldErrors((prev) => ({ ...prev, ...newErrors }));
+      setFieldErrors(newErrors);
       toast.error("Please fill in all required fields to continue.");
       return false;
     }

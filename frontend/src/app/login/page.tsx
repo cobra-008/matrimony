@@ -168,8 +168,10 @@ function LoginContent() {
   const resendIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const OTP_SESSION_KEY = `etm_otp_resend_${otpIdentifier.trim()}`;
 
-  // Initialise cooldown from sessionStorage on mount / identifier change
+  // Restore cooldown from sessionStorage only after OTP has been sent
+  // (not on initial mount with otpSent=false, to avoid stale empty-key issues)
   useEffect(() => {
+    if (!otpSent) return; // only run when OTP was actually sent
     const state = getOtpCooldownState(OTP_SESSION_KEY);
     const remaining = Math.max(0, Math.ceil((state.unlocksAt - Date.now()) / 1000));
     if (remaining > 0) startResendCountdown(remaining);

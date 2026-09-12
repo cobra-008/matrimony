@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect, useRef } from "react";
+import { use, useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -11,7 +11,7 @@ import { getUserById, sendInterestWithNotification, getInterestStatus, shortlist
 import { useAuth } from "@/context/AuthContext";
 import { useMembership } from "@/hooks/useMembership";
 import { ProfileViewSkeleton } from "@/components/ui/Skeleton";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 const ALL_PROFILES = [...MOCK_PROFILES, ...MOCK_GROOM_PROFILES];
@@ -346,7 +346,7 @@ const SIDEBAR_ITEMS = [
   { label: "Contact Details", id: "section-Contact-Details" },
 ];
 
-export default function ProfileDetailPage({
+function ProfileDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -358,6 +358,10 @@ export default function ProfileDetailPage({
   const canViewContact = can("contacts");
   const canHoroscope   = can("horoscope_view");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromPage = searchParams?.get("from"); // e.g. "daily-recs"
+  const backHref = fromPage === "daily-recs" ? "/daily-recs" : "/matches";
+  const backLabel = fromPage === "daily-recs" ? "Back to Daily Recs" : "Back to Matches";
   const [loading, setLoading] = useState(true);
   const [dbProfile, setDbProfile] = useState<Awaited<ReturnType<typeof getUserById>> | null>(null);
 
@@ -635,7 +639,7 @@ export default function ProfileDetailPage({
             ) : (
               <>
                 <Link
-                  href="/matches"
+                  href={backHref}
                   style={{
                     color: "var(--primary)",
                     textDecoration: "none",
@@ -646,7 +650,7 @@ export default function ProfileDetailPage({
                   }}
                 >
                   <ArrowLeft size={13} />
-                  Back to Matches
+                  {backLabel}
                 </Link>
                 <ChevronRight size={12} style={{ color: "#ccc" }} />
                 <span>{profile.name}</span>
@@ -1435,5 +1439,17 @@ export default function ProfileDetailPage({
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function ProfileDetailPageWrapper({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: "var(--bg-page)" }} />}>
+      <ProfileDetailPage params={params} />
+    </Suspense>
   );
 }

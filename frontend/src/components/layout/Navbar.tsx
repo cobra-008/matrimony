@@ -199,7 +199,7 @@ export default function Navbar() {
   };
 
   const otherProfiles = storedProfiles.filter(
-    (p) => p.id !== user?.id && p.mobile && p.mobile === user?.mobile
+    (p) => p.id !== user?.id
   );
   const { can, isPremium, planName } = useMembership();
 

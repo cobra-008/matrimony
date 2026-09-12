@@ -376,6 +376,19 @@ export default function DailyRecsPage() {
                       </button>
 
                         <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
+                          <Link
+                            href={`/profile/${activeProfile.id}?from=daily-recs`}
+                            style={{
+                              display: "flex", alignItems: "center", gap: "0.5rem",
+                              padding: "0.625rem 1.5rem", borderRadius: "30px",
+                              border: "1.5px solid var(--primary)", background: "#fff",
+                              color: "var(--primary)", fontWeight: 700, cursor: "pointer",
+                              fontSize: "0.875rem", minHeight: "44px", textDecoration: "none",
+                            }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            View Profile
+                          </Link>
                           <button
                             onClick={handleSkip}
                             style={{
