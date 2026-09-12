@@ -465,6 +465,7 @@ function ProfileCard({
 
         {/* Attributes line */}
         <p
+          suppressHydrationWarning
           style={{
             fontSize: "0.8125rem",
             color: "#444",
@@ -828,9 +829,9 @@ function MatchesContent() {
         return;
       }
       switch (sectionId) {
-        case "your_matches": result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined); break;
+        case "your_matches": result = await fetchMatchProfiles(currentUser, oppositeGender as "male" | "female" | undefined); break;
         case "partner_preference": 
-          result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined);
+          result = await fetchMatchProfiles(currentUser, oppositeGender as "male" | "female" | undefined);
           result = result.filter(p => (p.compatibilityScore ?? 0) >= 60);
           break;
         case "shortlisted_by_you": {
@@ -860,7 +861,7 @@ function MatchesContent() {
         case "mutual_matches": result = await getMutualMatches(currentUser); break;
         case "looking_for_you": result = await getLookingForMe(currentUser); break;
         case "partner_preference": 
-          result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined);
+          result = await fetchMatchProfiles(currentUser, oppositeGender as "male" | "female" | undefined);
           result = result.filter(p => (p.compatibilityScore ?? 0) >= 60);
           break;
         case "education_pref": result = await getByEducationPref(currentUser.id, currentUser.partnerEducation, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
@@ -868,7 +869,7 @@ function MatchesContent() {
         case "location_pref": result = await getByLocationPref(currentUser.id, currentUser.city, currentUser.state, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "nri_matches": result = await getNRIMatches(currentUser.id, currentUser.gender === "male" ? "female" : currentUser.gender === "female" ? "male" : null); break;
         case "hidden_profiles": result = []; break;
-        default: result = await fetchMatchProfiles(currentUser, currentUser.gender as "male" | "female" | undefined);
+        default: result = await fetchMatchProfiles(currentUser, oppositeGender as "male" | "female" | undefined);
       }
     } catch {
       result = [];
@@ -971,7 +972,7 @@ function MatchesContent() {
   useEffect(() => {
     if (activeSection !== "hidden_profiles" || !user) return;
     if (hiddenIds.size === 0) { setHiddenProfiles([]); return; }
-    fetchMatchProfiles(user, user.gender as "male" | "female" | undefined)
+    fetchMatchProfiles(user, oppositeGender as "male" | "female" | undefined)
       .then(all => setHiddenProfiles(all.filter(p => hiddenIds.has(p.id))))
       .catch(() => { });
     // eslint-disable-next-line react-hooks/exhaustive-deps
