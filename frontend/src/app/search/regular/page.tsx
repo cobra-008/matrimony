@@ -85,6 +85,12 @@ function SearchContent() {
           <style>{`
             @media (max-width: 900px) {
               .search-regular-sticky { top: 60px !important; }
+              .search-layout { flex-direction: column !important; }
+              .search-sidebar { display: none !important; }
+              .search-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important; }
+            }
+            @media (max-width: 480px) {
+              .search-grid { grid-template-columns: 1fr !important; }
             }
           `}</style>
           <div className="container">
@@ -146,7 +152,7 @@ function SearchContent() {
         </div>
 
         <div className="container" style={{ paddingTop: "1.25rem", paddingBottom: "2.5rem" }}>
-          <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
+          <div className="search-layout" style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
             {/* Sidebar filters */}
             <aside
               style={{
@@ -159,7 +165,7 @@ function SearchContent() {
                 position: "sticky",
                 top: "160px",
               }}
-              className="hidden lg:block"
+              className="search-sidebar"
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
                 <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-dark)", display: "flex", alignItems: "center", gap: "5px" }}>
@@ -267,7 +273,7 @@ function SearchContent() {
                   <p style={{ fontSize: "0.8125rem", color: "var(--text-medium)" }}>Try a different search or adjust filters.</p>
                 </div>
               ) : viewMode === "grid" ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: "0.875rem" }}>
+                <div className="search-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "1rem" }}>
                   {filtered.map((p) => <ProfileCard key={p.id} profile={p} variant="full" />)}
                 </div>
               ) : (
