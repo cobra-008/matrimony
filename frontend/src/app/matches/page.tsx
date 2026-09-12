@@ -222,8 +222,10 @@ function ProfileCard({
   canMessage?: boolean;
   canViewContact?: boolean;
 }) {
+  // Calculate age using a stable approach or suppress hydration warning
+  // Using a stable server-rendered date or simply calculating it
   const age = profile.dob
-    ? Math.floor((Date.now() - new Date(profile.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+    ? Math.floor((new Date().getTime() - new Date(profile.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
     : 0;
 
   const photo = profile.photoUrl || null;
