@@ -40,18 +40,21 @@ interface ProfileCardProps {
 }
 
 // SVG Avatar — WhatsApp style generic avatar
-function GenderAvatar({ gender, width = 64, height = 72, blur = false }: { gender?: string; width?: number; height?: number; blur?: boolean }) {
+function GenderAvatar({ gender, width = 64, height = 72, blur = false }: { gender?: string; width?: number | string; height?: number | string; blur?: boolean }) {
+  const isLarge = width === 240 || width === "100%";
+  const iconSize = isLarge ? 80 : Math.round((typeof width === "number" ? width : 64) * 0.8);
   return (
     <div style={{
-      width: `${width}px`, height: `${height}px`,
+      width: typeof width === "number" ? `${width}px` : width, 
+      height: typeof height === "number" ? `${height}px` : height,
       background: "#DFDFDF",
       borderRadius: "var(--radius-md)",
-      display: "flex", alignItems: "flex-end", justifyContent: "center",
+      display: "flex", alignItems: isLarge ? "center" : "flex-end", justifyContent: "center",
       flexShrink: 0,
       filter: blur ? "blur(6px)" : "none",
       overflow: "hidden"
     }}>
-      <svg width={Math.round(width * 0.8)} height={Math.round(height * 0.8)} viewBox="0 0 24 24" fill="none" style={{ marginBottom: "-4px" }}>
+      <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" style={{ marginBottom: isLarge ? 0 : "-4px" }}>
         <circle cx="12" cy="8" r="5" fill="#FFFFFF" />
         <path d="M4 22c0-4.5 3.5-8 8-8s8 3.5 8 8" fill="#FFFFFF" />
       </svg>
@@ -217,7 +220,7 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
                   transform: isLoggedIn ? "none" : "scale(1.05)",
                 }}
               />
-            : <GenderAvatar gender={profile.gender} width={240} height={240} blur={!isLoggedIn} />}
+            : <GenderAvatar gender={profile.gender} width="100%" height="100%" blur={!isLoggedIn} />}
         </Link>
 
         {/* Online badge */}
@@ -345,14 +348,14 @@ export default function ProfileCard({ profile, variant = "full" }: ProfileCardPr
 
         {/* Action buttons */}
         {isLoggedIn ? (
-          <div style={{ display: "flex", gap: "0.5rem", borderTop: "1px solid var(--border-light)", paddingTop: "0.625rem" }}>
+          <div style={{ display: "flex", gap: "0.5rem", borderTop: "1px solid var(--border-light)", paddingTop: "0.625rem", flexWrap: "wrap" }}>
             <button
               onClick={handleSendInterest}
               disabled={sendingInterest}
               aria-label={interested ? "Withdraw interest" : `Send interest to ${profile.name}`}
               aria-pressed={interested}
               style={{
-                flex: 1, padding: "0.5rem",
+                width: "100%", padding: "0.5rem",
                 background: interested ? "var(--primary)" : "#fff",
                 border: "1.5px solid var(--primary)",
                 color: interested ? "#fff" : "var(--primary)",

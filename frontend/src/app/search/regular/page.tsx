@@ -69,7 +69,7 @@ function SearchContent() {
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
+      <main style={{ background: "var(--bg-page)", minHeight: "100vh", paddingTop: "70px" }}>
         {/* Search bar — sticky */}
         <div
           className="search-regular-sticky"
@@ -78,7 +78,7 @@ function SearchContent() {
             borderBottom: "1px solid var(--border-color)",
             padding: "0.75rem 0",
             position: "sticky",
-            top: "88px",
+            top: "70px",
             zIndex: 40,
           }}
         >
