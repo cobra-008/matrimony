@@ -103,7 +103,6 @@ export const HINDU_CASTES = [
   'Ayira Vysya',
   'Ayodhyavasi',
   'Ayyaraka',
-  'BC / Backward Class',
   'Badaga',
   'Bagdi',
   'Baidya',
@@ -339,7 +338,6 @@ export const HINDU_CASTES = [
   'Lohar',
   'Loniya',
   'Lubana',
-  'MBC / Most Backward Class',
   'Madhesiya/Kanu/Halwai',
   'Madiga',
   'Madivala / Dhobi',
@@ -411,8 +409,6 @@ export const HINDU_CASTES = [
   'Nepali',
   'Nessi',
   'Nhavi',
-  'OBC / Other Backward Class',
-  'OC / Open Category',
   'Ontari',
   'Oswal',
   'Otari',
@@ -481,11 +477,7 @@ export const HINDU_CASTES = [
   'Relli',
   'Rohit / Chamar',
   'Ror',
-  'SC',
-  'SC / Scheduled Caste',
   'SKP',
-  'ST',
-  'ST / Scheduled Tribe',
   'Sadgope',
   'Sadhu Chetty',
   'Sagara (Uppara)',
@@ -502,7 +494,6 @@ export const HINDU_CASTES = [
   'Sathwara',
   'Satnami',
   'Savji',
-  'Sc',
   'Senai Thalaivar',
   'Sengunta Mudaliar',
   'Senguntha Mudaliyar',
@@ -521,7 +512,6 @@ export const HINDU_CASTES = [
   'Sourashtra',
   'Sozhia Chetty',
   'Srisayana',
-  'St',
   'Sugali (Naika)',
   'Sunar',
   'Sunari',
@@ -651,10 +641,6 @@ export const CASTE_TO_SUBCASTE: Record<string, string[]> = {
   ],
   'Arunthathiyar': [
     'Madiga',
-    'Others',
-  ],
-  'BC / Backward Class': [
-    'Not Specified',
     'Others',
   ],
   'Baniya': [
@@ -1040,10 +1026,6 @@ export const CASTE_TO_SUBCASTE: Record<string, string[]> = {
     'Panchal',
     'Vishwakarma Lohar',
   ],
-  'MBC / Most Backward Class': [
-    'Not Specified',
-    'Others',
-  ],
   'Mahar': [
     'Buddhist Mahar',
     'Chambhar',
@@ -1177,14 +1159,6 @@ export const CASTE_TO_SUBCASTE: Record<string, string[]> = {
     'Others',
     'Valmiki Nayaka',
   ],
-  'OBC / Other Backward Class': [
-    'Not Specified',
-    'Others',
-  ],
-  'OC / Open Category': [
-    'Not Specified',
-    'Others',
-  ],
   'Oswal': [
     'Doshi',
     'Kothari',
@@ -1265,14 +1239,6 @@ export const CASTE_TO_SUBCASTE: Record<string, string[]> = {
     'Pedakanti Reddy',
     'Pokanati Reddy',
     'Velama',
-  ],
-  'SC / Scheduled Caste': [
-    'Not Specified',
-    'Others',
-  ],
-  'ST / Scheduled Tribe': [
-    'Not Specified',
-    'Others',
   ],
   'Saiva Vellalar': [
     'Kanyakumari Saiva Vellalar',
