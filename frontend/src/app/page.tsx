@@ -7,14 +7,16 @@ import Footer from "@/components/layout/Footer";
 import {
   ChevronDown, ArrowRight, CheckCircle, Shield, Users, Star,
   Crown, Camera, Briefcase, FileText, MapPin, Heart,
-  Users2, Sparkles, Eye, Search, User, Settings2, Mail, X
+  Crown, Camera, Briefcase, FileText, MapPin, Heart,
+  Users2, Sparkles, Eye, Search, User, Settings2, Mail, X, RefreshCw
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import ProfileCard from "@/components/ui/ProfileCard";
 import { PROFILE_FOR_OPTIONS } from "@/data/matrimony-data";
-import { fetchMatchProfiles, fetchLatestProfiles, type RegisteredUser, computeProfileCompletion } from "@/lib/auth-store";
+import { fetchMatchProfiles, fetchLatestProfiles, type RegisteredUser, computeProfileCompletion, getProfilesByMobile, loginWithOtpSession } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 // Helper: compute age from dob
 function calcAge(dob?: string): number {
@@ -427,6 +429,53 @@ function AuthenticatedDashboard() {
       setHideCompleteBanner(true);
     }
   }, []);
+
+  const [multiProfiles, setMultiProfiles] = useState<RegisteredUser[]>([]);
+  const [switchConfirmOpen, setSwitchConfirmOpen] = useState(false);
+  const [targetAccount, setTargetAccount] = useState<RegisteredUser | null>(null);
+
+  // Fetch profiles with same mobile number for switch account feature
+  useEffect(() => {
+    if (!user?.mobile) {
+      setMultiProfiles([]);
+      return;
+    }
+    getProfilesByMobile(user.mobile).then((profiles) => {
+      setMultiProfiles(profiles.filter((p) => p.id !== user.id));
+    }).catch((err) => {
+      console.error("[Home] error fetching mobile profiles:", err);
+      setMultiProfiles([]);
+    });
+  }, [user?.id, user?.mobile]);
+
+  const handleSwitchAccount = async () => {
+    if (!targetAccount) return;
+    setSwitchConfirmOpen(false);
+    
+    const toastId = toast.loading("Switching account...");
+    try {
+      const res = await fetch("/api/otp-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: targetAccount.id }),
+      });
+      const loginData = await res.json();
+      if (!res.ok) {
+        toast.error(loginData.error || "Failed to switch account.", { id: toastId });
+        return;
+      }
+      const result = await loginWithOtpSession(loginData.access_token, loginData.refresh_token);
+      if (!result) {
+        toast.error("Failed to switch account. Please log in again.", { id: toastId });
+        return;
+      }
+      toast.success(`Switched to ${targetAccount.name}`, { id: toastId });
+      window.location.reload();
+    } catch {
+      toast.error("Network error while switching account.", { id: toastId });
+    }
+  };
+
   const [matchCounts, setMatchCounts] = useState({
     allMatches: 0,
     newMatches: 0,
@@ -684,23 +733,34 @@ function AuthenticatedDashboard() {
           )}
 
           {/* Switch account */}
-          <div style={{ margin: "0.875rem 0 0", padding: "0.625rem 0.875rem", borderTop: "1px solid #F2E8D6" }}>
-            <Link
-              href="/login"
-              style={{
-                display: "flex", alignItems: "center", gap: "6px",
-                textDecoration: "none",
-                fontFamily: "var(--font-sans)", fontSize: "0.875rem",
-                color: "#2D1018", fontWeight: 400,
-              }}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
-              </svg>
-              Switch account
-            </Link>
-          </div>
+          {multiProfiles.length > 0 && (
+            <div style={{ margin: "0.875rem 0 0", padding: "0.625rem 0.875rem", borderTop: "1px solid #F2E8D6" }}>
+              <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: "#999", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+                Switch Account
+              </div>
+              {multiProfiles.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setTargetAccount(p);
+                    setSwitchConfirmOpen(true);
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "6px",
+                    background: "none", border: "none", padding: "0.25rem 0",
+                    fontFamily: "var(--font-sans)", fontSize: "0.875rem",
+                    color: "#2D1018", fontWeight: 400, cursor: "pointer",
+                    textAlign: "left", width: "100%",
+                  }}
+                >
+                  <RefreshCw size={15} color="#888" />
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {p.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Quick links */}
           <div style={{ padding: "0.25rem 0 0.875rem" }}>
@@ -1289,6 +1349,17 @@ function GuestSuccessStories() {
         </div>
         <style>{`.success-stories-scroll::-webkit-scrollbar{display:none}`}</style>
       </div>
+
+      <ConfirmDialog
+        isOpen={switchConfirmOpen}
+        title="Switch Account"
+        message={`Do you want to switch to the ${targetAccount?.name} account?`}
+        onConfirm={handleSwitchAccount}
+        onCancel={() => {
+          setSwitchConfirmOpen(false);
+          setTargetAccount(null);
+        }}
+      />
     </section>
   );
 }

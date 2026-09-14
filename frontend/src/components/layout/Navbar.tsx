@@ -12,6 +12,8 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useMembership } from "@/hooks/useMembership";
 import BottomNav from "./BottomNav";
+import { getProfilesByMobile, loginWithOtpSession, type RegisteredUser } from "@/lib/auth-store";
+import toast from "react-hot-toast";
 
 // ── Guest Center Navigation ────────────────────────────────────────────────────
 const GUEST_NAV = [
@@ -98,31 +100,17 @@ const LOGGED_IN_NAV = [
   },
 ];
 
-interface StoredProfile {
-  id: string;
-  name: string;
-  photoUrl?: string;
-  mobile?: string;
-}
-
-function getStoredProfiles(): StoredProfile[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem("etm_profiles") || "[]");
-  } catch {
-    return [];
-  }
-}
-
 export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [storedProfiles, setStoredProfiles] = useState<StoredProfile[]>([]);
+  const [multiProfiles, setMultiProfiles] = useState<RegisteredUser[]>([]);
   const [scrolled, setScrolled] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [switchConfirmOpen, setSwitchConfirmOpen] = useState(false);
+  const [targetAccount, setTargetAccount] = useState<RegisteredUser | null>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // Sticky scroll shrink
@@ -132,25 +120,47 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Load stored profiles for switch-account
+  // Fetch profiles with same mobile number for switch account feature
   useEffect(() => {
-    setStoredProfiles(getStoredProfiles());
-  }, [user]);
-
-  // Persist profile to switch-account list
-  useEffect(() => {
-    if (!user) return;
-    const existing = getStoredProfiles();
-    const alreadyStored = existing.some((p) => p.id === user.id);
-    if (!alreadyStored) {
-      const updated = [
-        ...existing,
-        { id: user.id, name: user.name, photoUrl: user.photoUrl, mobile: user.mobile },
-      ];
-      localStorage.setItem("etm_profiles", JSON.stringify(updated));
-      setStoredProfiles(updated);
+    if (!user?.mobile) {
+      setMultiProfiles([]);
+      return;
     }
-  }, [user]);
+    getProfilesByMobile(user.mobile).then((profiles) => {
+      setMultiProfiles(profiles.filter((p) => p.id !== user.id));
+    }).catch((err) => {
+      console.error("[Navbar] error fetching mobile profiles:", err);
+      setMultiProfiles([]);
+    });
+  }, [user?.id, user?.mobile]);
+
+  const handleSwitchAccount = async () => {
+    if (!targetAccount) return;
+    setSwitchConfirmOpen(false);
+    
+    const toastId = toast.loading("Switching account...");
+    try {
+      const res = await fetch("/api/otp-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: targetAccount.id }),
+      });
+      const loginData = await res.json();
+      if (!res.ok) {
+        toast.error(loginData.error || "Failed to switch account.", { id: toastId });
+        return;
+      }
+      const result = await loginWithOtpSession(loginData.access_token, loginData.refresh_token);
+      if (!result) {
+        toast.error("Failed to switch account. Please log in again.", { id: toastId });
+        return;
+      }
+      toast.success(`Switched to ${targetAccount.name}`, { id: toastId });
+      window.location.reload();
+    } catch {
+      toast.error("Network error while switching account.", { id: toastId });
+    }
+  };
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -198,9 +208,6 @@ export default function Navbar() {
     return pathname.startsWith(href);
   };
 
-  const otherProfiles = storedProfiles.filter(
-    (p) => p.id !== user?.id
-  );
   const { can, isPremium, planName } = useMembership();
 
   // ── LOGGED-IN NAVBAR ──────────────────────────────────────────────────────
@@ -565,17 +572,18 @@ export default function Navbar() {
                     ))}
 
                     {/* Switch Account */}
-                    {otherProfiles.length > 0 && (
+                    {multiProfiles.length > 0 && (
                       <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: "0.25rem" }}>
                         <div style={{ padding: "0.375rem 1rem 0.25rem", fontSize: "0.6875rem", fontWeight: 700, color: "#999", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                           Switch Account
                         </div>
-                        {otherProfiles.map((p) => (
+                        {multiProfiles.map((p) => (
                           <button
                             key={p.id}
                             onClick={() => {
                               setProfileMenuOpen(false);
-                              router.push(`/login?mobile=${encodeURIComponent(p.mobile || "")}&name=${encodeURIComponent(p.name)}`);
+                              setTargetAccount(p);
+                              setSwitchConfirmOpen(true);
                             }}
                             style={{
                               width: "100%",
@@ -675,6 +683,68 @@ export default function Navbar() {
             to   { opacity: 1; transform: translateY(0); }
           }
         `}</style>
+
+        {/* Switch Account confirmation modal */}
+        {switchConfirmOpen && targetAccount && (
+          <div
+            style={{
+              position: "fixed", inset: 0, zIndex: 9999,
+              background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "1rem",
+            }}
+            onClick={() => setSwitchConfirmOpen(false)}
+          >
+            <div
+              style={{
+                background: "#fff", borderRadius: "16px",
+                padding: "2rem 1.75rem", maxWidth: "360px", width: "100%",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+                textAlign: "center",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{
+                width: "56px", height: "56px", borderRadius: "50%",
+                background: "#f0f8ff", display: "flex", alignItems: "center",
+                justifyContent: "center", margin: "0 auto 1rem", border: "1px solid #cce5ff"
+              }}>
+                <RefreshCw size={24} style={{ color: "#0056b3" }} />
+              </div>
+              <h3 style={{ fontWeight: 700, fontSize: "1.125rem", color: "var(--text-dark)", marginBottom: "0.5rem" }}>
+                Switch Account?
+              </h3>
+              <p style={{ fontSize: "0.875rem", color: "#888", marginBottom: "1.5rem", lineHeight: 1.5 }}>
+                Do you want to switch to the <strong>{targetAccount.name}</strong> account?
+              </p>
+              <div style={{ display: "flex", gap: "0.75rem" }}>
+                <button
+                  onClick={() => setSwitchConfirmOpen(false)}
+                  style={{
+                    flex: 1, padding: "0.625rem", border: "1.5px solid var(--border-color)",
+                    borderRadius: "var(--radius-full)", background: "#fff",
+                    color: "var(--text-dark)", fontWeight: 600, fontSize: "0.875rem",
+                    cursor: "pointer", fontFamily: "var(--font-sans)",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSwitchAccount}
+                  style={{
+                    flex: 1, padding: "0.625rem", border: "none",
+                    borderRadius: "var(--radius-full)",
+                    background: "var(--primary)", color: "#fff",
+                    fontWeight: 700, fontSize: "0.875rem",
+                    cursor: "pointer", fontFamily: "var(--font-sans)",
+                  }}
+                >
+                  Yes, switch
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Logout confirmation modal */}
         {logoutConfirmOpen && (

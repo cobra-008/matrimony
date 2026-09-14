@@ -83,6 +83,18 @@ export default function NotificationsPage() {
     }
   }, [authLoading, user, router]);
 
+  if (authLoading || !user) {
+    return (
+      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   const load = async () => {
     if (!user) return;
     setLoading(true);

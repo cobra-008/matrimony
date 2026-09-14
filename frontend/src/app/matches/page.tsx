@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Crown, Lock } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
@@ -778,6 +778,25 @@ function MatchesContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
+  const router = useRouter();
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user) {
+    return (
+      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   // Keep sessionStorage in sync whenever the user changes section
   useEffect(() => {
     sessionStorage.setItem("matches_section", activeSection);
@@ -883,6 +902,15 @@ function MatchesContent() {
     setProfiles(result.slice(0, 200));
     setLoading(false);
   }, []);
+
+  // Load shortlisted IDs on mount
+  useEffect(() => {
+    if (!user) return;
+    getShortlistedProfiles(user.id).then(profiles => {
+      setShortlistedIds(new Set(profiles.map(p => p.id)));
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // Load sent interest IDs on mount
   useEffect(() => {

@@ -509,8 +509,26 @@ function SidebarLink({
 
 // ── Main Page ─────────────────────────────────────────────────────────
 export default function InterestsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user) {
+    return (
+      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const [section, setSection] = useState<ActiveSection>("received");
   const [receivedFilter, setReceivedFilter] = useState<ReceivedFilter>("pending");

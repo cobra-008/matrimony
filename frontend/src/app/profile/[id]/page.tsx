@@ -623,9 +623,9 @@ function ProfileDetailPage({
           .profile-attr-grid { grid-template-columns: 1fr !important; }
           .profile-edu-grid { grid-template-columns: 1fr !important; }
           /* Tables: prevent horizontal overflow */
-          .profile-details-table, .profile-main-wrap table { width: 100% !important; table-layout: fixed !important; word-break: break-word !important; }
-          .info-label-col { width: 110px !important; min-width: 110px !important; max-width: 110px !important; }
-          .profile-edu-grid > span:nth-child(odd) { width: 110px !important; }
+          .profile-details-table, .profile-main-wrap table { width: 100% !important; word-break: break-word !important; }
+          .info-label-col { width: 135px !important; min-width: 120px !important; max-width: 45% !important; padding-right: 8px !important; }
+          .profile-edu-grid > span:nth-child(odd) { width: 135px !important; }
           /* Section cards: prevent overflow */
           .profile-main-wrap > div > div { max-width: 100% !important; box-sizing: border-box !important; }
           /* Info column: must not overflow */
@@ -652,7 +652,7 @@ function ProfileDetailPage({
           }
         }
         @media (max-width: 400px) {
-          .info-label-col { width: 95px !important; min-width: 95px !important; max-width: 95px !important; }
+          .info-label-col { width: 120px !important; min-width: 110px !important; max-width: 45% !important; padding-right: 4px !important; }
           .profile-main-wrap { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
         }
       `}</style>
@@ -1280,7 +1280,7 @@ function ProfileDetailPage({
                     />
                     <InfoRow
                       label="Religion / Community"
-                      value={`${p.partnerReligion || profile.religion || "Hindu"} / ${p.partnerCaste || profile.community || "Any Caste"}`}
+                      value={`${p.partnerReligion || "Any"} / ${p.partnerCaste || "Any"}`}
                     />
                     <InfoRow
                       label="Mother Tongue"
