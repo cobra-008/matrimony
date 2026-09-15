@@ -263,9 +263,7 @@ function LoginContent() {
   }
 
   // ── Send OTP ──────────────────────────────────────────────────────────────
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const val = otpIdentifier.trim();
+  const executeSendOtp = async (val: string) => {
     if (!val) {
       setFieldErrors((p) => ({ ...p, otpId: "Please enter your email or mobile number." }));
       return;
@@ -341,6 +339,22 @@ function LoginContent() {
     setOtpSent(true);
   };
 
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    await executeSendOtp(otpIdentifier.trim());
+  };
+
+  // Auto-send OTP if autosend=true in search params
+  const autosend = searchParams.get("autosend") === "true";
+  const autosendTriggered = useRef(false);
+  useEffect(() => {
+    if (autosend && prefillMobile && !autosendTriggered.current) {
+      autosendTriggered.current = true;
+      executeSendOtp(prefillMobile);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autosend, prefillMobile]);
+
   // ── Resend OTP ────────────────────────────────────────────────────────────
   const handleResendOtp = async () => {
     if (resendCooldown > 0) return;
@@ -378,8 +392,8 @@ function LoginContent() {
   };
 
   // ── Verify OTP ────────────────────────────────────────────────────────────
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleVerifyOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (otp.length !== 6) {
       setOtpError("Please enter the 6-digit OTP.");
       return;
@@ -607,7 +621,7 @@ function LoginContent() {
 
                       {/* ── OTP: Step 1 — enter email or phone ── */}
                       {mode === "otp" && !otpSent && (
-                        <form onSubmit={(e) => e.preventDefault()}>
+                        <form onSubmit={handleSendOtp}>
                           <div style={{ marginBottom: "1.125rem" }}>
                             <label className="form-label">Email Address or Mobile Number</label>
                             <input
@@ -630,7 +644,7 @@ function LoginContent() {
                               </p>
                             )}
                           </div>
-                          <button type="button" onClick={handleSendOtp} disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+                          <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
                             {loading ? "Sending..." : "Send OTP"}
                           </button>
                         </form>
@@ -638,7 +652,7 @@ function LoginContent() {
 
                       {/* ── OTP: Step 2 — enter OTP ── */}
                       {mode === "otp" && otpSent && !notRegistered && (
-                        <form onSubmit={(e) => e.preventDefault()}>
+                        <form onSubmit={handleVerifyOtp}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem" }}>
                             <p style={{ fontSize: "0.875rem", color: "var(--text-medium)" }}>
                               OTP sent to <strong>{otpType === "phone" ? `+91 ${otpIdentifier.replace(/\D/g, "")}` : otpIdentifier}</strong>
@@ -691,7 +705,7 @@ function LoginContent() {
                               </button>
                             )}
                           </div>
-                          <button type="button" onClick={handleVerifyOtp} disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
+                          <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }}>
                             {loading ? "Verifying..." : "Verify & Login"}
                           </button>
                         </form>

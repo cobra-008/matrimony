@@ -443,6 +443,11 @@ export default function PrivacyPolicyPage() {
       <Navbar />
       <main style={{ background: "var(--bg-page)", minHeight: "calc(100vh - 120px)", padding: "2rem 0 4rem" }}>
         <div className="container" style={{ maxWidth: "900px" }}>
+          {/* Back Button */}
+          <div style={{ marginBottom: "1.25rem", display: "inline-block" }}>
+            <BackButton style={{ background: "#fff", border: "1px solid #e0e0e0", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} />
+          </div>
+
           {/* Header */}
           <div
             style={{
@@ -451,19 +456,21 @@ export default function PrivacyPolicyPage() {
               padding: "2.5rem 2rem",
               marginBottom: "2rem",
               color: "#fff",
+              boxShadow: "0 10px 30px rgba(220, 38, 38, 0.25)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8">
-                <path d="M16 3 L28 9 V17 C28 23 22 28 16 30 C10 28 4 23 4 17 V9 Z" />
-                <polyline points="11,16 14,19 21,13" strokeWidth="2.2" />
-              </svg>
-              <h1 style={{ margin: 0, fontSize: "clamp(1.25rem, 4vw, 1.75rem)", fontWeight: 800 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
+              <div style={{ background: "rgba(255,255,255,0.15)", padding: "12px", borderRadius: "12px", boxShadow: "inset 0 2px 4px rgba(255,255,255,0.1)" }}>
+                <svg width="36" height="36" viewBox="0 0 32 32" fill="none" stroke="#fff" strokeWidth="2">
+                  <path d="M16 3 L28 9 V17 C28 23 22 28 16 30 C10 28 4 23 4 17 V9 Z" />
+                  <polyline points="11,16 14,19 21,13" strokeWidth="2.5" />
+                </svg>
+              </div>
+              <h1 style={{ margin: 0, fontSize: "clamp(2rem, 5vw, 2.75rem)", fontWeight: 900, textShadow: "0 2px 10px rgba(0,0,0,0.15)", letterSpacing: "-1px" }}>
                 Privacy Policy
               </h1>
             </div>
-            <p style={{ margin: 0, opacity: 0.85, fontSize: "0.9375rem", lineHeight: 1.6 }}>
+            <p style={{ margin: 0, opacity: 0.9, fontSize: "1.0625rem", lineHeight: 1.6, maxWidth: "600px" }}>
               Your privacy matters to us. This policy explains how Elite Tamil Matrimony collects, uses,
               and protects your personal information.
             </p>

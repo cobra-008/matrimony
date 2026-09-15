@@ -482,6 +482,8 @@ export async function loginWithPassword(
  * Get ALL profiles for a mobile number (supports multi-account).
  */
 export async function getProfilesByMobile(mobile: string): Promise<RegisteredUser[]> {
+  if (!mobile || mobile.trim() === '' || mobile === 'undefined' || mobile === 'null') return [];
+
   const { data } = await supabase
     .from('profiles')
     .select('*')

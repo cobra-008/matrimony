@@ -58,10 +58,10 @@ export default function ContactPage() {
         </section>
 
         <section className="section">
-          <div className="container">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="container" style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 1rem" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", alignItems: "flex-start" }}>
               {/* Contact info */}
-              <div className="space-y-5">
+              <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
                 {[
                   {
                     icon: <Mail size={20} />,
@@ -104,27 +104,29 @@ export default function ContactPage() {
                     bg: "var(--gold-50)",
                   },
                 ].map((item) => (
-                  <div key={item.label} className="card p-4 flex items-start gap-4">
+                  <div key={item.label} className="card p-4" style={{ display: "flex", alignItems: "flex-start", gap: "1rem", background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)" }}>
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: item.bg, color: item.color }}
+                      style={{
+                        width: "40px", height: "40px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        background: item.bg, color: item.color
+                      }}
                     >
                       {item.icon}
                     </div>
                     <div>
-                      <div className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wider">
+                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                         {item.label}
                       </div>
-                      <div className="font-semibold text-[var(--text-primary)] text-sm mt-0.5">{item.value}</div>
-                      <div className="text-xs text-[var(--text-muted)] mt-0.5">{item.sub}</div>
+                      <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: "0.875rem", marginTop: "2px" }}>{item.value}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>{item.sub}</div>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Contact form */}
-              <div className="lg:col-span-2">
-                <div className="card p-6 sm:p-8">
+              <div style={{ flex: "2 1 500px" }}>
+                <div className="card p-6 sm:p-8" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)", padding: "2rem" }}>
                   {submitted ? (
                     <div className="text-center py-10">
                       <CheckCircle2 size={48} className="mx-auto mb-4 text-green-500" />
@@ -145,13 +147,13 @@ export default function ContactPage() {
                     <>
                       <h2
                         className="font-bold text-[var(--text-primary)] mb-6"
-                        style={{ fontFamily: "var(--font-serif)", fontSize: "1.3rem" }}
+                        style={{ fontFamily: "var(--font-serif)", fontSize: "1.3rem", marginBottom: "1.5rem" }}
                       >
                         Send us a message
                       </h2>
-                      <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
+                      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+                          <div style={{ flex: "1 1 200px" }}>
                             <label className="form-label">Full Name *</label>
                             <input
                               type="text"
@@ -159,9 +161,10 @@ export default function ContactPage() {
                               placeholder="Your name"
                               value={form.name}
                               onChange={(e) => setForm({ ...form, name: e.target.value })}
+                              style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}
                             />
                           </div>
-                          <div>
+                          <div style={{ flex: "1 1 200px" }}>
                             <label className="form-label">Email *</label>
                             <input
                               type="email"
@@ -169,11 +172,12 @@ export default function ContactPage() {
                               placeholder="your@email.com"
                               value={form.email}
                               onChange={(e) => setForm({ ...form, email: e.target.value })}
+                              style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}
                             />
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+                          <div style={{ flex: "1 1 200px" }}>
                             <label className="form-label">Phone (optional)</label>
                             <input
                               type="tel"
@@ -181,14 +185,16 @@ export default function ContactPage() {
                               placeholder="+91 XXXXX XXXXX"
                               value={form.phone}
                               onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                              style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}
                             />
                           </div>
-                          <div>
+                          <div style={{ flex: "1 1 200px" }}>
                             <label className="form-label">Subject</label>
                             <select
                               className="form-select"
                               value={form.subject}
                               onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                              style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}
                             >
                               <option value="">Select a topic</option>
                               <option value="account">Account Issues</option>
@@ -209,6 +215,7 @@ export default function ContactPage() {
                             placeholder="Describe your query or feedback in detail..."
                             value={form.message}
                             onChange={(e) => setForm({ ...form, message: e.target.value })}
+                            style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)", minHeight: "120px" }}
                           />
                           <div className="text-xs text-[var(--text-muted)] text-right mt-1">
                             {form.message.length}/1000

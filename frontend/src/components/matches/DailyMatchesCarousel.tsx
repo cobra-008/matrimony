@@ -45,10 +45,13 @@ export default function DailyMatchesCarousel() {
     if (user) load();
   }, [user?.id, load]);
 
+  const [sentInterests, setSentInterests] = useState<Set<string>>(new Set());
+
   const handleSendInterest = async (p: RegisteredUser) => {
     if (!user) { toast.error("Please login"); return; }
     const { error } = await sendInterest(user.id, p.id);
     if (error) { toast.error("Already sent or error occurred"); return; }
+    setSentInterests(prev => new Set([...prev, p.id]));
     toast.success(`Interest sent to ${p.name}!`);
   };
 
@@ -355,21 +358,39 @@ export default function DailyMatchesCarousel() {
                       </svg>
                       Skip
                     </button>
-                    <button
-                      onClick={() => handleSendInterest(activeProfile)}
-                      style={{
-                        display: "flex", alignItems: "center", gap: "0.5rem",
-                        padding: "0.625rem 1.75rem", borderRadius: "30px",
-                        border: "none", background: "var(--primary)",
-                        color: "#fff", fontWeight: 700, cursor: "pointer",
-                        fontSize: "0.875rem", minHeight: "44px",
-                      }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="white"/>
-                      </svg>
-                      Send Interest
-                    </button>
+                    {sentInterests.has(activeProfile.id) ? (
+                      <button
+                        style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem",
+                          padding: "0.625rem 1.75rem", borderRadius: "30px",
+                          border: "1.5px solid #6B1A2A", background: "#FEF0F0",
+                          color: "#6B1A2A", fontWeight: 700, cursor: "default",
+                          fontSize: "0.875rem", minHeight: "44px",
+                        }}
+                        disabled
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Interest Sent
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleSendInterest(activeProfile)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem",
+                          padding: "0.625rem 1.75rem", borderRadius: "30px",
+                          border: "none", background: "var(--primary)",
+                          color: "#fff", fontWeight: 700, cursor: "pointer",
+                          fontSize: "0.875rem", minHeight: "44px",
+                        }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="white"/>
+                        </svg>
+                        Send Interest
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

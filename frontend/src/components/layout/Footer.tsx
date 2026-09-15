@@ -372,7 +372,7 @@ export default function Footer() {
             }}
           >
             <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.35)", margin: 0 }}>
-              &copy; {new Date().getFullYear()} Elite Tamil Matrimony. All rights reserved.
+              &copy; {new Date().getFullYear()} Elite Tamil Matrimony. All rights reserved. <span style={{ opacity: 0.5, margin: "0 0.25rem" }}>|</span> Last updated on September 15, 2026
             </p>
             <p style={{ fontSize: "0.6875rem", color: "rgba(255,255,255,0.25)", margin: 0 }}>
               A newly launched platform for Tamil families and individuals seeking meaningful marriage relationships.

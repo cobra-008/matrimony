@@ -1428,7 +1428,7 @@ function RegisterWizard() {
                 Religion &amp; Community
               </h3>
 
-              <FloatSelect
+              <SearchableSelect
                 label="Religion"
                 value={form.religion}
                 onChange={(v) => {
@@ -1439,6 +1439,7 @@ function RegisterWizard() {
                   else setFieldError("religion", "Please select a religion.");
                 }}
                 options={RELIGIONS}
+                placeholder="Select religion"
               />
               <FieldError msg={fieldErrors.religion} />
               {castes.length > 0 && (
@@ -1468,7 +1469,7 @@ function RegisterWizard() {
                 </div>
               )}
 
-              <FloatSelect label="Mother Tongue" value={form.motherTongue} onChange={(v) => set("motherTongue", v)} options={MOTHER_TONGUES} />
+              <SearchableSelect label="Mother Tongue" value={form.motherTongue} onChange={(v) => set("motherTongue", v)} options={MOTHER_TONGUES} placeholder="Select mother tongue" />
               
               <MultiSelectTags
                 label="Other Languages Known"
@@ -1571,7 +1572,7 @@ function RegisterWizard() {
             <StepProgressBar step={3} total={6} />
             <StepHeader step={3} total={6} title="Education and Career" onBack={() => setStep(1)} />
             <div className="register-card" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-xl)", padding: "1.5rem" }}>
-              <FloatSelect
+              <SearchableSelect
                 label="Highest Education"
                 value={form.education}
                 onChange={(v) => {
@@ -1580,6 +1581,7 @@ function RegisterWizard() {
                   else setFieldError("education", "Please select your education.");
                 }}
                 options={EDUCATION_LEVELS}
+                placeholder="Select education"
               />
               <FieldError msg={fieldErrors.education} />
               <FloatSearchableCombobox
@@ -1594,7 +1596,7 @@ function RegisterWizard() {
                 placeholder="Search or type your occupation..."
               />
               <FieldError msg={fieldErrors.occupation} />
-              <FloatSelect label="Annual Income (Rs.)" value={form.income} onChange={(v) => set("income", v)} options={INCOME_OPTIONS} />
+              <SearchableSelect label="Annual Income (Rs.)" value={form.income} onChange={(v) => set("income", v)} options={INCOME_OPTIONS} placeholder="Select income range" />
 
               <div style={{ marginBottom: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border-light)" }}>
                 <h3 style={{ fontWeight: 700, fontSize: "0.9375rem", color: "var(--text-dark)", marginBottom: "1rem" }}>Location</h3>
@@ -1700,7 +1702,7 @@ function RegisterWizard() {
               </div>
 
               {/* Partner Religion */}
-              <FloatSelect
+              <SearchableSelect
                 label="Partner Religion"
                 value={form.partnerReligion}
                 onChange={v => setForm(f => ({ ...f, partnerReligion: v }))}
@@ -1742,7 +1744,7 @@ function RegisterWizard() {
               </div>
 
               {/* Preferred State */}
-              <FloatSelect
+              <SearchableSelect
                 label="Preferred State"
                 value={form.partnerState}
                 onChange={v => setForm(f => ({ ...f, partnerState: v }))}

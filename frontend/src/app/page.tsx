@@ -7,7 +7,6 @@ import Footer from "@/components/layout/Footer";
 import {
   ChevronDown, ArrowRight, CheckCircle, Shield, Users, Star,
   Crown, Camera, Briefcase, FileText, MapPin, Heart,
-  Crown, Camera, Briefcase, FileText, MapPin, Heart,
   Users2, Sparkles, Eye, Search, User, Settings2, Mail, X, RefreshCw
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -240,7 +239,7 @@ function HeroAuthCard() {
         const digits = val.replace(/\D/g, "");
         toast.success(`OTP sent to +91 ${digits}`);
         // Redirect to full login page for phone OTP (MSG91 widget required)
-        window.location.href = `/login?mobile=${digits}`;
+        window.location.href = `/login?mobile=${digits}&autosend=true`;
         return;
       }
     } catch { toast.error("Network error. Please try again."); setSendingOtp(false); return; }
@@ -285,7 +284,7 @@ function HeroAuthCard() {
         <button
           onClick={() => setTab("register")}
           style={{
-            flex: 1, padding: "0.875rem 0.5rem",
+            flex: 1, padding: "0.75rem 0.25rem",
             background: tab === "register" ? "var(--gradient-hero)" : "#f9f9f9",
             border: "none", cursor: "pointer",
             fontSize: "0.875rem", fontWeight: 700,
@@ -293,6 +292,10 @@ function HeroAuthCard() {
             fontFamily: "var(--font-sans)",
             transition: "all 0.2s",
             borderRadius: "0",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            minWidth: 0,
           }}
         >
           Register Free
@@ -300,7 +303,7 @@ function HeroAuthCard() {
         <button
           onClick={() => setTab("login")}
           style={{
-            flex: 1, padding: "0.875rem 0.5rem",
+            flex: 1, padding: "0.75rem 0.25rem",
             background: tab === "login" ? "var(--gradient-hero)" : "#f9f9f9",
             border: "none", cursor: "pointer",
             fontSize: "0.875rem", fontWeight: 700,
@@ -308,6 +311,10 @@ function HeroAuthCard() {
             fontFamily: "var(--font-sans)",
             transition: "all 0.2s",
             borderRadius: "0",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            minWidth: 0,
           }}
         >
           Login
@@ -433,6 +440,7 @@ function AuthenticatedDashboard() {
   const [multiProfiles, setMultiProfiles] = useState<RegisteredUser[]>([]);
   const [switchConfirmOpen, setSwitchConfirmOpen] = useState(false);
   const [targetAccount, setTargetAccount] = useState<RegisteredUser | null>(null);
+  const [upgrading, setUpgrading] = useState(false);
 
   // Fetch profiles with same mobile number for switch account feature
   useEffect(() => {
@@ -718,16 +726,19 @@ function AuthenticatedDashboard() {
               </p>
               <Link
                 href="/membership"
+                onClick={() => setUpgrading(true)}
                 style={{
-                  display: "block", textAlign: "center",
+                  display: "flex", justifyContent: "center", alignItems: "center", gap: "6px",
                   padding: "0.375rem",
                   background: "#6B1A2A", color: "#fff",
                   borderRadius: "20px", textDecoration: "none",
                   fontSize: "0.8125rem", fontWeight: 700,
                   fontFamily: "var(--font-sans)",
+                  opacity: upgrading ? 0.7 : 1,
+                  pointerEvents: upgrading ? "none" : "auto",
                 }}
               >
-                Upgrade now
+                {upgrading ? <><span style={{ animation: "spin 0.8s linear infinite", display: "inline-block" }}>⟳</span> Loading…</> : "Upgrade now"}
               </Link>
             </div>
           )}
@@ -1105,6 +1116,16 @@ function AuthenticatedDashboard() {
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        isOpen={switchConfirmOpen}
+        title="Switch Account"
+        message={`Do you want to switch to the ${targetAccount?.name} account?`}
+        onConfirm={handleSwitchAccount}
+        onCancel={() => {
+          setSwitchConfirmOpen(false);
+          setTargetAccount(null);
+        }}
+      />
       <Footer />
     </div>
   );
@@ -1350,16 +1371,6 @@ function GuestSuccessStories() {
         <style>{`.success-stories-scroll::-webkit-scrollbar{display:none}`}</style>
       </div>
 
-      <ConfirmDialog
-        isOpen={switchConfirmOpen}
-        title="Switch Account"
-        message={`Do you want to switch to the ${targetAccount?.name} account?`}
-        onConfirm={handleSwitchAccount}
-        onCancel={() => {
-          setSwitchConfirmOpen(false);
-          setTargetAccount(null);
-        }}
-      />
     </section>
   );
 }
@@ -1442,6 +1453,23 @@ export default function HomePage() {
               }
               .hero-text {
                 text-align: center;
+              }
+              .hero-right {
+                width: 100%;
+                min-width: 0;
+                overflow: hidden;
+              }
+              .hero-form-wrap {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+                min-width: 0;
+              }
+              .hero-form-wrap > * {
+                width: 100%;
+                max-width: 380px;
+                box-sizing: border-box;
+                min-width: 0;
               }
               @media (min-width: 992px) {
                 .hero-inner {

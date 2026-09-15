@@ -680,24 +680,23 @@ function ProfileCard({
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "4px",
+                gap: "5px",
                 padding: "0.4375rem 1rem",
-                border: "1.5px solid #E8D5B7",
+                border: "1.5px solid #C8973A",
                 borderRadius: "20px",
-                background: "#FFF8E8",
-                color: "#C8973A",
-                fontSize: "0.75rem",
+                background: "linear-gradient(135deg, #FFF8ED 0%, #FFF3DC 100%)",
+                color: "#6B1A2A",
+                fontSize: "0.8125rem",
                 fontWeight: 600,
                 cursor: "pointer",
                 fontFamily: "var(--font-sans)",
                 textDecoration: "none",
+                position: "relative",
+                overflow: "hidden",
               }}
             >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#C8973A" strokeWidth="2.5">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0110 0v4" />
-              </svg>
-              Gold+
+              <Lock size={13} style={{ color: "#C8973A", flexShrink: 0, zIndex: 1 }} />
+              <span style={{ filter: "blur(3px)", userSelect: "none", zIndex: 0 }}>+91 98XXXXXX</span>
             </Link>
           )}
 
@@ -979,9 +978,11 @@ function MatchesContent() {
       if (!p.createdAt || Date.now() - new Date(p.createdAt).getTime() > 30 * 24 * 60 * 60 * 1000) return false;
     }
 
-    // Age Filter
+    // Age Filter — if filter is active, exclude profiles with no DOB
+    const ageFilterActive = ageFrom !== "Any" || ageTo !== "Any";
     const age = p.dob ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
-    if (age !== null) {
+    if (ageFilterActive) {
+      if (age === null) return false; // exclude profiles with no DOB when filter is active
       if (ageFrom !== "Any" && age < parseInt(ageFrom)) return false;
       if (ageTo !== "Any" && age > parseInt(ageTo)) return false;
     }
@@ -1136,23 +1137,22 @@ function MatchesContent() {
           )}
 
           {/* ── SIDEBAR ─────────────────────────────────────────────────── */}
-          <aside
-            className="matches-sidebar-panel"
-            style={{
-              width: "268px",
-              flexShrink: 0,
-              background: "#fff",
-              border: "1px solid #e0e0e0",
-              borderRadius: "6px",
-              overflow: "hidden",
-              alignSelf: "flex-start",
-              position: "sticky",
-              top: 0,
-              height: "100%",
-              maxHeight: "100%",
-              overflowY: "auto",
-            }}
-          >
+            <aside
+              className="matches-sidebar-panel"
+              style={{
+                width: "268px",
+                flexShrink: 0,
+                background: "#fff",
+                border: "1px solid #e0e0e0",
+                borderRadius: "6px",
+                overflow: "hidden",
+                alignSelf: "flex-start",
+                position: "sticky",
+                top: 0,
+                height: "100%",
+                maxHeight: "100%",
+              }}
+            >
             {/* "All Matches" header */}
             <div
               style={{
@@ -1245,17 +1245,18 @@ function MatchesContent() {
                 onClick={() => setSidebarOpen(true)}
                 className="matches-section-btn"
                 style={{
-                  display: "flex", alignItems: "center", gap: "6px",
-                  padding: "0.5rem 0.875rem", border: "1.5px solid #6B1A2A",
-                  borderRadius: "20px", background: "#fff", color: "#6B1A2A",
-                  fontWeight: 700, fontSize: "0.8125rem", cursor: "pointer",
-                  fontFamily: "var(--font-sans)", minHeight: "40px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "0.5rem", border: "1.5px solid #ccc",
+                  borderRadius: "8px", background: "#fff", color: "#333",
+                  cursor: "pointer", minHeight: "40px", minWidth: "40px",
                 }}
+                aria-label="Menu"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="11" y1="18" x2="13" y2="18" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
                 </svg>
-                {SIDEBAR.flatMap(s => s.items).find(i => i.id === activeSection)?.label || "Category"}
               </button>
               <h1
                 style={{
@@ -1428,28 +1429,36 @@ function MatchesContent() {
                   <div>
                     <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Age From</label>
                     <select className="form-select" style={{ fontSize: "0.8125rem" }} value={ageFrom} onChange={e => setAgeFrom(e.target.value)}>
-                      <option value="Any">Any</option>
-                      {Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`).map(o => <option key={o} value={o.split(" ")[0]}>{o}</option>)}
+                      <option value="Any">Doesn't matter</option>
+                      {Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`).map(o => {
+                        const val = parseInt(o.split(" ")[0]);
+                        const isDisabled = ageTo !== "Any" && val > parseInt(ageTo);
+                        return <option key={o} value={val} disabled={isDisabled}>{o}</option>;
+                      })}
                     </select>
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Age To</label>
                     <select className="form-select" style={{ fontSize: "0.8125rem" }} value={ageTo} onChange={e => setAgeTo(e.target.value)}>
-                      <option value="Any">Any</option>
-                      {Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`).map(o => <option key={o} value={o.split(" ")[0]}>{o}</option>)}
+                      <option value="Any">Doesn't matter</option>
+                      {Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`).map(o => {
+                        const val = parseInt(o.split(" ")[0]);
+                        const isDisabled = ageFrom !== "Any" && val < parseInt(ageFrom);
+                        return <option key={o} value={val} disabled={isDisabled}>{o}</option>;
+                      })}
                     </select>
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Height From</label>
                     <select className="form-select" style={{ fontSize: "0.8125rem" }} value={heightFrom} onChange={e => setHeightFrom(e.target.value)}>
-                      <option value="Any">Any</option>
+                      <option value="Any">Doesn't matter</option>
                       {HEIGHTS.map(h => <option key={h.label} value={h.label}>{h.label}</option>)}
                     </select>
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Height To</label>
                     <select className="form-select" style={{ fontSize: "0.8125rem" }} value={heightTo} onChange={e => setHeightTo(e.target.value)}>
-                      <option value="Any">Any</option>
+                      <option value="Any">Doesn't matter</option>
                       {HEIGHTS.map(h => <option key={h.label} value={h.label}>{h.label}</option>)}
                     </select>
                   </div>

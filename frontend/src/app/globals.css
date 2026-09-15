@@ -1967,3 +1967,13 @@ select {
 
 .profile-card-info { padding: 1rem; }
 @media (max-width: 480px) { .profile-card-info { padding: 0.5rem 0.75rem; } }
+
+/* ── Navbar mobile fixes ─────────────────────────────────────────── */
+@media (max-width: 400px) {
+  .nav-brand-text { display: none !important; }
+}
+
+/* nav-icon-row: hide on mobile (bottom nav takes over) */
+@media (max-width: 899px) {
+  .nav-icon-row { display: none !important; }
+}

@@ -712,6 +712,8 @@ function ProfileDetailPage({
                 borderRadius: "var(--radius-xl)",
                 overflow: "hidden",
                 boxShadow: "var(--shadow-sm)",
+                position: "sticky",
+                top: "80px",
               }}
             >
               {/* Sidebar profile mini */}
@@ -935,13 +937,13 @@ function ProfileDetailPage({
                           style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: shortlisted ? "var(--success)" : "#fff", border: "1.5px solid var(--success)", borderRadius: "var(--radius-full)", color: shortlisted ? "#fff" : "var(--success)", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", whiteSpace: "nowrap" }}>
                           <BookmarkPlus size={14} /> {shortlisted ? "Shortlisted" : "Shortlist"}
                         </button>
-                        {canMessage ? (
-                          <Link href={`/messages?partnerId=${id}`} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: "#fff", border: "1.5px solid #6B1A2A", borderRadius: "var(--radius-full)", color: "#6B1A2A", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", textDecoration: "none" }}>
-                            <MessageCircle size={14} /> Message
+                        {canViewContact ? (
+                          <Link href={`#section-Contact-Details`} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: "#fff", border: "1.5px solid #10b981", borderRadius: "var(--radius-full)", color: "#10b981", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", textDecoration: "none" }}>
+                            <Phone size={14} /> Contact
                           </Link>
                         ) : (
-                          <Link href="/membership" style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: "#FFF8E8", border: "1.5px solid #E8D5B7", borderRadius: "var(--radius-full)", color: "#C8973A", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", textDecoration: "none" }}>
-                            <Crown size={14} /> Message (Gold+)
+                          <Link href="/membership" style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.5rem 1rem", background: "#f3f4f6", border: "1.5px solid #d1d5db", borderRadius: "var(--radius-full)", color: "#9ca3af", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer", textDecoration: "none" }}>
+                            <Lock size={14} /> <span style={{ filter: "blur(3px)" }}>Contact</span>
                           </Link>
                         )}
                       </div>

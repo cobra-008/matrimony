@@ -3,11 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Search } from "lucide-react";
 
+type OptionItem = string | { value: string; label: string };
+
 interface SearchableSelectProps {
   label: string;
   value: string;
   onChange: (v: string) => void;
-  options: string[];
+  options: OptionItem[];
   placeholder?: string;
   disabled?: boolean;
   hideLabel?: boolean;
@@ -26,6 +28,14 @@ export default function SearchableSelect({
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Normalize all options to { value, label }
+  const normalized = options.map((o): { value: string; label: string } =>
+    typeof o === "string" ? { value: o, label: o } : o
+  );
+
+  // Display label for current value
+  const displayLabel = normalized.find((o) => o.value === value)?.label ?? value;
 
   // Close when clicking outside
   useEffect(() => {
@@ -50,16 +60,17 @@ export default function SearchableSelect({
     }
   }, [isOpen]);
 
-  const filteredOptions = options.filter((opt) =>
-    opt.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredOptions = search.trim()
+    ? normalized
+        .filter((opt) =>
+          opt.label.toLowerCase().startsWith(search.toLowerCase())
+        )
+        .sort((a, b) => a.label.localeCompare(b.label))
+    : normalized;
 
   return (
-    <div
-      ref={containerRef}
-      style={{ position: "relative", marginBottom: "1rem" }}
-    >
-      {/* Trigger Button (looks exactly like the native select) */}
+    <div ref={containerRef} style={{ position: "relative", marginBottom: "1rem" }}>
+      {/* Trigger Button */}
       <button
         type="button"
         disabled={disabled}
@@ -92,7 +103,7 @@ export default function SearchableSelect({
             color: value ? "var(--text-dark)" : "var(--text-muted)",
           }}
         >
-          {value || placeholder || `Select ${label}`}
+          {displayLabel || placeholder || `Select ${label}`}
         </span>
         <ChevronDown size={14} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
       </button>
@@ -115,7 +126,7 @@ export default function SearchableSelect({
         </span>
       )}
 
-      {/* Dropdown Menu */}
+      {/* Dropdown */}
       {isOpen && !disabled && (
         <div
           style={{
@@ -127,7 +138,7 @@ export default function SearchableSelect({
             border: "1px solid var(--border-color)",
             borderRadius: "var(--radius-md)",
             boxShadow: "var(--shadow-lg)",
-            zIndex: 100,
+            zIndex: 200,
             animation: "fadeIn 0.15s ease",
             overflow: "hidden",
             display: "flex",
@@ -164,7 +175,7 @@ export default function SearchableSelect({
             />
           </div>
 
-          {/* Options List */}
+          {/* Options */}
           <ul
             role="listbox"
             style={{
@@ -177,13 +188,13 @@ export default function SearchableSelect({
           >
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt) => (
-                <li key={opt} role="presentation">
+                <li key={opt.value} role="presentation">
                   <button
                     type="button"
                     role="option"
-                    aria-selected={value === opt}
+                    aria-selected={value === opt.value}
                     onClick={() => {
-                      onChange(opt);
+                      onChange(opt.value);
                       setIsOpen(false);
                       setSearch("");
                     }}
@@ -191,28 +202,24 @@ export default function SearchableSelect({
                       width: "100%",
                       padding: "0.625rem 1rem",
                       textAlign: "left",
-                      background: value === opt ? "var(--primary-light)" : "transparent",
+                      background: value === opt.value ? "var(--primary-light)" : "transparent",
                       border: "none",
                       borderBottom: "1px solid var(--border-light)",
                       fontSize: "0.875rem",
-                      color: value === opt ? "var(--primary)" : "var(--text-dark)",
-                      fontWeight: value === opt ? 600 : 400,
+                      color: value === opt.value ? "var(--primary)" : "var(--text-dark)",
+                      fontWeight: value === opt.value ? 600 : 400,
                       cursor: "pointer",
                       fontFamily: "var(--font-sans)",
                       transition: "background 0.1s",
                     }}
                     onMouseEnter={(e) => {
-                      if (value !== opt) {
-                        e.currentTarget.style.background = "#F3F4F6";
-                      }
+                      if (value !== opt.value) e.currentTarget.style.background = "#F3F4F6";
                     }}
                     onMouseLeave={(e) => {
-                      if (value !== opt) {
-                        e.currentTarget.style.background = "transparent";
-                      }
+                      if (value !== opt.value) e.currentTarget.style.background = "transparent";
                     }}
                   >
-                    {opt}
+                    {opt.label}
                   </button>
                 </li>
               ))
@@ -226,7 +233,7 @@ export default function SearchableSelect({
                   fontFamily: "var(--font-sans)",
                 }}
               >
-                No sub-castes available
+                No options found
               </li>
             )}
           </ul>

@@ -8,7 +8,7 @@ import Footer from "@/components/layout/Footer";
 import {
   Camera, Upload, Trash2, Check, ChevronRight, ChevronDown,
   User, BookOpen, Briefcase, Users, Leaf, MapPin, FileText,
-  Heart, Info, Save, Eye, X, Plus,
+  Heart, Info, Save, Eye, X, Plus, ArrowLeft, CheckCircle2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
@@ -388,6 +388,23 @@ function EditProfileContent() {
   const [pMaritalStatus, setPMaritalStatus] = useState<string[]>(user?.partnerMaritalStatus || []);
   const [pCountry, setPCountry] = useState(user?.partnerCountry || "India");
 
+  const [initialStateHash, setInitialStateHash] = useState<string>("");
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [pendingNav, setPendingNav] = useState<(() => void) | null>(null);
+
+  const currentFormState = JSON.stringify({
+    firstName, lastName, gender, dob, height, weight, bodyType, physicalStatus, maritalStatus, motherTongue,
+    religion, caste, subCaste, gothram, star, rasi, dhosham, timeOfBirth, education, college,
+    occupation, company, employmentType, income, diet, smoking, drinking, disabilities,
+    languages, hobbies, interests, country, state, city, nativePlace, about,
+    pAgeMin, pAgeMax, pReligion, pCaste, pEducation, pOccupation,
+    pIncome, pHeightMin, pHeightMax, pCountry, pMaritalStatus, pMotherTongue,
+    fatherOcc, motherOcc, familyStatus, familyType, brothers, sisters
+  });
+
+  const isDirty = initialStateHash !== "" && initialStateHash !== currentFormState;
+
   // ── Re-populate all fields once `user` loads from auth (auth is async) ─────
   // useState initializers only run once at mount; if user was null at that
   // point, all fields would be blank. This effect hydrates them on user load.
@@ -405,7 +422,12 @@ function EditProfileContent() {
     setWeight(user.weight || "");
     setBodyType(user.bodyType || "");
     setPhysicalStatus(user.physicalStatus || "");
-    setMaritalStatus(user.maritalStatus || "");
+    // Normalize maritalStatus: if DB has 'never_married' (value) convert to label
+    const rawMS = user.maritalStatus || "";
+    const normalizedMS = MARITAL_STATUS.find(m => m.value === rawMS)?.label ||
+                         MARITAL_STATUS.find(m => m.label === rawMS)?.label ||
+                         rawMS;
+    setMaritalStatus(normalizedMS);
     setMotherTongue(user.motherTongue || "");
 
     // Religion
@@ -468,6 +490,10 @@ function EditProfileContent() {
 
     // Gallery
     if (user.photos?.length) setGallery(user.photos);
+
+    setTimeout(() => {
+      setInitialStateHash(currentFormState);
+    }, 150);
   }, [user]);
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -494,6 +520,7 @@ function EditProfileContent() {
   // Caste and Subcaste are now immutable and only displayed.
 
   const HEIGHT_OPTS = HEIGHTS.map(h => ({ value: String(h.value), label: h.label }));
+  const PREF_HEIGHT_OPTS = [{ value: "Any", label: "Doesn't matter" }, ...HEIGHT_OPTS];
   const AGE_OPTS = Array.from({ length: 43 }, (_, i) => ({ value: String(i + 18), label: `${i + 18} yrs` }));
 
   const ALL_CITIES = Array.from(new Set(citiesData.map(c => c.city))).sort();
@@ -632,9 +659,8 @@ function EditProfileContent() {
         });
 
       await refresh();
-      toast.success("Saved successfully! ✓");
-      // Go back to wherever they came from
-      setTimeout(() => router.back(), 500);
+      setInitialStateHash(currentFormState);
+      setShowSuccessModal(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Save failed");
     } finally {
@@ -647,8 +673,28 @@ function EditProfileContent() {
     languages, hobbies, interests, country, state, city, nativePlace, about,
     gallery, pAgeMin, pAgeMax, pReligion, pCaste, pEducation, pOccupation,
     pIncome, pHeightMin, pHeightMax, pCountry, pMaritalStatus, pMotherTongue,
-    fatherOcc, motherOcc, familyStatus, familyType, brothers, sisters, refresh, router,
+    fatherOcc, motherOcc, familyStatus, familyType, brothers, sisters, refresh, router, currentFormState
   ]);
+
+  const handleBack = () => {
+    if (isDirty) {
+      setShowDiscardModal(true);
+      setPendingNav(() => () => router.back());
+    } else {
+      router.back();
+    }
+  };
+
+  const handlePreview = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const target = user ? `/profile/${user.id}` : "/matches";
+    if (isDirty) {
+      setShowDiscardModal(true);
+      setPendingNav(() => () => router.push(target));
+    } else {
+      router.push(target);
+    }
+  };
 
   return (
     <>
@@ -667,16 +713,21 @@ function EditProfileContent() {
           {/* ── Page header ── */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: "0.75rem" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-              <div style={{ marginTop: "2px" }}><BackButton /></div>
+              <div style={{ marginTop: "2px" }}>
+                <button onClick={handleBack} className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors p-2 -ml-2 rounded-lg hover:bg-gray-100 font-semibold text-sm">
+                  <ArrowLeft size={18} />
+                  <span>Back</span>
+                </button>
+              </div>
               <div>
                 <h1 style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Edit Profile</h1>
                 <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginTop: "3px" }}>Update your information to get better matches</p>
               </div>
             </div>
             <div style={{ display: "flex", gap: "0.75rem" }}>
-              <Link href={user ? `/profile/${user.id}` : "/matches"} className="btn btn-ghost" style={{ border: "1.5px solid var(--border-color)", display: "flex", alignItems: "center", gap: "5px" }}>
+              <button onClick={handlePreview} className="btn btn-ghost" style={{ border: "1.5px solid var(--border-color)", display: "flex", alignItems: "center", gap: "5px" }}>
                 <Eye size={14} /> Preview
-              </Link>
+              </button>
               <button onClick={handleSave} disabled={saving} className="btn btn-primary" style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: "140px", justifyContent: "center" }}>
                 {saving ? <><span style={{ animation: "spin 0.8s linear infinite", display: "inline-block" }}>⟳</span> Saving…</> : <><Save size={14} /> Save Changes</>}
               </button>
@@ -790,16 +841,16 @@ function EditProfileContent() {
                     <FormInput type="date" value={dob} onChange={() => {}} disabled />
                   </FormField>
                   <FormField label="Height" hint="Used for partner matching">
-                    <FormSelect value={height} onChange={setHeight} options={HEIGHT_OPTS} placeholder="Select height" />
+                    <SearchableSelect label="Height" hideLabel value={height} onChange={setHeight} options={HEIGHT_OPTS} placeholder="Select height" />
                   </FormField>
                   <FormField label="Weight (kg)">
                     <FormInput value={weight} onChange={setWeight} placeholder="e.g. 65" type="number" />
                   </FormField>
                   <FormField label="Marital Status" required>
-                    <FormSelect value={maritalStatus} onChange={setMaritalStatus} options={MARITAL_STATUS} placeholder="Select status" />
+                    <SearchableSelect label="Marital Status" hideLabel value={maritalStatus} onChange={setMaritalStatus} options={MARITAL_STATUS.map(m => m.label)} placeholder="Select status" />
                   </FormField>
                   <FormField label="Mother Tongue" required>
-                    <FormSelect value={motherTongue} onChange={setMotherTongue} options={MOTHER_TONGUES} placeholder="Select language" />
+                    <SearchableSelect label="Mother Tongue" hideLabel value={motherTongue} onChange={setMotherTongue} options={MOTHER_TONGUES} placeholder="Select language" />
                   </FormField>
                   <FormField label="Body Type">
                     <FormSelect value={bodyType} onChange={setBodyType} options={["Slim", "Athletic", "Average", "Heavy"]} placeholder="Select body type" />
@@ -871,10 +922,10 @@ function EditProfileContent() {
                     <FormInput value={gothram} onChange={setGothram} placeholder="Enter gothram (optional)" />
                   </FormField>
                   <FormField label="Star (Natchathiram)" required>
-                    <FormSelect value={star} onChange={setStar} options={STARS} placeholder="Select star" />
+                    <SearchableSelect label="Star" hideLabel value={star} onChange={setStar} options={STARS} placeholder="Select star" />
                   </FormField>
                   <FormField label="Raasi" required>
-                    <FormSelect value={rasi} onChange={setRasi} options={RAASI_LIST} placeholder="Select raasi" />
+                    <SearchableSelect label="Raasi" hideLabel value={rasi} onChange={setRasi} options={RAASI_LIST} placeholder="Select raasi" />
                   </FormField>
                   <FormField label="Dhosham" required>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.25rem" }}>
@@ -938,7 +989,7 @@ function EditProfileContent() {
               <SectionCard id="professional" title="Professional Details" icon={<Briefcase size={16} />}>
                 <FieldGrid>
                   <FormField label="Highest Education" required>
-                    <FormSelect value={education} onChange={setEducation} options={EDUCATION_LEVELS} placeholder="Select qualification" />
+                    <SearchableSelect label="Education" hideLabel value={education} onChange={setEducation} options={EDUCATION_LEVELS} placeholder="Select qualification" />
                   </FormField>
                   <FormField label="College / University">
                     <FormInput value={college} onChange={setCollege} placeholder="e.g. IIT Madras" />
@@ -960,7 +1011,7 @@ function EditProfileContent() {
                     <FormSelect value={employmentType} onChange={setEmploymentType} options={["Private Sector", "Government / PSU", "Self Employed", "Business Owner", "Defence / Civil Services", "Not Working"]} placeholder="Select type" />
                   </FormField>
                   <FormField label="Annual Income">
-                    <FormSelect value={income} onChange={setIncome} options={INCOME_RANGES} placeholder="Select income range" />
+                    <SearchableSelect label="Annual Income" hideLabel value={income} onChange={setIncome} options={INCOME_RANGES} placeholder="Select income range" />
                   </FormField>
                 </FieldGrid>
               </SectionCard>
@@ -1110,43 +1161,65 @@ function EditProfileContent() {
                   {/* Age Range */}
                   <FormField label="Age Range">
                     <div style={{ display: "flex", gap: "0.625rem", alignItems: "center" }}>
-                      <FormSelect value={pAgeMin} onChange={setPAgeMin} options={AGE_OPTS} placeholder="From" />
+                      <FormSelect
+                        value={pAgeMin}
+                        onChange={setPAgeMin}
+                        options={AGE_OPTS.filter(o => !pAgeMax || parseInt(o.value) <= parseInt(pAgeMax))}
+                        placeholder="Doesn't matter"
+                      />
                       <span style={{ color: "#aaa", fontSize: "0.8125rem", flexShrink: 0 }}>to</span>
-                      <FormSelect value={pAgeMax} onChange={setPAgeMax} options={AGE_OPTS} placeholder="To" />
+                      <FormSelect
+                        value={pAgeMax}
+                        onChange={setPAgeMax}
+                        options={AGE_OPTS.filter(o => !pAgeMin || parseInt(o.value) >= parseInt(pAgeMin))}
+                        placeholder="Doesn't matter"
+                      />
                     </div>
                   </FormField>
 
                   {/* Height Range */}
                   <FormField label="Height Range">
                     <div style={{ display: "flex", gap: "0.625rem", alignItems: "center" }}>
-                      <FormSelect value={pHeightMin} onChange={setPHeightMin} options={HEIGHT_OPTS} placeholder="Min" />
+                      <FormSelect
+                        value={pHeightMin}
+                        onChange={setPHeightMin}
+                        options={PREF_HEIGHT_OPTS}
+                        placeholder="Doesn't matter"
+                      />
                       <span style={{ color: "#aaa", fontSize: "0.8125rem", flexShrink: 0 }}>to</span>
-                      <FormSelect value={pHeightMax} onChange={setPHeightMax} options={HEIGHT_OPTS} placeholder="Max" />
+                      <FormSelect
+                        value={pHeightMax}
+                        onChange={setPHeightMax}
+                        options={PREF_HEIGHT_OPTS}
+                        placeholder="Doesn't matter"
+                      />
                     </div>
                   </FormField>
 
                   <FormField label="Religion">
-                    <FormSelect value={pReligion} onChange={setPReligion} options={RELIGIONS} placeholder="Any religion" />
+                    <SearchableSelect label="Religion" hideLabel value={pReligion} onChange={setPReligion} options={RELIGIONS} placeholder="Any religion" />
                   </FormField>
 
-                  <FormField label="Caste">
-                    <FormInput value={pCaste} onChange={setPCaste} placeholder="Any / specific caste" />
-                  </FormField>
+                  {(pReligion && pReligion !== "No Religion" && pReligion !== "Any" && pReligion !== "Not Preferred" && pReligion !== "Spiritual - Not Religious") && (
+                    <FormField label="Caste">
+                      <FormInput value={pCaste} onChange={setPCaste} placeholder="Any / specific caste" />
+                    </FormField>
+                  )}
 
                   <FormField label="Education">
-                    <FormSelect value={pEducation} onChange={setPEducation} options={EDUCATION_LEVELS} placeholder="Any" />
+                    <SearchableSelect label="Education" hideLabel value={pEducation} onChange={setPEducation} options={EDUCATION_LEVELS} placeholder="Any" />
                   </FormField>
 
                   <FormField label="Occupation">
-                    <FormSelect value={pOccupation} onChange={setPOccupation} options={OCCUPATIONS} placeholder="Any" />
+                    <SearchableSelect label="Occupation" hideLabel value={pOccupation} onChange={setPOccupation} options={OCCUPATIONS} placeholder="Any" />
                   </FormField>
 
                   <FormField label="Annual Income">
-                    <FormSelect value={pIncome} onChange={setPIncome} options={INCOME_RANGES} placeholder="Any" />
+                    <SearchableSelect label="Income" hideLabel value={pIncome} onChange={setPIncome} options={INCOME_RANGES} placeholder="Any" />
                   </FormField>
 
                   <FormField label="Country">
-                    <FormSelect value={pCountry} onChange={setPCountry} options={COUNTRIES} />
+                    <SearchableSelect label="Country" hideLabel value={pCountry} onChange={setPCountry} options={COUNTRIES} placeholder="Select country" />
                   </FormField>
                 </FieldGrid>
 
@@ -1174,6 +1247,32 @@ function EditProfileContent() {
           </>)}
         </div>
       </main>
+
+      {/* Discard Modal */}
+      {showDiscardModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "#fff", padding: "2rem", borderRadius: "var(--radius-lg)", maxWidth: "400px", width: "90%", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
+            <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "0.5rem" }}>Discard Changes?</h3>
+            <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>You have unsaved changes in your profile. Do you want to discard them and leave?</p>
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <button onClick={() => setShowDiscardModal(false)} className="btn btn-ghost flex-1 justify-center border border-gray-300">Keep Editing</button>
+              <button onClick={() => { setShowDiscardModal(false); if (pendingNav) pendingNav(); }} className="btn flex-1 justify-center text-white" style={{ background: "#EF4444" }}>Discard</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "#fff", padding: "2rem", borderRadius: "var(--radius-lg)", maxWidth: "400px", width: "90%", textAlign: "center", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
+            <CheckCircle2 size={48} className="mx-auto mb-4 text-green-500" />
+            <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "0.5rem" }}>Saved Successfully</h3>
+            <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>Your profile information has been updated.</p>
+            <button onClick={() => { setShowSuccessModal(false); router.back(); }} className="btn btn-primary w-full justify-center">Continue</button>
+          </div>
+        </div>
+      )}
 
       {/* ── Sticky bottom save bar ── */}
       <div

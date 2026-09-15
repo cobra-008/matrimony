@@ -111,6 +111,7 @@ export default function Navbar() {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [switchConfirmOpen, setSwitchConfirmOpen] = useState(false);
   const [targetAccount, setTargetAccount] = useState<RegisteredUser | null>(null);
+  const [loadingUpgrade, setLoadingUpgrade] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   // Sticky scroll shrink
@@ -244,13 +245,13 @@ export default function Navbar() {
             }}
           >
             {/* Logo — transparent icon + brand text */}
-            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+            <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
               <img
                 src="/logo-transparent.png"
                 alt="Elite Tamil Matrimony"
-                style={{ height: "46px", width: "auto", display: "block" }}
+                style={{ height: "42px", width: "auto", display: "block" }}
               />
-              <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
+              <div className="nav-brand-text" style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
                 <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "1rem", color: "#6B1A2A", letterSpacing: "0.04em", textTransform: "uppercase" }}>Elite</span>
                 <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: 700, fontSize: "0.75rem", color: "#C8973A", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tamil Matrimony</span>
               </div>
@@ -396,7 +397,7 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <button
-                    onClick={() => router.push("/membership")}
+                    onClick={() => { setLoadingUpgrade(true); router.push("/membership"); }}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -413,10 +414,12 @@ export default function Navbar() {
                       whiteSpace: "nowrap",
                       boxShadow: "0 2px 6px rgba(200,151,58,0.35)",
                       letterSpacing: "0.02em",
+                      opacity: loadingUpgrade ? 0.7 : 1,
+                      pointerEvents: loadingUpgrade ? "none" : "auto",
                     }}
                   >
-                    <Sparkles size={11} />
-                    Upgrade
+                    {loadingUpgrade ? <><span style={{ animation: "spin 0.8s linear infinite", display: "inline-block" }}>⟳</span></> : <Sparkles size={11} />}
+                    {loadingUpgrade ? "Loading..." : "Upgrade"}
                   </button>
                 )}
               </div>
@@ -520,16 +523,19 @@ export default function Navbar() {
                           </span>
                         ) : (
                           <button
-                            onClick={() => { router.push("/membership"); setProfileMenuOpen(false); }}
+                            onClick={() => { setLoadingUpgrade(true); router.push("/membership"); setProfileMenuOpen(false); }}
                             style={{
                               display: "inline-flex", alignItems: "center", gap: "4px",
                               background: "linear-gradient(135deg, #C8973A 0%, #E8C060 50%, #C8973A 100%)",
                               color: "#fff", fontSize: "0.6875rem", fontWeight: 700,
                               padding: "3px 10px", borderRadius: "10px", border: "none", cursor: "pointer",
                               fontFamily: "var(--font-sans)",
+                              opacity: loadingUpgrade ? 0.7 : 1,
+                              pointerEvents: loadingUpgrade ? "none" : "auto",
                             }}
                           >
-                            <Sparkles size={10} /> Upgrade to Gold
+                            {loadingUpgrade ? <><span style={{ animation: "spin 0.8s linear infinite", display: "inline-block" }}>⟳</span></> : <Sparkles size={10} />}
+                            {loadingUpgrade ? "Loading..." : "Upgrade to Gold"}
                           </button>
                         )}
                       </div>

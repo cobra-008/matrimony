@@ -25,6 +25,7 @@ export const RELIGIONS = [
   'No Religion',
   'Spiritual - Not Religious',
   'Other',
+  'Not Preferred',
 ];
 
 export const MOTHER_TONGUES = [

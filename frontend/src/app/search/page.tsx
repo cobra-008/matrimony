@@ -190,9 +190,9 @@ function RangeField({
         {label}
       </label>
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-        <Sel value={fromValue} onChange={onFromChange} options={options} placeholder="From" />
+        <Sel value={fromValue} onChange={onFromChange} options={options} placeholder="Doesn't matter" />
         <span style={{ color: "var(--text-muted)", fontSize: "0.8125rem", flexShrink: 0 }}>to</span>
-        <Sel value={toValue} onChange={onToChange} options={options} placeholder="To" />
+        <Sel value={toValue} onChange={onToChange} options={options} placeholder="Doesn't matter" />
       </div>
     </div>
   );
@@ -556,22 +556,26 @@ function SearchContent() {
                         placeholder="Any Religion"
                       />
                     </Field>
-                    <Field label="Caste / Community">
-                      <Sel
-                        value={caste}
-                        onChange={(v) => { setCaste(v); setSubCaste(""); }}
-                        options={availableCastes}
-                        placeholder={religion ? "Select Caste" : "Select Religion first"}
-                      />
-                    </Field>
-                    <Field label="Sub Caste">
-                      <Sel
-                        value={subCaste}
-                        onChange={setSubCaste}
-                        options={availableSubCastes}
-                        placeholder={caste ? "Select Sub Caste" : "Select Caste first"}
-                      />
-                    </Field>
+                    {(!religion || (availableCastes && availableCastes.length > 0)) && (
+                      <Field label="Caste / Community">
+                        <Sel
+                          value={caste}
+                          onChange={(v) => { setCaste(v); setSubCaste(""); }}
+                          options={availableCastes || []}
+                          placeholder={religion ? "Select Caste" : "Select Religion first"}
+                        />
+                      </Field>
+                    )}
+                    {(caste || (availableSubCastes && availableSubCastes.length > 0)) && (
+                      <Field label="Sub Caste">
+                        <Sel
+                          value={subCaste}
+                          onChange={setSubCaste}
+                          options={availableSubCastes || []}
+                          placeholder={caste ? "Select Sub Caste" : "Select Caste first"}
+                        />
+                      </Field>
+                    )}
                   </FormGrid>
                 </Section>
 

@@ -103,8 +103,8 @@ const COMPARISON_ROWS = [
 function CellValue({ val }: { val: boolean | string }) {
   if (typeof val === "boolean") {
     return val
-      ? <Check size={16} style={{ color: "#2E7D32", strokeWidth: 2.5 }} />
-      : <X size={14} style={{ color: "#ccc", strokeWidth: 2 }} />;
+      ? <div style={{ display: "flex", justifyContent: "center" }}><Check size={16} style={{ color: "#2E7D32", strokeWidth: 2.5 }} /></div>
+      : <div style={{ display: "flex", justifyContent: "center" }}><X size={14} style={{ color: "#ccc", strokeWidth: 2 }} /></div>;
   }
   return <span style={{ fontSize: "0.75rem", fontWeight: 600 }}>{val}</span>;
 }
@@ -114,6 +114,7 @@ function ActivePlanDashboard() {
   const { planName: hookPlanName, isPremium: hookIsPremium } = useMembership();
   const router = useRouter();
   const [cancelling, setCancelling] = useState(false);
+  const [renewing, setRenewing] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelled, setCancelled] = useState(false);
@@ -233,7 +234,9 @@ function ActivePlanDashboard() {
           </div>
         </div>
         <div style={{ background: "#fafafa", borderTop: "1px solid #f0f0f0", padding: "1rem 1.5rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-          <button onClick={() => router.push(`/payment?plan=${plan}`)} className="btn btn-primary" style={{ fontSize: "0.875rem", justifyContent: "center", flex: "1 1 140px" }}>Renew Plan</button>
+          <button onClick={() => { setRenewing(true); router.push(`/payment?plan=${plan}`); }} className="btn btn-primary" style={{ fontSize: "0.875rem", justifyContent: "center", flex: "1 1 140px", opacity: renewing ? 0.7 : 1 }}>
+            {renewing ? <><span style={{ animation: "spin 0.8s linear infinite", display: "inline-block" }}>⟳</span> Loading…</> : "Renew Plan"}
+          </button>
           <button onClick={() => setShowCancelConfirm(true)} className="btn" style={{ fontSize: "0.875rem", border: "1.5px solid #e0e0e0", color: "#666", background: "#fff", flex: "1 1 140px", justifyContent: "center" }}>Cancel Plan</button>
         </div>
       </div>
@@ -274,8 +277,8 @@ function ActivePlanDashboard() {
               <div style={{ fontWeight: 800, fontSize: "1rem", marginBottom: "0.25rem" }}>Upgrade to Prime Till U Marry</div>
               <div style={{ fontSize: "0.875rem", opacity: 0.85 }}>12 months for just ₹8,999 — find your match stress-free.</div>
             </div>
-            <button onClick={() => router.push("/payment?plan=PrimeTillUMarry")} style={{ background: "#fff", color: "#6B1A2A", border: "none", borderRadius: "8px", padding: "0.625rem 1.25rem", fontWeight: 700, fontSize: "0.875rem", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
-              Upgrade →
+            <button onClick={() => { setRenewing(true); router.push("/payment?plan=PrimeTillUMarry"); }} style={{ background: "#fff", color: "#6B1A2A", border: "none", borderRadius: "8px", padding: "0.625rem 1.25rem", fontWeight: 700, fontSize: "0.875rem", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, opacity: renewing ? 0.7 : 1 }}>
+              {renewing ? "Loading…" : "Upgrade →"}
             </button>
           </div>
         </div>
@@ -297,6 +300,9 @@ function ActivePlanDashboard() {
 }
 
 function PricingGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
+  const router = useRouter();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
   return (
     <div>
       <div className="plans-scroll-wrapper">
@@ -338,13 +344,21 @@ function PricingGrid({ isLoggedIn }: { isLoggedIn: boolean }) {
             </ul>
 
             <div className="plan-cta">
-              <Link
-                href={isLoggedIn ? plan.href : `/login?redirect=${encodeURIComponent(plan.href)}`}
+              <button
+                onClick={() => {
+                  setLoadingPlan(plan.name);
+                  router.push(isLoggedIn ? plan.href : `/login?redirect=${encodeURIComponent(plan.href)}`);
+                }}
                 className="btn plan-btn"
-                style={{ background: plan.gradient, display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", border: "none", color: "#fff" }}
+                style={{ background: plan.gradient, display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", border: "none", color: "#fff", width: "100%", opacity: loadingPlan === plan.name ? 0.7 : 1 }}
+                disabled={loadingPlan === plan.name}
               >
-                {isLoggedIn ? "Pay Now" : "Login to Buy"} <ArrowRight size={14} />
-              </Link>
+                {loadingPlan === plan.name ? (
+                  <><span style={{ animation: "spin 0.8s linear infinite", display: "inline-block" }}>⟳</span> Loading…</>
+                ) : (
+                  <>{isLoggedIn ? "Pay Now" : "Login to Buy"} <ArrowRight size={14} /></>
+                )}
+              </button>
             </div>
           </div>
         ))}
