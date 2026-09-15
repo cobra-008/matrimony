@@ -871,6 +871,7 @@ export default function Navbar() {
           {/* Login — ALWAYS visible */}
           <Link
             href="/login"
+            className="nav-btn-mobile-xs"
             style={{
               border: "1.5px solid var(--primary)",
               color: "var(--primary)",
@@ -893,6 +894,7 @@ export default function Navbar() {
           {/* Register Free — ALWAYS visible */}
           <Link
             href="/register"
+            className="nav-btn-mobile-xs"
             style={{
               background: "var(--primary)",
               color: "#fff",
@@ -909,7 +911,7 @@ export default function Navbar() {
             onMouseEnter={(e) => (e.currentTarget.style.background = "var(--primary-dark)")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "var(--primary)")}
           >
-            Register Free
+            Register <span className="hide-text-mobile-xs">Free</span>
           </Link>
 
           {/* Hamburger for extra links */}
