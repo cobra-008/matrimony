@@ -480,8 +480,7 @@ function AuthenticatedDashboard() {
         return;
       }
       toast.success(`Switched to ${targetAccount.name}`, { id: toastId });
-      await refresh();
-      router.replace("/");
+      window.location.href = "/";
     } catch {
       toast.error("Network error while switching account.", { id: toastId });
     }

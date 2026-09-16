@@ -464,7 +464,7 @@ export default function TermsPage() {
           {/* Header */}
           <div
             style={{
-              background: "linear-gradient(135deg, #1a3a6b 0%, #2563eb 100%)",
+              background: "linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)",
               borderRadius: "12px",
               padding: "2.5rem 2rem",
               marginBottom: "2rem",

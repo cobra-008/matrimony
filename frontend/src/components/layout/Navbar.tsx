@@ -158,8 +158,7 @@ export default function Navbar() {
       }
       toast.success(`Switched to ${targetAccount.name}`, { id: toastId });
       // Refresh auth context so the new user is loaded, then navigate smoothly
-      await refresh();
-      router.replace("/");
+      window.location.href = "/";
     } catch {
       toast.error("Network error while switching account.", { id: toastId });
     }
