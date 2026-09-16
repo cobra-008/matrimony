@@ -607,6 +607,8 @@ function ProfileDetailPage({
       <style>{`
         .hide-mobile { display: block; }
         .show-mobile { display: none; }
+        .profile-sidebar::-webkit-scrollbar, .profile-right-panel::-webkit-scrollbar { display: none; }
+        .profile-sidebar, .profile-right-panel { scrollbar-width: none; }
         @media (max-width: 640px) {
           .hide-mobile { display: none !important; }
           .show-mobile { display: block !important; }
@@ -615,7 +617,7 @@ function ProfileDetailPage({
           .profile-main-wrap { overflow-x: hidden !important; padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
           .profile-layout-row { flex-direction: column !important; }
           .profile-sidebar { display: none !important; }
-          .profile-right-panel { width: 100% !important; margin-top: 1.5rem !important; }
+          .profile-right-panel { width: 100% !important; margin-top: 1.5rem !important; position: static !important; max-height: none !important; overflow-y: visible !important; }
           .profile-info-body { flex-direction: column !important; align-items: flex-start !important; text-align: left !important; padding: 1.25rem !important; }
           .profile-photo-col { width: 120px !important; margin: 0 0 1rem 0 !important; }
           .profile-photo-img { width: 120px !important; height: 150px !important; border-radius: var(--radius-lg) !important; margin: 0 !important; }
@@ -714,6 +716,9 @@ function ProfileDetailPage({
                 boxShadow: "var(--shadow-sm)",
                 position: "sticky",
                 top: "80px",
+                alignSelf: "flex-start",
+                maxHeight: "calc(100vh - 100px)",
+                overflowY: "auto",
               }}
             >
               {/* Sidebar profile mini */}
@@ -1389,6 +1394,11 @@ function ProfileDetailPage({
                   display: "flex",
                   flexDirection: "column",
                   gap: "1rem",
+                  position: "sticky",
+                  top: "80px",
+                  alignSelf: "flex-start",
+                  maxHeight: "calc(100vh - 100px)",
+                  overflowY: "auto",
                 }}
               >
                 {/* Add Partner Preferences */}
