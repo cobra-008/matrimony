@@ -703,13 +703,36 @@ function EditProfileContent() {
         .edit-sidebar::-webkit-scrollbar { display: none; }
         .edit-sidebar { scrollbar-width: none; }
         .edit-nav-item:hover { background: var(--primary-light) !important; color: var(--primary) !important; }
+        @media (min-width: 900px) {
+          body, html { overflow: hidden !important; }
+          .edit-main-wrap {
+            height: calc(100vh - 80px) !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .edit-layout-row {
+            flex: 1 !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+          }
+          .edit-center-col {
+            overflow-y: auto !important;
+            height: 100% !important;
+            padding-right: 12px !important;
+          }
+          .edit-sidebar {
+            height: 100% !important;
+            overflow-y: auto !important;
+          }
+        }
         @media (max-width: 899px) {
           .edit-sidebar { display: none !important; }
           .edit-main-col { width: 100% !important; }
         }
       `}</style>
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "1.5rem 1rem 6rem" }}>
+        <div className="edit-main-wrap" style={{ maxWidth: "1100px", margin: "0 auto", padding: "1.5rem 1rem 6rem" }}>
 
           {/* ── Auth loading guard — show spinner while user loads from Supabase ── */}
           {!user && (
@@ -743,7 +766,7 @@ function EditProfileContent() {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
+          <div className="edit-layout-row" style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
             {/* ── Sticky Left Nav ── */}
             <aside className="edit-sidebar" style={{
               width: "220px",
@@ -783,7 +806,7 @@ function EditProfileContent() {
             </aside>
 
             {/* ── Main Form ── */}
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="edit-center-col" style={{ flex: 1, minWidth: 0 }}>
 
               {/* ─────────────────────────────────────────────────────
                   § 1  PROFILE PHOTO

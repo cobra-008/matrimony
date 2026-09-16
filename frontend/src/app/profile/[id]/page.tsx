@@ -607,8 +607,32 @@ function ProfileDetailPage({
       <style>{`
         .hide-mobile { display: block; }
         .show-mobile { display: none; }
-        .profile-sidebar::-webkit-scrollbar, .profile-right-panel::-webkit-scrollbar { display: none; }
-        .profile-sidebar, .profile-right-panel { scrollbar-width: none; }
+        .profile-sidebar::-webkit-scrollbar, .profile-right-panel::-webkit-scrollbar, .profile-center-col::-webkit-scrollbar { display: none; }
+        .profile-sidebar, .profile-right-panel, .profile-center-col { scrollbar-width: none; }
+        
+        @media (min-width: 900px) {
+          body, html { overflow: hidden !important; } /* Prevent entire page from scrolling on desktop */
+          .profile-main-wrap { 
+            height: calc(100vh - 80px) !important; /* 80px for Navbar */
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .profile-layout-row { 
+            flex: 1 !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+          }
+          .profile-center-col {
+            overflow-y: auto !important;
+            height: 100% !important;
+            padding-right: 12px !important;
+          }
+          .profile-sidebar, .profile-right-panel {
+            height: 100% !important;
+            overflow-y: auto !important;
+          }
+        }
         @media (max-width: 640px) {
           .hide-mobile { display: none !important; }
           .show-mobile { display: block !important; }
@@ -793,7 +817,7 @@ function ProfileDetailPage({
             </aside>
 
             {/* ── MAIN CONTENT ── */}
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="profile-center-col" style={{ flex: 1, minWidth: 0 }}>
 
               {/* ══════════════════════════════════════════════════
                   1. PERSONAL INFORMATION — AT THE TOP
