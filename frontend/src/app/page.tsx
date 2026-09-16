@@ -486,13 +486,27 @@ function AuthenticatedDashboard() {
     }
   };
 
-  const [matchCounts, setMatchCounts] = useState({
-    allMatches: 0,
-    newMatches: 0,
-    whoViewedYou: 0,
-    whoShortlistedYou: 0,
-    profilesYouViewed: 0,
-    shortlistedByYou: 0,
+  const [matchCounts, setMatchCounts] = useState(() => {
+    if (typeof window !== "undefined") {
+      const cached = sessionStorage.getItem("dash_matchCounts");
+      if (cached) {
+        try { return JSON.parse(cached); } catch(e) {}
+      }
+    }
+    return {
+      allMatches: 0,
+      newMatches: 0,
+      whoViewedYou: 0,
+      whoShortlistedYou: 0,
+      profilesYouViewed: 0,
+      shortlistedByYou: 0,
+    };
+  });
+  const [loadingCounts, setLoadingCounts] = useState(() => {
+    if (typeof window !== "undefined") {
+      return !sessionStorage.getItem("dash_matchCounts");
+    }
+    return true;
   });
 
   // Countdown until midnight
@@ -535,15 +549,18 @@ function AuthenticatedDashboard() {
       getViewedByMe(user.id, opp),
       getShortlistedProfiles(user.id),
     ]).then(([all, newM, viewedMe, shortlistedMe, viewedByMe, shortlisted]: RegisteredUser[][]) => {
-      setMatchCounts({
+      const counts = {
         allMatches: all.length,
         newMatches: newM.length,
         whoViewedYou: viewedMe.length,
         whoShortlistedYou: shortlistedMe.length,
         profilesYouViewed: viewedByMe.length,
         shortlistedByYou: shortlisted.length,
-      });
-    }).catch(() => {});
+      };
+      setMatchCounts(counts);
+      sessionStorage.setItem("dash_matchCounts", JSON.stringify(counts));
+    }).catch(() => {})
+      .finally(() => setLoadingCounts(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
@@ -875,9 +892,21 @@ function AuthenticatedDashboard() {
                 }}
               >
                 {tile.icon}
-                <span style={{ fontSize: "1.25rem", fontWeight: 700, color: "#6B1A2A", lineHeight: 1 }}>
-                  {tile.count}
-                </span>
+                {loadingCounts ? (
+                  <span style={{ 
+                    display: "inline-block", 
+                    width: "32px", 
+                    height: "20px", 
+                    background: "#F2E8D6", 
+                    borderRadius: "4px", 
+                    animation: "pulse 1.5s infinite ease-in-out",
+                    margin: "2px 0"
+                  }} />
+                ) : (
+                  <span style={{ fontSize: "1.25rem", fontWeight: 700, color: "#6B1A2A", lineHeight: 1 }}>
+                    {tile.count}
+                  </span>
+                )}
                 <span style={{ fontSize: "0.6875rem", color: "#4A2030", lineHeight: 1.3 }}>{tile.label}</span>
               </Link>
             ))}
