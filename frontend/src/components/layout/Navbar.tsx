@@ -101,7 +101,7 @@ const LOGGED_IN_NAV = [
 ];
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, refresh } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -157,7 +157,9 @@ export default function Navbar() {
         return;
       }
       toast.success(`Switched to ${targetAccount.name}`, { id: toastId });
-      window.location.reload();
+      // Refresh auth context so the new user is loaded, then navigate smoothly
+      await refresh();
+      router.replace("/");
     } catch {
       toast.error("Network error while switching account.", { id: toastId });
     }

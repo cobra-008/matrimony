@@ -816,17 +816,55 @@ function MatchesContent() {
     onConfirm: () => void;
   }>({ isOpen: false, message: "", onConfirm: () => {} });
 
-  const [nameSearch, setNameSearch] = useState("");
+  const [nameSearch, setNameSearch] = useState(() => {
+    if (typeof window !== "undefined") return sessionStorage.getItem("matches_nameSearch") || "";
+    return "";
+  });
   const [starMissing, setStarMissing] = useState(false);
-  const [activeChips, setActiveChips] = useState<string[]>([]);
-  const [ageFrom, setAgeFrom] = useState("Any");
-  const [ageTo, setAgeTo] = useState("Any");
-  const [heightFrom, setHeightFrom] = useState("Any");
-  const [heightTo, setHeightTo] = useState("Any");
+  const [activeChips, setActiveChips] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try { return JSON.parse(sessionStorage.getItem("matches_chips") || "[]"); } catch { return []; }
+    }
+    return [];
+  });
+  const [ageFrom, setAgeFrom] = useState(() => {
+    if (typeof window !== "undefined") return sessionStorage.getItem("matches_ageFrom") || "Any";
+    return "Any";
+  });
+  const [ageTo, setAgeTo] = useState(() => {
+    if (typeof window !== "undefined") return sessionStorage.getItem("matches_ageTo") || "Any";
+    return "Any";
+  });
+  const [heightFrom, setHeightFrom] = useState(() => {
+    if (typeof window !== "undefined") return sessionStorage.getItem("matches_heightFrom") || "Any";
+    return "Any";
+  });
+  const [heightTo, setHeightTo] = useState(() => {
+    if (typeof window !== "undefined") return sessionStorage.getItem("matches_heightTo") || "Any";
+    return "Any";
+  });
   const chipRowRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   // Track last user ID to detect account switches
   const lastUserIdRef = useRef<string | null>(null);
+
+  // Persist filter state whenever it changes
+  useEffect(() => { sessionStorage.setItem("matches_nameSearch", nameSearch); }, [nameSearch]);
+  useEffect(() => { sessionStorage.setItem("matches_chips", JSON.stringify(activeChips)); }, [activeChips]);
+  useEffect(() => { sessionStorage.setItem("matches_ageFrom", ageFrom); }, [ageFrom]);
+  useEffect(() => { sessionStorage.setItem("matches_ageTo", ageTo); }, [ageTo]);
+  useEffect(() => { sessionStorage.setItem("matches_heightFrom", heightFrom); }, [heightFrom]);
+  useEffect(() => { sessionStorage.setItem("matches_heightTo", heightTo); }, [heightTo]);
+
+  // Lock body scroll when mobile sidebar is open to prevent background scroll bleed
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [sidebarOpen]);
 
   const oppositeGender = user?.gender === "male" ? "female" : user?.gender === "female" ? "male" : null;
 
@@ -978,13 +1016,15 @@ function MatchesContent() {
       if (!p.createdAt || Date.now() - new Date(p.createdAt).getTime() > 30 * 24 * 60 * 60 * 1000) return false;
     }
 
-    // Age Filter — if filter is active, exclude profiles with no DOB
+    // Age Filter — compare consistently as numbers
     const ageFilterActive = ageFrom !== "Any" || ageTo !== "Any";
     const age = p.dob ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
     if (ageFilterActive) {
       if (age === null) return false; // exclude profiles with no DOB when filter is active
-      if (ageFrom !== "Any" && age < parseInt(ageFrom)) return false;
-      if (ageTo !== "Any" && age > parseInt(ageTo)) return false;
+      const fromNum = ageFrom !== "Any" ? Number(ageFrom) : null;
+      const toNum = ageTo !== "Any" ? Number(ageTo) : null;
+      if (fromNum !== null && age < fromNum) return false;
+      if (toNum !== null && age > toNum) return false;
     }
 
     // Height Filter
@@ -1145,7 +1185,8 @@ function MatchesContent() {
                 background: "#fff",
                 border: "1px solid #e0e0e0",
                 borderRadius: "6px",
-                overflow: "hidden",
+                overflowY: "auto",
+                overscrollBehavior: "contain",
                 alignSelf: "flex-start",
                 position: "sticky",
                 top: 0,
@@ -1271,52 +1312,7 @@ function MatchesContent() {
               </h1>
             </div>
 
-            {/* Name Search Bar */}
-            {activeSection !== "daily_matches" && (
-            <div style={{ marginBottom: "0.75rem", position: "relative" }}>
-              <svg
-                width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"
-                style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
-              >
-                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search profiles by name…"
-                value={nameSearch}
-                onChange={(e) => setNameSearch(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem 0.75rem 0.5rem 2rem",
-                  border: nameSearch ? "1.5px solid #6B1A2A" : "1.5px solid #ddd",
-                  borderRadius: "20px",
-                  fontSize: "0.875rem",
-                  fontFamily: "var(--font-sans)",
-                  color: "#222",
-                  background: "#fff",
-                  outline: "none",
-                  boxSizing: "border-box",
-                  transition: "border-color 0.2s",
-                }}
-              />
-              {nameSearch && (
-                <button
-                  onClick={() => setNameSearch("")}
-                  style={{
-                    position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)",
-                    background: "none", border: "none", cursor: "pointer", color: "#aaa",
-                    padding: "2px", lineHeight: 1,
-                  }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              )}
-            </div>
-            )}
-
-            {/* Filter / Sort / Chips row */}
+            {/* Filter / Sort / Chips row — includes search */}
             {activeSection !== "daily_matches" && (
             <div
               ref={chipRowRef}
@@ -1332,6 +1328,48 @@ function MatchesContent() {
                 paddingBottom: "4px",
               }}
             >
+              {/* Inline search input */}
+              <div style={{ position: "relative", flexShrink: 0, minWidth: "140px", maxWidth: "200px" }}>
+                <svg
+                  width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"
+                  style={{ position: "absolute", left: "9px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}
+                >
+                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search name…"
+                  value={nameSearch}
+                  onChange={(e) => setNameSearch(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "0.3125rem 1.5rem 0.3125rem 1.75rem",
+                    border: nameSearch ? "1.5px solid #6B1A2A" : "1.5px solid #ddd",
+                    borderRadius: "20px",
+                    fontSize: "0.8125rem",
+                    fontFamily: "var(--font-sans)",
+                    color: "#222",
+                    background: "#fff",
+                    outline: "none",
+                    boxSizing: "border-box" as const,
+                    transition: "border-color 0.2s",
+                  }}
+                />
+                {nameSearch && (
+                  <button
+                    onClick={() => setNameSearch("")}
+                    style={{
+                      position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)",
+                      background: "none", border: "none", cursor: "pointer", color: "#aaa",
+                      padding: "2px", lineHeight: 1,
+                    }}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                )}
+              </div>
               {/* Filter button with active-count badge */}
               <button
                 onClick={() => setFilterOpen((v) => !v)}
@@ -1426,14 +1464,14 @@ function MatchesContent() {
                 }}
               >
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem", marginBottom: "1rem" }}>
+              {/* Age From */}
                   <div>
                     <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Age From</label>
                     <select className="form-select" style={{ fontSize: "0.8125rem" }} value={ageFrom} onChange={e => setAgeFrom(e.target.value)}>
                       <option value="Any">Doesn't matter</option>
-                      {Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`).map(o => {
-                        const val = parseInt(o.split(" ")[0]);
-                        const isDisabled = ageTo !== "Any" && val > parseInt(ageTo);
-                        return <option key={o} value={val} disabled={isDisabled}>{o}</option>;
+                      {Array.from({ length: 35 }, (_, i) => String(18 + i)).map(val => {
+                        const isDisabled = ageTo !== "Any" && Number(val) > Number(ageTo);
+                        return <option key={val} value={val} disabled={isDisabled}>{val} Yrs</option>;
                       })}
                     </select>
                   </div>
@@ -1441,10 +1479,9 @@ function MatchesContent() {
                     <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 600, color: "#555", marginBottom: "4px" }}>Age To</label>
                     <select className="form-select" style={{ fontSize: "0.8125rem" }} value={ageTo} onChange={e => setAgeTo(e.target.value)}>
                       <option value="Any">Doesn't matter</option>
-                      {Array.from({ length: 35 }, (_, i) => `${18 + i} Yrs`).map(o => {
-                        const val = parseInt(o.split(" ")[0]);
-                        const isDisabled = ageFrom !== "Any" && val < parseInt(ageFrom);
-                        return <option key={o} value={val} disabled={isDisabled}>{o}</option>;
+                      {Array.from({ length: 35 }, (_, i) => String(18 + i)).map(val => {
+                        const isDisabled = ageFrom !== "Any" && Number(val) < Number(ageFrom);
+                        return <option key={val} value={val} disabled={isDisabled}>{val} Yrs</option>;
                       })}
                     </select>
                   </div>
@@ -1463,14 +1500,23 @@ function MatchesContent() {
                     </select>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end" }}>
+                <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end", alignItems: "center", flexWrap: "wrap" }}>
+                  {/* Active filter count indicator */}
+                  {(ageFrom !== "Any" || ageTo !== "Any" || heightFrom !== "Any" || heightTo !== "Any") && (
+                    <span style={{ fontSize: "0.75rem", color: "#888" }}>
+                      {[ageFrom !== "Any" ? `Age from ${ageFrom}` : "", ageTo !== "Any" ? `to ${ageTo}` : "", heightFrom !== "Any" ? `Height from ${heightFrom}` : "", heightTo !== "Any" ? `to ${heightTo}` : ""].filter(Boolean).join(" · ")}
+                    </span>
+                  )}
                   <button onClick={() => {
                     setAgeFrom("Any");
                     setAgeTo("Any");
                     setHeightFrom("Any");
                     setHeightTo("Any");
-                  }} style={{ padding: "0.5rem 1rem", background: "none", border: "1.5px solid #ccc", borderRadius: "20px", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer", color: "#555" }}>Clear</button>
-                  <button onClick={() => setFilterOpen(false)} style={{ padding: "0.5rem 1rem", background: "#6B1A2A", color: "#fff", border: "none", borderRadius: "20px", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer" }}>Apply Filters</button>
+                    setActiveChips([]);
+                    setNameSearch("");
+                    setCurrentPage(1);
+                  }} style={{ padding: "0.5rem 1rem", background: "none", border: "1.5px solid #ccc", borderRadius: "20px", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer", color: "#555", fontFamily: "var(--font-sans)" }}>Reset All</button>
+                  <button onClick={() => setFilterOpen(false)} style={{ padding: "0.5rem 1rem", background: "#6B1A2A", color: "#fff", border: "none", borderRadius: "20px", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-sans)" }}>Apply Filters</button>
                 </div>
               </div>
             )}

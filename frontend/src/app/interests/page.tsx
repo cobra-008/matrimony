@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
@@ -469,7 +469,7 @@ function SidebarLink({
   color,
 }: {
   label: string;
-  count?: number;
+  count?: number | null;
   active: boolean;
   onClick: () => void;
   color?: string;
@@ -491,7 +491,7 @@ function SidebarLink({
       }}
     >
       {label}
-      {count !== undefined && count > 0 && (
+      {count !== undefined && count !== null && count > 0 && (
         <span
           style={{
             display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -512,6 +512,41 @@ export default function InterestsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  // Restore section/filter from sessionStorage
+  const [section, setSection] = useState<ActiveSection>(() => {
+    if (typeof window !== "undefined") {
+      return (sessionStorage.getItem("interests_section") as ActiveSection) || "received";
+    }
+    return "received";
+  });
+  const [receivedFilter, setReceivedFilter] = useState<ReceivedFilter>(() => {
+    if (typeof window !== "undefined") {
+      return (sessionStorage.getItem("interests_receivedFilter") as ReceivedFilter) || "pending";
+    }
+    return "pending";
+  });
+  const [sentFilter, setSentFilter] = useState<SentFilter>(() => {
+    if (typeof window !== "undefined") {
+      return (sessionStorage.getItem("interests_sentFilter") as SentFilter) || "all";
+    }
+    return "all";
+  });
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  // Persist section/filter changes
+  useEffect(() => { sessionStorage.setItem("interests_section", section); }, [section]);
+  useEffect(() => { sessionStorage.setItem("interests_receivedFilter", receivedFilter); }, [receivedFilter]);
+  useEffect(() => { sessionStorage.setItem("interests_sentFilter", sentFilter); }, [sentFilter]);
+
+  // Restore sidebar scroll position
+  useEffect(() => {
+    if (sidebarOpen && sidebarRef.current) {
+      const saved = sessionStorage.getItem("interests_sidebar_scroll");
+      if (saved) sidebarRef.current.scrollTop = parseInt(saved, 10);
+    }
+  }, [sidebarOpen]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.replace("/login");
@@ -530,17 +565,12 @@ export default function InterestsPage() {
     );
   }
 
-  const [section, setSection] = useState<ActiveSection>("received");
-  const [receivedFilter, setReceivedFilter] = useState<ReceivedFilter>("pending");
-  const [sentFilter, setSentFilter] = useState<SentFilter>("all");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const [received, setReceived] = useState<InterestRow[]>([]);
   const [sent, setSent] = useState<InterestRow[]>([]);
 
-  // Count cache for badge numbers
-  const [receivedCounts, setReceivedCounts] = useState({ all: 0, pending: 0, accepted: 0, declined: 0 });
-  const [sentCounts, setSentCounts] = useState({ all: 0, pending: 0, accepted: 0, declined: 0 });
+  // Count cache — null means not yet loaded (show '--')
+  const [receivedCounts, setReceivedCounts] = useState<{ all: number | null; pending: number | null; accepted: number | null; declined: number | null }>({ all: null, pending: null, accepted: null, declined: null });
+  const [sentCounts, setSentCounts] = useState<{ all: number | null; pending: number | null; accepted: number | null; declined: number | null }>({ all: null, pending: null, accepted: null, declined: null });
 
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -590,7 +620,7 @@ export default function InterestsPage() {
     setReceived((prev) =>
       prev.map((r) => r.id === interestId ? { ...r, status: "accepted" } : r)
     );
-    setReceivedCounts((c) => ({ ...c, pending: c.pending - 1, accepted: c.accepted + 1 }));
+    setReceivedCounts((c) => ({ ...c, pending: (c.pending ?? 0) - 1, accepted: (c.accepted ?? 0) + 1 }));
   };
 
   const handleDecline = async (interestId: string) => {
@@ -602,7 +632,7 @@ export default function InterestsPage() {
     setReceived((prev) =>
       prev.map((r) => r.id === interestId ? { ...r, status: "declined" } : r)
     );
-    setReceivedCounts((c) => ({ ...c, pending: c.pending - 1, declined: c.declined + 1 }));
+    setReceivedCounts((c) => ({ ...c, pending: (c.pending ?? 0) - 1, declined: (c.declined ?? 0) + 1 }));
   };
 
   const handleWithdraw = async (interestId: string) => {
@@ -612,7 +642,7 @@ export default function InterestsPage() {
     if (error) { toast.error("Failed to withdraw."); return; }
     toast("Interest withdrawn.");
     setSent((prev) => prev.filter((r) => r.id !== interestId));
-    setSentCounts((c) => ({ ...c, all: c.all - 1, pending: c.pending - 1 }));
+    setSentCounts((c) => ({ ...c, all: (c.all ?? 0) - 1, pending: (c.pending ?? 0) - 1 }));
   };
 
   // Filter + search applied client-side
@@ -706,14 +736,19 @@ export default function InterestsPage() {
 
           {/* ── SIDEBAR ── */}
           <aside
+            ref={sidebarRef}
             className="interests-sidebar"
+            onScroll={() => {
+              if (sidebarRef.current) sessionStorage.setItem("interests_sidebar_scroll", String(sidebarRef.current.scrollTop));
+            }}
             style={{
               width: "220px", flexShrink: 0,
               background: "#fff",
               border: "1px solid #e0e0e0",
               borderRadius: "6px",
-              overflow: "hidden",
+              overflowY: "auto",
               top: "72px",
+              overscrollBehavior: "contain",
             }}
           >
             {/* Interests Received */}
@@ -778,9 +813,11 @@ export default function InterestsPage() {
                   <h1 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#111", margin: "0 0 3px" }}>
                     {headingMap[currentFilter]}{" "}
                   <span style={{ color: "#E8401A" }}>
-                    ({section === "received"
-                      ? receivedCounts[receivedFilter]
-                      : sentCounts[sentFilter]})
+                    ({loading
+                      ? "--"
+                      : section === "received"
+                        ? (receivedCounts[receivedFilter] ?? "--")
+                        : (sentCounts[sentFilter] ?? "--")})
                   </span>
                 </h1>
                 <p style={{ fontSize: "0.8125rem", color: "#888", margin: 0 }}>
