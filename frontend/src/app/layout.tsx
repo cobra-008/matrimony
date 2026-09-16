@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
 import MigrationRunner from "@/components/ui/MigrationRunner";
 import CookieConsent from "@/components/ui/CookieConsent";
+import PageResilience from "@/components/ui/PageResilience";
 
 const lato = Lato({
   variable: "--font-lato",
@@ -83,6 +84,7 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-lato, 'Lato', sans-serif)" }}
       >
         <AuthProvider>
+          <PageResilience />
           <MigrationRunner />
           {children}
           <CookieConsent />

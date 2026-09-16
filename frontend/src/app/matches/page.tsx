@@ -767,7 +767,7 @@ function MatchesContent() {
   const [hiddenProfiles, setHiddenProfiles] = useState<RegisteredUser[]>([]);
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab");
-  const [activeSection, setActiveSection] = useState("your_matches");
+  const [activeSection, setActiveSection] = useState("daily_matches");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {

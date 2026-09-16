@@ -26,8 +26,10 @@ export default function SearchableSelect({
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [dropup, setDropup] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Normalize all options to { value, label }
   const normalized = options.map((o): { value: string; label: string } =>
@@ -37,9 +39,9 @@ export default function SearchableSelect({
   // Display label for current value
   const displayLabel = normalized.find((o) => o.value === value)?.label ?? value;
 
-  // Close when clicking outside
+  // Close when clicking/touching outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleOutside(event: MouseEvent | TouchEvent) {
       if (
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
@@ -47,31 +49,49 @@ export default function SearchableSelect({
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleOutside);
+    document.addEventListener("touchstart", handleOutside, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+    };
   }, []);
 
-  // Focus search input when opened
+  // Determine dropup direction and scroll into view when opened
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      setDropup(spaceBelow < 260);
+      // Scroll into view on mobile so keyboard doesn't hide it
       setTimeout(() => {
-        searchInputRef.current?.focus();
+        triggerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => searchInputRef.current?.focus(), 100);
       }, 50);
     }
   }, [isOpen]);
 
+  // Filter: use includes for better searchability, prioritize prefix matches
   const filteredOptions = search.trim()
     ? normalized
         .filter((opt) =>
-          opt.label.toLowerCase().startsWith(search.toLowerCase())
+          opt.label.toLowerCase().includes(search.toLowerCase())
         )
-        .sort((a, b) => a.label.localeCompare(b.label))
+        .sort((a, b) => {
+          const aStarts = a.label.toLowerCase().startsWith(search.toLowerCase());
+          const bStarts = b.label.toLowerCase().startsWith(search.toLowerCase());
+          if (aStarts && !bStarts) return -1;
+          if (!aStarts && bStarts) return 1;
+          return a.label.localeCompare(b.label);
+        })
     : normalized;
 
   return (
     <div ref={containerRef} style={{ position: "relative", marginBottom: "1rem" }}>
       {/* Trigger Button */}
       <button
+        ref={triggerRef}
         type="button"
         disabled={disabled}
         onClick={() => {
@@ -131,14 +151,16 @@ export default function SearchableSelect({
         <div
           style={{
             position: "absolute",
-            top: "calc(100% + 4px)",
+            ...(dropup
+              ? { bottom: "calc(100% + 4px)", top: "auto" }
+              : { top: "calc(100% + 4px)", bottom: "auto" }),
             left: 0,
             right: 0,
             background: "#fff",
             border: "1px solid var(--border-color)",
             borderRadius: "var(--radius-md)",
             boxShadow: "var(--shadow-lg)",
-            zIndex: 200,
+            zIndex: 9999,
             animation: "fadeIn 0.15s ease",
             overflow: "hidden",
             display: "flex",
@@ -168,7 +190,7 @@ export default function SearchableSelect({
                 background: "transparent",
                 outline: "none",
                 width: "100%",
-                fontSize: "0.875rem",
+                fontSize: "16px",
                 color: "var(--text-dark)",
                 fontFamily: "var(--font-sans)",
               }}
@@ -193,7 +215,8 @@ export default function SearchableSelect({
                     type="button"
                     role="option"
                     aria-selected={value === opt.value}
-                    onClick={() => {
+                    onMouseDown={(e) => {
+                      e.preventDefault();
                       onChange(opt.value);
                       setIsOpen(false);
                       setSearch("");

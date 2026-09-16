@@ -146,7 +146,7 @@ const sections: Section[] = [
         <div className="policy-notice">
           <strong>📢 Reporting Violations:</strong> If you encounter another user violating these rules, please
           report them immediately via the &ldquo;Report Profile&rdquo; button or email{" "}
-          <a href="mailto:trust@elitetamilmatrimony.com" style={{ color: "var(--primary)" }}>
+          <a href="mailto:support@elitetamilmatrimony.com" style={{ color: "var(--primary)" }}>
             trust@elitetamilmatrimony.com
           </a>
           . We review all reports within 48 hours.
@@ -364,7 +364,7 @@ const sections: Section[] = [
         </p>
         <p>
           Before initiating arbitration, you agree to first attempt to resolve the dispute by contacting us at{" "}
-          <a href="mailto:legal@elitetamilmatrimony.com" style={{ color: "var(--primary)" }}>
+          <a href="mailto:support@elitetamilmatrimony.com" style={{ color: "var(--primary)" }}>
             legal@elitetamilmatrimony.com
           </a>{" "}
           and giving us 30 days to respond.

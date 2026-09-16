@@ -186,21 +186,49 @@ function FloatSearchableCombobox({ label, value, onChange, options, placeholder 
 }) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
+  const [dropup, setDropup] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setQuery(value); }, [value]);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handler = (e: MouseEvent | TouchEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
   }, []);
 
-  const filtered = query === value
-    ? options.slice(0, 60)
-    : options.filter(o => o.toLowerCase().includes(query.toLowerCase())).slice(0, 60);
+  // All options when empty query, filtered with includes when typing
+  const filtered = query && query !== value
+    ? options
+        .filter(o => o.toLowerCase().includes(query.toLowerCase()))
+        .sort((a, b) => {
+          const aStarts = a.toLowerCase().startsWith(query.toLowerCase());
+          const bStarts = b.toLowerCase().startsWith(query.toLowerCase());
+          if (aStarts && !bStarts) return -1;
+          if (!aStarts && bStarts) return 1;
+          return a.localeCompare(b);
+        })
+        .slice(0, 200)
+    : options;
+
+  const handleOpen = () => {
+    setOpen(true);
+    // Detect if we should open upward (dropup) to avoid keyboard
+    if (inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      setDropup(viewportHeight - rect.bottom < 260);
+      // Scroll into view so keyboard doesn't overlap
+      setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+    }
+  };
 
   const select = (v: string) => {
     setQuery(v);
@@ -211,6 +239,7 @@ function FloatSearchableCombobox({ label, value, onChange, options, placeholder 
   return (
     <div ref={ref} style={{ position: "relative", marginBottom: "1rem" }}>
       <input
+        ref={inputRef}
         type="text"
         value={query}
         placeholder={placeholder || `Select ${label}`}
@@ -218,10 +247,10 @@ function FloatSearchableCombobox({ label, value, onChange, options, placeholder 
         style={{ 
           paddingTop: query ? "1.375rem" : "0.75rem", 
           paddingBottom: query ? "0.375rem" : "0.75rem",
-          fontSize: "0.875rem",
+          fontSize: "16px",
         }}
         onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
+        onFocus={handleOpen}
         autoComplete="off"
         aria-label={label}
       />
@@ -232,15 +261,17 @@ function FloatSearchableCombobox({ label, value, onChange, options, placeholder 
       )}
       {open && (
         <div style={{
-          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+          position: "absolute",
+          ...(dropup ? { bottom: "calc(100% + 4px)", top: "auto" } : { top: "calc(100% + 4px)", bottom: "auto" }),
+          left: 0, right: 0,
           background: "#fff", border: "1px solid var(--border-color)",
           borderRadius: "var(--radius-md)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-          maxHeight: "220px", overflowY: "auto", zIndex: 200,
+          maxHeight: "220px", overflowY: "auto", zIndex: 9999,
         }}>
-          {filtered.length === 0 && (
+          {filtered.length === 0 && query.trim() && (
             <div
               style={{ padding: "0.625rem 0.875rem", fontSize: "0.8125rem", color: "var(--text-muted)" }}
-              onMouseDown={() => select(query)}
+              onMouseDown={(e) => { e.preventDefault(); select(query); }}
             >
               Use &ldquo;{query}&rdquo; as custom {label.toLowerCase()}
             </div>
@@ -248,7 +279,7 @@ function FloatSearchableCombobox({ label, value, onChange, options, placeholder 
           {filtered.map(opt => (
             <div
               key={opt}
-              onMouseDown={() => select(opt)}
+              onMouseDown={(e) => { e.preventDefault(); select(opt); }}
               style={{
                 padding: "0.5rem 0.875rem", fontSize: "0.875rem", cursor: "pointer",
                 background: opt === value ? "var(--primary-light)" : "transparent",
@@ -263,7 +294,7 @@ function FloatSearchableCombobox({ label, value, onChange, options, placeholder 
           ))}
           {filtered.length > 0 && !filtered.includes(query) && query.trim() && (
             <div
-              onMouseDown={() => select(query)}
+              onMouseDown={(e) => { e.preventDefault(); select(query); }}
               style={{
                 padding: "0.5rem 0.875rem", fontSize: "0.8125rem", cursor: "pointer",
                 borderTop: "1px solid var(--border-light)", color: "var(--primary)", fontWeight: 600,
@@ -288,20 +319,45 @@ function MultiSelectTags({ label, values, onChange, options, placeholder = "Sele
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [dropup, setDropup] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handler = (e: MouseEvent | TouchEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
   }, []);
 
   const unselected = options.filter(o => !values.includes(o));
   const filtered = query
-    ? unselected.filter(o => o.toLowerCase().includes(query.toLowerCase())).slice(0, 30)
-    : unselected.slice(0, 30);
+    ? unselected
+        .filter(o => o.toLowerCase().includes(query.toLowerCase()))
+        .sort((a, b) => {
+          const aS = a.toLowerCase().startsWith(query.toLowerCase());
+          const bS = b.toLowerCase().startsWith(query.toLowerCase());
+          if (aS && !bS) return -1;
+          if (!aS && bS) return 1;
+          return a.localeCompare(b);
+        })
+        .slice(0, 50)
+    : unselected.slice(0, 50);
+
+  const handleInputFocus = () => {
+    setOpen(true);
+    if (inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      setDropup(viewportHeight - rect.bottom < 220);
+      setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+    }
+  };
 
   const select = (v: string) => {
     if (!values.includes(v)) onChange([...values, v]);
@@ -322,7 +378,7 @@ function MultiSelectTags({ label, values, onChange, options, placeholder = "Sele
           paddingTop: values.length > 0 ? "1.375rem" : "0.75rem", paddingBottom: "0.375rem",
           alignItems: "center", cursor: "text",
         }}
-        onClick={() => { document.getElementById(`multi-input-${label}`)?.focus(); setOpen(true); }}
+        onClick={() => { inputRef.current?.focus(); setOpen(true); }}
       >
         {values.map(val => (
           <span
@@ -343,16 +399,17 @@ function MultiSelectTags({ label, values, onChange, options, placeholder = "Sele
           </span>
         ))}
         <input
+          ref={inputRef}
           id={`multi-input-${label}`}
           type="text"
           value={query}
           placeholder={values.length === 0 ? placeholder : ""}
           style={{
             border: "none", outline: "none", background: "transparent",
-            flex: 1, minWidth: "60px", fontSize: "0.875rem", color: "var(--text-dark)",
+            flex: 1, minWidth: "60px", fontSize: "16px", color: "var(--text-dark)",
           }}
           onChange={e => { setQuery(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
+          onFocus={handleInputFocus}
           autoComplete="off"
         />
       </div>
@@ -363,10 +420,12 @@ function MultiSelectTags({ label, values, onChange, options, placeholder = "Sele
       )}
       {open && (
         <div style={{
-          position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0,
+          position: "absolute",
+          ...(dropup ? { bottom: "calc(100% + 4px)", top: "auto" } : { top: "calc(100% + 4px)", bottom: "auto" }),
+          left: 0, right: 0,
           background: "#fff", border: "1px solid var(--border-color)",
           borderRadius: "var(--radius-md)", boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-          maxHeight: "200px", overflowY: "auto", zIndex: 200,
+          maxHeight: "200px", overflowY: "auto", zIndex: 9999,
         }}>
           {filtered.length === 0 && !query && (
             <div style={{ padding: "0.625rem 0.875rem", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
@@ -1020,7 +1079,7 @@ function RegisterWizard() {
         </div>
       )}
 
-      <div style={{ maxWidth: "560px", margin: "0 auto", padding: "0.5rem 1.25rem 1.5rem" }}>
+      <div style={{ maxWidth: "560px", margin: "0 auto", padding: "0.5rem 1.25rem 1.5rem", overflowX: "hidden" }}>
 
         {/* ===== STEP 0: Basic Info ===== */}
         {step === 0 && (
@@ -1206,12 +1265,16 @@ function RegisterWizard() {
               <div style={{ marginBottom: "1.5rem" }}>
                 <label className="form-label" htmlFor="password-input">Set Password <span style={{ color: "var(--primary)", marginLeft: "2px" }}>*</span></label>
                 <div style={{ position: "relative" }}>
+                  {/* Hidden dummy inputs trick browser autofill away from visible fields */}
+                  <input type="text" style={{ display: "none" }} tabIndex={-1} aria-hidden="true" />
+                  <input type="password" style={{ display: "none" }} tabIndex={-1} aria-hidden="true" />
                   <input
                     id="password-input"
                     type={showPassword ? "text" : "password"}
                     className="form-input"
                     placeholder="Create a login password (min 6 characters)"
                     value={form.password}
+                    autoComplete="new-password"
                     onChange={(e) => {
                       set("password", e.target.value);
                       if (!e.target.value) setFieldError("password", "Password is required.");
@@ -1268,6 +1331,7 @@ function RegisterWizard() {
                         placeholder="your@email.com"
                         value={form.email}
                         disabled={emailOtpSent}
+                        autoComplete="off"
                         onChange={(e) => {
                           set("email", e.target.value);
                           clearFieldError("email");

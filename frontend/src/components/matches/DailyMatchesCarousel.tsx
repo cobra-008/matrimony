@@ -28,10 +28,9 @@ export default function DailyMatchesCarousel() {
   const [profiles, setProfiles] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [showAll, setShowAll] = useState(false);
 
-  // Profiles shown in carousel — 4 initially, all when expanded
-  const visibleProfiles = showAll ? profiles : profiles.slice(0, 4);
+  // All profiles shown in main card picker (no limit — scroll through all)
+  const visibleProfiles = profiles;
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -106,25 +105,29 @@ export default function DailyMatchesCarousel() {
             {profiles.length > 0 ? `${profiles.length} profiles for today` : "Loading…"}
           </p>
         </div>
-        {/* View All / Collapse button */}
-        {!loading && profiles.length > 4 && (
-          <button
-            onClick={() => setShowAll(v => !v)}
+        {/* Circle arrow button — links to Daily Matches section */}
+        {!loading && profiles.length > 0 && (
+          <Link
+            href="/matches?tab=daily_matches"
+            title="View all daily matches"
             style={{
-              display: "flex", alignItems: "center", gap: "4px",
-              background: "none", border: "none", cursor: "pointer",
-              fontSize: "0.875rem", fontWeight: 700,
-              color: "var(--primary)", fontFamily: "var(--font-sans)",
-              padding: "0.25rem 0",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: "40px", height: "40px",
+              borderRadius: "50%",
+              border: "2px solid var(--primary)",
+              color: "var(--primary)",
+              background: "#fff",
+              textDecoration: "none",
+              transition: "background 0.2s, color 0.2s",
+              flexShrink: 0,
             }}
+            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = "var(--primary)"; (e.currentTarget as HTMLAnchorElement).style.color = "#fff"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = "#fff"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--primary)"; }}
           >
-            {showAll ? "Show Less" : `View All (${profiles.length})`}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              {showAll
-                ? <polyline points="18 15 12 9 6 15" />
-                : <polyline points="6 9 12 15 18 9" />}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
             </svg>
-          </button>
+          </Link>
         )}
       </div>
 
@@ -140,11 +143,6 @@ export default function DailyMatchesCarousel() {
             <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "var(--text-medium)" }}>
               Daily Pick {selectedIndex + 1} of {profiles.length}
             </span>
-            {profiles.length > 4 && (
-              <span style={{ fontSize: "0.8125rem", color: "#888" }}>
-                Showing {visibleProfiles.length} of {profiles.length}
-              </span>
-            )}
           </div>
           {/* Horizontal Avatar Carousel */}
           <div 
@@ -196,11 +194,11 @@ export default function DailyMatchesCarousel() {
                 border: "1px solid var(--border-color)",
                 marginBottom: "1.5rem",
                 flexDirection: "row",
-                minHeight: "450px",
+                minHeight: "380px",
               }}
             >
               {/* Left Side: Large Photo */}
-              <div className="daily-rec-photo-col" style={{ width: "380px", flexShrink: 0, position: "relative" }}>
+              <div className="daily-rec-photo-col" style={{ width: "min(40%, 340px)", flexShrink: 0, position: "relative" }}>
                 {activeProfile.photoUrl
                   ? <img src={activeProfile.photoUrl} alt={activeProfile.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   : <GenderAvatar gender={activeProfile.gender} />}
@@ -317,16 +315,16 @@ export default function DailyMatchesCarousel() {
                     onClick={handleDontShow}
                     style={{
                       display: "flex", alignItems: "center", gap: "0.5rem",
-                      padding: "0.625rem 1.25rem", borderRadius: "30px",
+                      padding: "0.625rem 1rem", borderRadius: "30px",
                       border: "1px solid var(--border-color)", background: "#fff",
                       color: "var(--text-medium)", fontWeight: 600, cursor: "pointer",
-                      fontSize: "0.875rem", minHeight: "44px",
+                      fontSize: "0.875rem", minHeight: "44px", whiteSpace: "nowrap",
                     }}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
-                    Don't Show
+                    Don&apos;t Show
                   </button>
 
                   <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
