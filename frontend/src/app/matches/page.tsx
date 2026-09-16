@@ -777,6 +777,16 @@ function MatchesContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
+  // Lock body scroll when mobile sidebar is open to prevent background scrolling
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [sidebarOpen]);
+
   const router = useRouter();
   useEffect(() => {
     if (!authLoading && !user) {
@@ -985,13 +995,12 @@ function MatchesContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id]);
 
-  // Restore scroll position of the right panel when navigating back from a profile
+  // Restore scroll position of the right panel when navigating back from a profile or switching sections
   useEffect(() => {
     if (loading) return; // wait until profiles have loaded and rendered
-    const saved = sessionStorage.getItem("matches_scroll");
+    const saved = sessionStorage.getItem(`matches_scroll_${activeSection}`);
     if (saved) {
       const scrollTop = parseInt(saved, 10);
-      sessionStorage.removeItem("matches_scroll");
       // Double RAF: first RAF waits for paint, second waits for layout
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -1000,9 +1009,14 @@ function MatchesContent() {
           }
         });
       });
+    } else {
+      // If no saved scroll, go to top
+       if (rightPanelRef.current) {
+          rightPanelRef.current.scrollTop = 0;
+       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  }, [loading, activeSection]);
 
   // Client-side chip filtering + hide + name search + advanced filters
   const allFiltered = profiles.filter((p) => {
@@ -1274,11 +1288,14 @@ function MatchesContent() {
                 })}
               </div>
             ))}
+            {/* Extra padding at bottom so last items are accessible on mobile */}
+            <div style={{ height: "5rem" }} />
           </aside>
 
           {/* ── MAIN ────────────────────────────────────────────────────── */}
           <div
             ref={rightPanelRef}
+            onScroll={(e) => sessionStorage.setItem(`matches_scroll_${activeSection}`, String(e.currentTarget.scrollTop))}
             style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px", paddingBottom: "2rem" }}>
             {/* Mobile: Section select button */}
             <div className="matches-mobile-header" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
@@ -1648,10 +1665,6 @@ function MatchesContent() {
                       <div
                         key={profile.id}
                         onClick={() => {
-                          // Save the right-panel scroll + active section before navigating into profile detail
-                          if (rightPanelRef.current) {
-                            sessionStorage.setItem("matches_scroll", String(rightPanelRef.current.scrollTop));
-                          }
                           sessionStorage.setItem("matches_section", activeSection);
                         }}
                       >

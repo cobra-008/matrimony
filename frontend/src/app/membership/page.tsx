@@ -182,7 +182,7 @@ function ActivePlanDashboard() {
         <p style={{ fontSize: "0.875rem", color: "#999", marginBottom: "2rem" }}>A cancellation confirmation has been sent to your email.</p>
         <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
           <button onClick={() => router.push("/")} className="btn" style={{ border: "1.5px solid var(--primary)", color: "var(--primary)", background: "#fff" }}>Go to Dashboard</button>
-          <button onClick={() => window.location.reload()} className="btn btn-primary" style={{ justifyContent: "center" }}>View Plans</button>
+          <button onClick={() => setCancelled(false)} className="btn btn-primary" style={{ justifyContent: "center" }}>View Plans</button>
         </div>
       </div>
     );

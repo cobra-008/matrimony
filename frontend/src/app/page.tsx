@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import {
@@ -425,7 +426,8 @@ function HeroAuthCard() {
 }
 
 function AuthenticatedDashboard() {
-  const { user } = useAuth();
+  const { user, refresh } = useAuth();
+  const router = useRouter();
   const [dailyRecs, setDailyRecs] = useState<RegisteredUser[]>([]);
   const [loadingRecs, setLoadingRecs] = useState(true);
   const [timeLeft, setTimeLeft] = useState("");
@@ -478,7 +480,8 @@ function AuthenticatedDashboard() {
         return;
       }
       toast.success(`Switched to ${targetAccount.name}`, { id: toastId });
-      window.location.reload();
+      await refresh();
+      router.replace("/");
     } catch {
       toast.error("Network error while switching account.", { id: toastId });
     }

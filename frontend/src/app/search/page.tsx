@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
@@ -316,6 +316,56 @@ function SearchContent() {
   const [raasi, setRaasi] = useState("");
   const [dhosham, setDhosham] = useState("");
 
+  const stateDeps = [
+    activeTab, ageFrom, ageTo, heightFrom, heightTo, profileCreatedBy, maritalStatus,
+    physicalStatus, motherTongues, religion, caste, subCaste, education, occupation,
+    incomeFrom, incomeTo, country, state, diet, smoking, drinking, star, raasi, dhosham
+  ];
+
+  // Load from session storage on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("search_filters_state");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setActiveTab(parsed.activeTab || "criteria");
+        setAgeFrom(parsed.ageFrom || "22");
+        setAgeTo(parsed.ageTo || "35");
+        setHeightFrom(parsed.heightFrom || "152");
+        setHeightTo(parsed.heightTo || "193");
+        setProfileCreatedBy(parsed.profileCreatedBy || "");
+        setMaritalStatus(parsed.maritalStatus || "");
+        setPhysicalStatus(parsed.physicalStatus || "");
+        setMotherTongues(parsed.motherTongues || []);
+        setReligion(parsed.religion || "");
+        setCaste(parsed.caste || "");
+        setSubCaste(parsed.subCaste || "");
+        setEducation(parsed.education || "");
+        setOccupation(parsed.occupation || "");
+        setIncomeFrom(parsed.incomeFrom || "");
+        setIncomeTo(parsed.incomeTo || "");
+        setCountry(parsed.country || "");
+        setState(parsed.state || "");
+        setDiet(parsed.diet || "");
+        setSmoking(parsed.smoking || "");
+        setDrinking(parsed.drinking || "");
+        setStar(parsed.star || "");
+        setRaasi(parsed.raasi || "");
+        setDhosham(parsed.dhosham || "");
+      }
+    } catch {}
+  }, []);
+
+  // Save to session storage whenever form state changes
+  useEffect(() => {
+    const stateObj = {
+      activeTab, ageFrom, ageTo, heightFrom, heightTo, profileCreatedBy, maritalStatus,
+      physicalStatus, motherTongues, religion, caste, subCaste, education, occupation,
+      incomeFrom, incomeTo, country, state, diet, smoking, drinking, star, raasi, dhosham
+    };
+    sessionStorage.setItem("search_filters_state", JSON.stringify(stateObj));
+  }, stateDeps);
+
   const toggleTongue = (lang: string) =>
     setMotherTongues((prev) =>
       prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]
@@ -339,6 +389,7 @@ function SearchContent() {
     setCountry(""); setState("");
     setDiet(""); setSmoking(""); setDrinking("");
     setStar(""); setRaasi(""); setDhosham("");
+    sessionStorage.removeItem("search_filters_state");
     toast.success("Search filters reset");
   };
 

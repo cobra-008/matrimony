@@ -20,7 +20,14 @@ function SearchContent() {
 
   // Determine the default opposite gender based on user
   const defaultLookingFor = user?.gender === "female" ? "groom" : "bride";
-  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [query, setQuery] = useState(() => {
+    if (typeof window !== "undefined") {
+      if (searchParams.toString()) return searchParams.get("q") || "";
+      return sessionStorage.getItem("search_regular_q") || "";
+    }
+    return searchParams.get("q") || "";
+  });
+  
   const [lookingFor, setLookingFor] = useState(searchParams.get("looking_for") || defaultLookingFor);
   
   useEffect(() => {
@@ -31,14 +38,30 @@ function SearchContent() {
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sort, setSort] = useState("relevance");
-  const [filters, setFilters] = useState({
-    religion: searchParams.get("religion") || "",
-    mother_tongue: "",
-    age_min: "18",
-    age_max: "45",
-    education: "",
-    verified_only: false,
+  
+  const [filters, setFilters] = useState(() => {
+    const defaultF = {
+      religion: searchParams.get("religion") || "",
+      mother_tongue: "",
+      age_min: searchParams.get("ageFrom") || "18",
+      age_max: searchParams.get("ageTo") || "45",
+      education: "",
+      verified_only: false,
+    };
+    if (typeof window !== "undefined") {
+      if (searchParams.toString()) return defaultF;
+      const saved = sessionStorage.getItem("search_regular_f");
+      if (saved) {
+        try { return JSON.parse(saved); } catch {}
+      }
+    }
+    return defaultF;
   });
+
+  useEffect(() => {
+    sessionStorage.setItem("search_regular_q", query);
+    sessionStorage.setItem("search_regular_f", JSON.stringify(filters));
+  }, [query, filters]);
 
   const base = lookingFor === "bride" ? ALL_BRIDES : ALL_GROOMS;
 
@@ -58,13 +81,33 @@ function SearchContent() {
     return true;
   });
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = new URLSearchParams({ q: query, looking_for: lookingFor });
-    router.push(`/search/regular?${params.toString()}`);
-  };
+  // Restore and track scroll position
+  useEffect(() => {
+    const saved = sessionStorage.getItem("search_regular_scroll");
+    if (saved) {
+      const scrollY = parseInt(saved, 10);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, scrollY);
+        });
+      });
+    }
+    
+    const handleScroll = () => {
+      sessionStorage.setItem("search_regular_scroll", String(window.scrollY));
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  const resetFilters = () => setFilters({ religion: "", mother_tongue: "", age_min: "18", age_max: "45", education: "", verified_only: false });
+  const resetFilters = () => {
+    setQuery("");
+    setFilters({ religion: "", mother_tongue: "", age_min: "18", age_max: "45", education: "", verified_only: false });
+    sessionStorage.removeItem("search_regular_q");
+    sessionStorage.removeItem("search_regular_f");
+    sessionStorage.removeItem("search_filters_state");
+  };
 
   return (
     <>
@@ -88,7 +131,7 @@ function SearchContent() {
             }
           `}</style>
           <div className="container">
-            <form onSubmit={handleSearch} style={{ display: "flex", gap: "0.625rem", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: "0.625rem", alignItems: "center" }}>
               {/* Bride/groom toggle (only if not logged in) */}
               {!user && (
                 <div style={{ display: "flex", border: "1.5px solid var(--border-color)", borderRadius: "var(--radius-md)", overflow: "hidden", flexShrink: 0 }}>
@@ -136,12 +179,7 @@ function SearchContent() {
                   </button>
                 )}
               </div>
-
-              <button type="submit" className="btn btn-primary" style={{ flexShrink: 0, padding: "0.4375rem 1rem" }}>
-                <Search size={14} />
-                <span className="hide-mobile">Search</span>
-              </button>
-            </form>
+            </div>
           </div>
         </div>
 

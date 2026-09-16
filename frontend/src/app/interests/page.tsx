@@ -491,7 +491,7 @@ function SidebarLink({
       }}
     >
       {label}
-      {count !== undefined && count !== null && count > 0 && (
+      {count !== undefined && (count === null || count > 0) && (
         <span
           style={{
             display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -500,7 +500,7 @@ function SidebarLink({
             borderRadius: "50%", fontSize: "0.625rem", fontWeight: 700,
           }}
         >
-          {count}
+          {count === null ? "--" : count}
         </span>
       )}
     </button>

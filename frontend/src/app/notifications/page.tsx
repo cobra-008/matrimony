@@ -330,7 +330,7 @@ export default function NotificationsPage() {
                     }}
                     onClick={() => {
                       handleMarkRead(notif.id);
-                      if (notif.href) window.location.href = notif.href;
+                      if (notif.href) router.push(notif.href);
                     }}
                   >
                     {/* Icon circle */}
