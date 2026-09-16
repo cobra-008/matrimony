@@ -699,6 +699,15 @@ function EditProfileContent() {
   return (
     <>
       <Navbar />
+      <style>{`
+        .edit-sidebar::-webkit-scrollbar { display: none; }
+        .edit-sidebar { scrollbar-width: none; }
+        .edit-nav-item:hover { background: var(--primary-light) !important; color: var(--primary) !important; }
+        @media (max-width: 899px) {
+          .edit-sidebar { display: none !important; }
+          .edit-main-col { width: 100% !important; }
+        }
+      `}</style>
       <main style={{ background: "var(--bg-page)", minHeight: "100vh" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "1.5rem 1rem 6rem" }}>
 
@@ -736,13 +745,12 @@ function EditProfileContent() {
 
           <div style={{ display: "flex", gap: "1.25rem", alignItems: "flex-start" }}>
             {/* ── Sticky Left Nav ── */}
-            <aside style={{
+            <aside className="edit-sidebar" style={{
               width: "220px",
               flexShrink: 0,
               background: "#fff",
               border: "1px solid var(--border-color)",
               borderRadius: "var(--radius-xl)",
-              overflow: "hidden",
               boxShadow: "var(--shadow-sm)",
               position: "sticky",
               top: "80px",

@@ -712,7 +712,6 @@ function ProfileDetailPage({
                 background: "#fff",
                 border: "1px solid var(--border-color)",
                 borderRadius: "var(--radius-xl)",
-                overflow: "hidden",
                 boxShadow: "var(--shadow-sm)",
                 position: "sticky",
                 top: "80px",
