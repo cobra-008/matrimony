@@ -333,23 +333,10 @@ function MessagesContent() {
     (c.partnerProfile?.name || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  if (!user) {
-    return (
-      <>
-        <Navbar />
-        <main style={{ background: "#FFF8F0", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1rem" }}>
-          <div style={{ textAlign: "center" }}>
-            <MessageCircle size={48} style={{ color: "#E8D5B7", margin: "0 auto 1rem" }} />
-            <p style={{ color: "#6B1A2A", fontWeight: 600, marginBottom: "0.5rem" }}>Please log in to view messages.</p>
-            <Link href="/login" style={{ color: "#C8973A", fontWeight: 700 }}>Login →</Link>
-          </div>
-        </main>
-      </>
-    );
-  }
-
   // Mobile: show chat view OR list, not both
   const showChatOnMobile = !!selectedId;
+
+  if (!user) return null;
 
   return (
     <>
@@ -719,10 +706,31 @@ function MessagesContent() {
   );
 }
 
+function MessagesGuard() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+        Loading...
+      </div>
+    );
+  }
+
+  return <MessagesContent />;
+}
+
 export default function MessagesPage() {
   return (
     <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>Loading messages...</div>}>
-      <MessagesContent />
+      <MessagesGuard />
     </Suspense>
   );
 }

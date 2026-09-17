@@ -208,11 +208,6 @@ function SettingsContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login");
-    }
-  }, [authLoading, user, router]);
 
   useEffect(() => {
     if (user?.id) {
@@ -241,17 +236,7 @@ function SettingsContent() {
     }
   }, [user?.id]);
 
-  if (authLoading || !user) {
-    return (
-      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navbar />
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
-          Loading...
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+
 
 
 
@@ -894,10 +879,35 @@ function SettingsContent() {
   );
 }
 
+function SettingsGuard() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user) {
+    return (
+      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return <SettingsContent />;
+}
+
 export default function SettingsPage() {
   return (
     <Suspense fallback={<div style={{ minHeight: "100vh" }} />}>
-      <SettingsContent />
+      <SettingsGuard />
     </Suspense>
   );
 }

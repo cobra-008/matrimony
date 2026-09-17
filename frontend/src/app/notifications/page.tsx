@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
@@ -69,19 +69,14 @@ function timeAgo(dateStr?: string): string {
   return new Date(dateStr).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-export default function NotificationsPage() {
+function NotificationsContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login");
-    }
-  }, [authLoading, user, router]);
+
 
   const load = async () => {
     if (!user) return;
@@ -158,22 +153,7 @@ export default function NotificationsPage() {
 
   const displayed = filter === "unread" ? notifications.filter((n) => !n.read) : notifications;
 
-  // Show spinner while auth is resolving
-  if (authLoading || !user) {
-    return (
-      <>
-        <Navbar />
-        <main style={{ background: "#FFF8F0", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ width: "40px", height: "40px", margin: "0 auto 1rem", border: "3px solid #E8D5B7", borderTopColor: "#6B1A2A", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
-            <p style={{ color: "#888", fontSize: "0.875rem" }}>Loading notifications…</p>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+
 
   return (
     <>
@@ -375,5 +355,46 @@ export default function NotificationsPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+function NotificationsGuard() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user) {
+    return (
+      <>
+        <Navbar />
+        <main style={{ background: "#FFF8F0", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ width: "40px", height: "40px", margin: "0 auto 1rem", border: "3px solid #E8D5B7", borderTopColor: "#6B1A2A", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+            <p style={{ color: "#888", fontSize: "0.875rem" }}>Loading notifications…</p>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  return <NotificationsContent />;
+}
+
+export default function NotificationsPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ background: "#FFF8F0", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        Loading...
+      </div>
+    }>
+      <NotificationsGuard />
+    </Suspense>
   );
 }

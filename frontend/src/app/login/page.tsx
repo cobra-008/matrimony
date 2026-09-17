@@ -450,7 +450,7 @@ function LoginContent() {
         setLoading(false);
         if (!result) { toast.error("Login failed. Please try again or re-register."); return; }
         toast.success("Login successful!");
-        router.push("/matches");
+        router.push("/");
         return;
       }
       setLoading(false);
@@ -499,7 +499,7 @@ function LoginContent() {
       setLoading(false);
       if (!result) { toast.error("Login failed. Please try again or re-register."); return; }
       toast.success("Login successful!");
-      router.push("/matches");
+      router.push("/");
       return;
     }
     setLoading(false);
@@ -524,7 +524,7 @@ function LoginContent() {
       const result = await loginWithOtpSession(tokenData.access_token, tokenData.refresh_token);
       if (!result) { toast.error("Login failed. Please try again or re-register."); setLoading(false); return; }
       toast.success("Login successful!");
-      router.push("/matches");
+      router.push("/");
     } catch {
       toast.error("Failed to login to this profile. Please try again.");
     }
@@ -573,7 +573,7 @@ function LoginContent() {
     // Success — clear rate limit
     clearRateLimit(pwIdentifier);
     toast.success("Login successful!");
-    router.push("/matches");
+    router.push("/");
   };
 
   // Build redirect URL for "Create Account" with prefilled identifier

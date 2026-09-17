@@ -75,6 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth state changes (login, logout, token refresh)
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // TOKEN_REFRESHED: Supabase silently refreshed the JWT in the background.
+        // The user profile has NOT changed. Skip loading/re-fetch entirely to
+        // prevent MatchesContent (and all other pages) from unmounting unnecessarily.
+        if (event === "TOKEN_REFRESHED") return;
+
         if (session?.user) {
           // Set loading immediately so no broken UI flash during fetch
           setLoading(true);

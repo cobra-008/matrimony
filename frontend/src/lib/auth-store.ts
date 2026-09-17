@@ -2313,6 +2313,15 @@ export async function recordProfileViewWithNotification(
   viewedId: string,
   viewerName?: string
 ): Promise<void> {
+  const { data: existing } = await supabase
+    .from('profile_views')
+    .select('id')
+    .eq('viewer_id', viewerId)
+    .eq('viewed_id', viewedId)
+    .maybeSingle();
+
+  if (existing) return;
+
   await supabase
     .from('profile_views')
     .insert({ viewer_id: viewerId, viewed_id: viewedId });

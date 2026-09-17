@@ -757,25 +757,30 @@ function SkeletonCard() {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
-function MatchesContent() {
-  const { user, loading: authLoading } = useAuth();
-  const { can, isPremium } = useMembership();
-  const canMessage = can("messages");
-  const canViewContact = can("contacts");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hiddenProfiles, setHiddenProfiles] = useState<RegisteredUser[]>([]);
-  const searchParams = useSearchParams();
-  const tab = searchParams?.get("tab");
-  const [activeSection, setActiveSection] = useState("daily_matches");
+// ── Main Page (receives auth data as props — hook count is always constant) ────────
+function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremium }: {
+  user: NonNullable<ReturnType<typeof useAuth>["user"]>;
+  canMessage: boolean;
+  canViewContact: boolean;
+  initialTab: string | null;
+  isPremium: boolean;
+}) {
+  const router = useRouter();
+  const oppositeGender = user.gender === "male" ? "female" : user.gender === "female" ? "male" : undefined;
+
+  const [activeSection, setActiveSection] = useState("your_matches");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hiddenProfiles, setHiddenProfiles] = useState<RegisteredUser[]>([]);
+
+
   useEffect(() => {
-    if (tab && tab !== activeSection) {
-      setActiveSection(tab);
+    if (initialTab && initialTab !== activeSection) {
+      setActiveSection(initialTab);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
+  }, [initialTab]);
 
   // Lock body scroll when mobile sidebar is open to prevent background scrolling
   useEffect(() => {
@@ -786,25 +791,6 @@ function MatchesContent() {
     }
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
-
-  const router = useRouter();
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login");
-    }
-  }, [authLoading, user, router]);
-
-  if (authLoading || !user) {
-    return (
-      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navbar />
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
-          Loading...
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   // Keep sessionStorage in sync whenever the user changes section
   useEffect(() => {
@@ -826,37 +812,20 @@ function MatchesContent() {
     onConfirm: () => void;
   }>({ isOpen: false, message: "", onConfirm: () => {} });
 
-  const [nameSearch, setNameSearch] = useState(() => {
-    if (typeof window !== "undefined") return sessionStorage.getItem("matches_nameSearch") || "";
-    return "";
-  });
+  // Use server-safe defaults (empty) — sessionStorage values are restored after mount
+  const [nameSearch, setNameSearch] = useState("");
   const [starMissing, setStarMissing] = useState(false);
-  const [activeChips, setActiveChips] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      try { return JSON.parse(sessionStorage.getItem("matches_chips") || "[]"); } catch { return []; }
-    }
-    return [];
-  });
-  const [ageFrom, setAgeFrom] = useState(() => {
-    if (typeof window !== "undefined") return sessionStorage.getItem("matches_ageFrom") || "Any";
-    return "Any";
-  });
-  const [ageTo, setAgeTo] = useState(() => {
-    if (typeof window !== "undefined") return sessionStorage.getItem("matches_ageTo") || "Any";
-    return "Any";
-  });
-  const [heightFrom, setHeightFrom] = useState(() => {
-    if (typeof window !== "undefined") return sessionStorage.getItem("matches_heightFrom") || "Any";
-    return "Any";
-  });
-  const [heightTo, setHeightTo] = useState(() => {
-    if (typeof window !== "undefined") return sessionStorage.getItem("matches_heightTo") || "Any";
-    return "Any";
-  });
+  const [activeChips, setActiveChips] = useState<string[]>([]);
+  const [ageFrom, setAgeFrom] = useState("Any");
+  const [ageTo, setAgeTo] = useState("Any");
+  const [heightFrom, setHeightFrom] = useState("Any");
+  const [heightTo, setHeightTo] = useState("Any");
   const chipRowRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   // Track last user ID to detect account switches
   const lastUserIdRef = useRef<string | null>(null);
+
+
 
   // Persist filter state whenever it changes
   useEffect(() => { sessionStorage.setItem("matches_nameSearch", nameSearch); }, [nameSearch]);
@@ -865,18 +834,6 @@ function MatchesContent() {
   useEffect(() => { sessionStorage.setItem("matches_ageTo", ageTo); }, [ageTo]);
   useEffect(() => { sessionStorage.setItem("matches_heightFrom", heightFrom); }, [heightFrom]);
   useEffect(() => { sessionStorage.setItem("matches_heightTo", heightTo); }, [heightTo]);
-
-  // Lock body scroll when mobile sidebar is open to prevent background scroll bleed
-  useEffect(() => {
-    if (sidebarOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [sidebarOpen]);
-
-  const oppositeGender = user?.gender === "male" ? "female" : user?.gender === "female" ? "male" : null;
 
   // Load hidden IDs from localStorage on user change
   useEffect(() => {
@@ -1018,9 +975,23 @@ function MatchesContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, activeSection]);
 
+  // For hidden profiles section
+  useEffect(() => {
+    if (activeSection !== "hidden_profiles" || !user) return;
+    if (hiddenIds.size === 0) { setHiddenProfiles([]); return; }
+    fetchMatchProfiles(user, oppositeGender as "male" | "female" | undefined)
+      .then(all => setHiddenProfiles(all.filter(p => hiddenIds.has(p.id))))
+      .catch(() => { });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection, user?.id, hiddenIds.size]);
+
+
+
   // Client-side chip filtering + hide + name search + advanced filters
+  // Runs even when user is null so hook count never changes
   const allFiltered = profiles.filter((p) => {
-    if (p.id === user?.id) return false;
+    if (!user) return false;
+    if (p.id === user.id) return false;
     if (activeSection !== "hidden_profiles" && hiddenIds.has(p.id)) return false;
     if (nameSearch.trim() && !p.name.toLowerCase().includes(nameSearch.toLowerCase())) return false;
     if (activeChips?.includes("Profiles with photo") && !p.photoUrl) return false;
@@ -1034,7 +1005,7 @@ function MatchesContent() {
     const ageFilterActive = ageFrom !== "Any" || ageTo !== "Any";
     const age = p.dob ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
     if (ageFilterActive) {
-      if (age === null) return false; // exclude profiles with no DOB when filter is active
+      if (age === null) return false;
       const fromNum = ageFrom !== "Any" ? Number(ageFrom) : null;
       const toNum = ageTo !== "Any" ? Number(ageTo) : null;
       if (fromNum !== null && age < fromNum) return false;
@@ -1057,15 +1028,10 @@ function MatchesContent() {
   const totalPages = Math.max(1, Math.ceil(allFiltered.length / PAGE_SIZE));
   const displayed = allFiltered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  // For hidden profiles section
-  useEffect(() => {
-    if (activeSection !== "hidden_profiles" || !user) return;
-    if (hiddenIds.size === 0) { setHiddenProfiles([]); return; }
-    fetchMatchProfiles(user, oppositeGender as "male" | "female" | undefined)
-      .then(all => setHiddenProfiles(all.filter(p => hiddenIds.has(p.id))))
-      .catch(() => { });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSection, user?.id, hiddenIds.size]);
+  // Section label for heading
+  const sectionLabel = SIDEBAR.flatMap((s) => s.items).find((i) => i.id === activeSection)?.label || "Matches";
+  void sectionLabel;
+
 
   const toggleChip = (chip: string) => {
     setCurrentPage(1);
@@ -1134,32 +1100,9 @@ function MatchesContent() {
     toast.success(`Interest sent to ${name}!`);
   };
 
-  // Section label for heading — used in h1
-  const sectionLabel = SIDEBAR.flatMap((s) => s.items).find((i) => i.id === activeSection)?.label || "Matches";
-  void sectionLabel; // suppress unused warning
-
-  // While auth is resolving (e.g. account switch in progress), show a spinner
-  if (authLoading) {
-    return (
-      <>
-        <Navbar />
-        <main style={{ background: "#f2f2f2", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ textAlign: "center", padding: "3rem" }}>
-            <div style={{
-              width: "40px", height: "40px", margin: "0 auto 1rem",
-              border: "3px solid #e0e0e0",
-              borderTopColor: "#6B1A2A",
-              borderRadius: "50%",
-              animation: "spin 0.7s linear infinite",
-            }} />
-            <p style={{ color: "#888", fontSize: "0.875rem" }}>Loading your profile…</p>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+  // —————————————————————————————————————————————
+  // From here: no more hooks. Single render return.
+  // —————————————————————————————————————————————
 
   return (
     <>
@@ -1799,10 +1742,98 @@ function MatchesContent() {
   );
 }
 
+// ── Auth Guard — owns useSearchParams + auth gating, renders MatchesContent only when ready ──
+function MatchesGuard() {
+  const { user, loading: authLoading } = useAuth();
+  const { can, isPremium } = useMembership();
+  const searchParams = useSearchParams();
+  const tab = searchParams?.get("tab") ?? null;
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  // Server render + first client paint: return a static spinner with NO auth-aware components.
+  // This guarantees server HTML === client HTML, eliminating hydration mismatch.
+  if (!mounted) {
+    return (
+      <main style={{ background: "#f2f2f2", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", padding: "3rem" }}>
+          <div style={{
+            width: "40px", height: "40px", margin: "0 auto 1rem",
+            border: "3px solid #e0e0e0",
+            borderTopColor: "#6B1A2A",
+            borderRadius: "50%",
+            animation: "spin 0.7s linear infinite",
+          }} />
+          <p style={{ color: "#888", fontSize: "0.875rem" }}>Loading your matches…</p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </main>
+    );
+  }
+
+  // Client-only: auth check with full Navbar
+  if (authLoading || !user) {
+    return (
+      <>
+        <Navbar />
+        <main style={{ background: "#f2f2f2", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ textAlign: "center", padding: "3rem" }}>
+            <div style={{
+              width: "40px", height: "40px", margin: "0 auto 1rem",
+              border: "3px solid #e0e0e0",
+              borderTopColor: "#6B1A2A",
+              borderRadius: "50%",
+              animation: "spin 0.7s linear infinite",
+            }} />
+            <p style={{ color: "#888", fontSize: "0.875rem" }}>Loading your matches…</p>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  return (
+    <MatchesContent
+      key={user.id}
+      user={user}
+      canMessage={can("messages")}
+      canViewContact={can("contacts")}
+      initialTab={tab}
+      isPremium={isPremium}
+    />
+  );
+}
+
+const loadingFallback = (
+  <main style={{ background: "#f2f2f2", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ textAlign: "center", padding: "3rem" }}>
+      <div style={{
+        width: "40px", height: "40px", margin: "0 auto 1rem",
+        border: "3px solid #e0e0e0", borderTopColor: "#6B1A2A",
+        borderRadius: "50%", animation: "spin 0.7s linear infinite",
+      }} />
+      <p style={{ color: "#888", fontSize: "0.875rem" }}>Loading your matches…</p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  </main>
+);
+
 export default function MatchesPage() {
   return (
-    <Suspense fallback={<div style={{ textAlign: "center", padding: "3rem" }}>Loading...</div>}>
-      <MatchesContent />
+    <Suspense fallback={loadingFallback}>
+      <MatchesGuard />
     </Suspense>
   );
 }
