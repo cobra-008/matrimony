@@ -167,6 +167,14 @@ body {
   flex-direction: column;
 }
 
+#app-scroll-viewport > *, .app-scroll-viewport > * {
+  flex-shrink: 0;
+}
+
+#app-scroll-viewport > main, .app-scroll-viewport > main {
+  flex: 1 0 auto;
+}
+
 img {
   max-width: 100%;
   height: auto;
