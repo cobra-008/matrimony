@@ -164,7 +164,6 @@ export default function SuccessStoriesPage() {
                       style={{
                         position: "relative",
                         width: "100%",
-                        height: "240px",
                         overflow: "hidden",
                         background: "#2A0A10",
                         flexShrink: 0,
@@ -176,9 +175,7 @@ export default function SuccessStoriesPage() {
                           alt={story.name}
                           style={{
                             width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            objectPosition: "top",
+                            height: "auto",
                             display: "block",
                           }}
                         />
