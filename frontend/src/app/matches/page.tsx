@@ -768,7 +768,7 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
   const router = useRouter();
   const oppositeGender = user.gender === "male" ? "female" : user.gender === "female" ? "male" : undefined;
 
-  const [activeSection, setActiveSection] = useState("daily_matches");
+  const [activeSection, setActiveSection] = useState("your_matches");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
