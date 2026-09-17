@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
@@ -509,7 +509,7 @@ function SidebarLink({
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────
-export default function InterestsPage() {
+function InterestsContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
@@ -560,23 +560,7 @@ export default function InterestsPage() {
     }
   }, [sidebarOpen]);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login");
-    }
-  }, [authLoading, user, router]);
 
-  if (authLoading || !user) {
-    return (
-      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navbar />
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
-          Loading...
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -944,5 +928,38 @@ export default function InterestsPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+function InterestsGuard() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user) {
+    return (
+      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return <InterestsContent />;
+}
+
+export default function InterestsPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: "var(--bg-page)" }} />}>
+      <InterestsGuard />
+    </Suspense>
   );
 }

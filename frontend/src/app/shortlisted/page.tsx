@@ -6,27 +6,21 @@ import Footer from "@/components/layout/Footer";
 import ProfileCard from "@/components/ui/ProfileCard";
 import { BookmarkPlus, Trash2, Heart } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import { getShortlistedProfiles, removeShortlist, type RegisteredUser } from "@/lib/auth-store";
 import { useRouter } from "next/navigation";
 
-export default function ShortlistedPage() {
+function ShortlistedContent() {
   const { user, loading: authLoading } = useAuth();
   const [shortlisted, setShortlisted] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    if (!authLoading) {
-      if (!user) {
-        router.push('/login');
-        return;
-      }
-      loadShortlisted();
-    }
-  }, [user, authLoading, router]);
+    loadShortlisted();
+  }, [user]);
 
   const loadShortlisted = async () => {
     if (!user) return;
@@ -68,7 +62,7 @@ export default function ShortlistedPage() {
     }
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <>
         <Navbar />
@@ -185,5 +179,42 @@ export default function ShortlistedPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+function ShortlistedGuard() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user) {
+    return (
+      <>
+        <Navbar />
+        <main style={{ background: "var(--cream-bg)", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div>Loading...</div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  return <ShortlistedContent />;
+}
+
+export default function ShortlistedPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ background: "var(--cream-bg)", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        Loading...
+      </div>
+    }>
+      <ShortlistedGuard />
+    </Suspense>
   );
 }
