@@ -773,6 +773,47 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
   const [currentPage, setCurrentPage] = useState(1);
   const [hiddenProfiles, setHiddenProfiles] = useState<RegisteredUser[]>([]);
 
+
+  useEffect(() => {
+    if (tab && tab !== activeSection) {
+      setActiveSection(tab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  // Lock body scroll when mobile sidebar is open to prevent background scrolling
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [sidebarOpen]);
+
+  const router = useRouter();
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  if (authLoading || !user) {
+    return (
+      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Keep sessionStorage in sync whenever the user changes section
+  useEffect(() => {
+    sessionStorage.setItem("matches_section", activeSection);
+  }, [activeSection]);
   const [profiles, setProfiles] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -802,27 +843,14 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
   // Track last user ID to detect account switches
   const lastUserIdRef = useRef<string | null>(null);
 
-  // Restore persisted filter values — runs only on client after mount
   useEffect(() => {
-    setNameSearch(sessionStorage.getItem("matches_nameSearch") || "");
-    try { setActiveChips(JSON.parse(sessionStorage.getItem("matches_chips") || "[]")); } catch { /* ignore */ }
-    setAgeFrom(sessionStorage.getItem("matches_ageFrom") || "Any");
-    setAgeTo(sessionStorage.getItem("matches_ageTo") || "Any");
-    setHeightFrom(sessionStorage.getItem("matches_heightFrom") || "Any");
-    setHeightTo(sessionStorage.getItem("matches_heightTo") || "Any");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-
-  // Sync tab prop → activeSection (only on first load or when tab changes)
-  useEffect(() => {
-    if (initialTab && initialTab !== activeSection) {
-      setActiveSection(initialTab);
+    if (tab && tab !== activeSection) {
+      setActiveSection(tab);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialTab]);
+  }, [tab]);
 
-  // Lock body scroll when mobile sidebar is open to prevent background scrolling
+  // Lock body scroll when mobile sidebar is open to prevent background scroll bleed
   useEffect(() => {
     if (sidebarOpen) {
       document.body.style.overflow = "hidden";
@@ -832,7 +860,11 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
 
-  // Note: auth redirect is handled by MatchesGuard — user prop is always non-null here
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
 
   // Keep sessionStorage in sync whenever the user changes section
   useEffect(() => {
@@ -856,8 +888,6 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  const oppositeGender = user?.gender === "male" ? "female" : user?.gender === "female" ? "male" : null;
 
   const loadSection = useCallback(async (sectionId: string, currentUser: typeof user) => {
     if (!currentUser) return;
@@ -919,7 +949,7 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
     }
     setProfiles(result.slice(0, 200));
     setLoading(false);
-  }, [oppositeGender]);
+  }, []);
 
   // Load shortlisted IDs on mount
   useEffect(() => {
@@ -964,7 +994,7 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
     lastUserIdRef.current = user.id;
     loadSection(activeSection, user);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSection, user?.id, loadSection]);
+  }, [activeSection, user?.id]);
 
   // Restore scroll position of the right panel when navigating back from a profile or switching sections
   useEffect(() => {
@@ -999,8 +1029,17 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id, hiddenIds.size]);
 
-  // NOTE: No early returns after this point — all hooks must be called unconditionally.
-  // Conditional rendering is handled inside the single return statement below.
+  if (authLoading || !user) {
+    return (
+      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   // Client-side chip filtering + hide + name search + advanced filters
   // Runs even when user is null so hook count never changes
@@ -1122,7 +1161,7 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
   return (
     <>
       <Navbar />
-      <main style={{ background: "#f2f2f2", minHeight: "calc(100vh - 64px)", display: "flex", flexDirection: "column" }} className="matches-main-content">
+      <main style={{ background: "#f2f2f2", height: "calc(100vh - 64px)", overflow: "hidden", display: "flex", flexDirection: "column" }} className="matches-main-content">
         <div
           style={{
             maxWidth: "1100px",
@@ -1131,8 +1170,9 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
             padding: "0.75rem",
             display: "flex",
             gap: "1rem",
-            alignItems: "flex-start",
+            alignItems: "stretch",
             flex: 1,
+            overflow: "hidden",
           }}
         >
 
@@ -1157,11 +1197,12 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
                 border: "1px solid #e0e0e0",
                 borderRadius: "6px",
                 overflowY: "auto",
-                overscrollBehaviorY: "auto",
+                overscrollBehavior: "contain",
                 alignSelf: "flex-start",
                 position: "sticky",
-                top: "80px",
-                maxHeight: "calc(100vh - 100px)",
+                top: 0,
+                height: "100%",
+                maxHeight: "100%",
               }}
             >
             {/* "All Matches" header */}
@@ -1252,7 +1293,7 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
           <div
             ref={rightPanelRef}
             onScroll={(e) => sessionStorage.setItem(`matches_scroll_${activeSection}`, String(e.currentTarget.scrollTop))}
-            style={{ flex: 1, minWidth: 0, paddingRight: "2px", paddingBottom: "2rem" }}>
+            style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px", paddingBottom: "2rem" }}>
             {/* Mobile: Section select button */}
             <div className="matches-mobile-header" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
               <button
@@ -1489,7 +1530,7 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
                     setNameSearch("");
                     setCurrentPage(1);
                   }} style={{ padding: "0.5rem 1rem", background: "none", border: "1.5px solid #ccc", borderRadius: "20px", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer", color: "#555", fontFamily: "var(--font-sans)" }}>Reset All</button>
-                  <button onClick={() => setFilterOpen(false)} style={{ padding: "0.5rem 1rem", background: "#6B1A2A", color: "#fff", border: "none", borderRadius: "20px", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-sans)" }}>Apply Filters</button>
+                  <button onClick={() => setFilterOpen(false)} style={{ padding: "0.5rem 1rem", background: "#6B1A2A", color: "#fff", border: "none", borderRadius: "20px", fontSize: "0.8125rem", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-sans)" }}>Close Filters</button>
                 </div>
               </div>
             )}

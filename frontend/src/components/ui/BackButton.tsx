@@ -1,32 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { usePageTransition } from "@/components/ui/NavigationLoader";
 
 interface BackButtonProps {
   label?: string;
   style?: React.CSSProperties;
-  onClick?: () => void;
 }
 
-export default function BackButton({ label, style, onClick }: BackButtonProps) {
+export default function BackButton({ label, style }: BackButtonProps) {
   const router = useRouter();
-  const { startBackNavigation } = usePageTransition();
-
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (onClick) {
-      onClick();
-    } else if (startBackNavigation) {
-      startBackNavigation();
-    } else {
-      router.back();
-    }
-  };
-
   return (
     <button
-      onClick={handleClick}
+      onClick={() => router.back()}
       aria-label="Go back"
       style={{
         display: "flex",

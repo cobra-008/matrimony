@@ -491,16 +491,17 @@ function SidebarLink({
       }}
     >
       {label}
-      {count !== undefined && (count === null || count > 0) && (
+      {count !== undefined && (
         <span
           style={{
             display: "inline-flex", alignItems: "center", justifyContent: "center",
             width: "18px", height: "18px",
             background: "#E8401A", color: "#fff",
             borderRadius: "50%", fontSize: "0.625rem", fontWeight: 700,
+            lineHeight: 1,
           }}
         >
-          {count === null ? "--" : count}
+          {count || "--"}
         </span>
       )}
     </button>
@@ -817,8 +818,8 @@ export default function InterestsPage() {
                     ({loading
                       ? "--"
                       : section === "received"
-                        ? (receivedCounts[receivedFilter] ?? "--")
-                        : (sentCounts[sentFilter] ?? "--")})
+                        ? (receivedCounts[receivedFilter] || "--")
+                        : (sentCounts[sentFilter] || "--")})
                   </span>
                 </h1>
                 <p style={{ fontSize: "0.8125rem", color: "#888", margin: 0 }}>
