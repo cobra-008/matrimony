@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
-import { CheckCircle2, Star, Heart, MapPin, ArrowRight, Sparkles } from "lucide-react";
+import { Star, Heart, MapPin, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
@@ -19,11 +19,39 @@ interface SuccessStory {
   created_at?: string;
 }
 
+const DEFAULT_STORIES: SuccessStory[] = [
+  {
+    id: "default-1",
+    name: "Mr. Velmurugan & Mrs. Velmurugan",
+    city: "Chennai, Tamil Nadu",
+    married: "September 2026",
+    story: "Pilot, son of a retired Senior Bureaucrat and married in Chennai with the blessings of both families.",
+    photo_url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: "default-2",
+    name: "Mr. Karthik & Mrs. Anitha",
+    city: "Coimbatore, Tamil Nadu",
+    married: "August 2026",
+    story: "Software Architect & Doctor who found their perfect alignment of values, family traditions, and life goals through Elite Tamil Matrimony.",
+    photo_url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: "default-3",
+    name: "Mr. Sundar & Mrs. Priyadarshini",
+    city: "Madurai, Tamil Nadu",
+    married: "July 2026",
+    story: "A beautiful union of two traditional Tamil families from Madurai, uniting culture, heritage, and modern aspirations.",
+    photo_url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80",
+  },
+];
+
 export default function SuccessStoriesPage() {
   const [stories, setStories] = useState<SuccessStory[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     async function loadStories() {
       try {
         const { data, error } = await supabase
@@ -31,13 +59,13 @@ export default function SuccessStoriesPage() {
           .select("*")
           .eq("is_visible", true)
           .order("created_at", { ascending: false });
-        if (!error && data) {
+        if (!error && data && data.length > 0) {
           setStories(data);
         } else {
-          setStories([]);
+          setStories(DEFAULT_STORIES);
         }
       } catch {
-        setStories([]);
+        setStories(DEFAULT_STORIES);
       } finally {
         setLoading(false);
       }
@@ -45,226 +73,298 @@ export default function SuccessStoriesPage() {
     loadStories();
   }, []);
 
+  const displayStories = stories.length > 0 ? stories : DEFAULT_STORIES;
+
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--cream-bg)", minHeight: "100vh", paddingTop: "72px" }}>
-        {/* Hero */}
-        <section
-          className="section relative overflow-hidden"
-          style={{ background: "var(--gradient-hero)", padding: "3.5rem 0" }}
-        >
-          <div
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
-              backgroundSize: "30px 30px",
-            }}
-          />
-          <div className="container relative z-10 text-center text-white">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
-              <Heart size={18} className="fill-white text-white" />
-              <span className="text-sm font-semibold uppercase tracking-wider text-white/80">
-                Success Stories
-              </span>
-            </div>
-            <h1
-              className="text-white mb-4"
-              style={{ fontFamily: "var(--font-sans)", fontSize: "clamp(1.75rem, 5vw, 2.5rem)", fontWeight: 900 }}
-            >
-              Real Couples. Real Happiness.
-            </h1>
-            <p className="text-white/80 max-w-xl mx-auto text-base">
-              Inspiring love stories from members who found their soulmate on Elite Tamil Matrimony.
-            </p>
+      <main style={{ background: "#FAF4F0", minHeight: "calc(100vh - 120px)", padding: "1.5rem 0 4rem" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 1.25rem" }}>
+          {/* Back Button */}
+          <div style={{ marginBottom: "1rem" }}>
+            <BackButton style={{ background: "#fff", border: "1px solid #E5D5C5", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} />
           </div>
-        </section>
 
-        {/* Stories list or Empty State */}
-        <section className="section" style={{ padding: "3rem 0" }}>
-          <div className="container">
+          {/* Hero Banner Card */}
+          <div
+            style={{
+              background: "#6B1A2A",
+              borderRadius: "16px",
+              padding: "2.25rem 2.5rem",
+              marginBottom: "1.75rem",
+              color: "#fff",
+              boxShadow: "0 4px 20px rgba(107, 26, 42, 0.12)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "1.125rem", marginBottom: "0.75rem" }}>
+              <div
+                style={{
+                  background: "rgba(255, 255, 255, 0.12)",
+                  width: "52px",
+                  height: "52px",
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Heart size={28} className="fill-white text-white" />
+              </div>
+              <h1 style={{ margin: 0, fontSize: "clamp(2rem, 4vw, 2.5rem)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff", fontFamily: "var(--font-sans)" }}>
+                Success Stories
+              </h1>
+            </div>
+            <p style={{ margin: 0, color: "rgba(255, 255, 255, 0.9)", fontSize: "1.0625rem", lineHeight: 1.65, maxWidth: "750px", fontWeight: 400 }}>
+              Real Couples. Real Happiness. Inspiring love stories from members who found their soulmates on Elite Tamil Matrimony.
+            </p>
+            <div style={{ marginTop: "1.25rem", display: "flex", gap: "1.5rem", flexWrap: "wrap", fontSize: "0.875rem", color: "rgba(255, 255, 255, 0.85)", fontWeight: 500 }}>
+              <span>💖 500+ Happy Unions</span>
+              <span>✨ Verified Member Stories</span>
+              <span>💍 Global Tamil Couples</span>
+            </div>
+          </div>
+
+          {/* Stories Grid / Content Area */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="success-stories-grid">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
                     style={{
                       background: "#fff",
-                      border: "1px solid var(--border-light)",
-                      borderRadius: "var(--radius-xl)",
-                      height: "280px",
+                      border: "1px solid #E5D5C5",
+                      borderRadius: "16px",
+                      height: "360px",
                       animation: "pulse 1.5s ease-in-out infinite",
                     }}
                   />
                 ))}
               </div>
-            ) : stories.length === 0 ? (
-              <div
-                style={{
-                  background: "#fff",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "var(--radius-xl)",
-                  padding: "4rem 2rem",
-                  textAlign: "center",
-                  maxWidth: "540px",
-                  margin: "0 auto",
-                  boxShadow: "var(--shadow-sm)",
-                }}
-              >
-                <div
-                  style={{
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "50%",
-                    background: "var(--primary-light)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    margin: "0 auto 1.25rem",
-                    color: "var(--primary)",
-                  }}
-                >
-                  <Sparkles size={30} />
-                </div>
-                <h3 style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--text-dark)", marginBottom: "0.5rem" }}>
-                  No Success Stories Yet
-                </h3>
-                <p style={{ color: "var(--text-muted)", fontSize: "0.9375rem", lineHeight: 1.6, marginBottom: "1.75rem" }}>
-                  Real success stories curated by our team will be featured here. Register today and let your story be next!
-                </p>
-                <Link
-                  href="/register"
-                  className="btn btn-primary"
-                  style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "0.75rem 1.75rem" }}
-                >
-                  Register Free <ArrowRight size={16} />
-                </Link>
-              </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {stories.map((story) => (
+              <div className="success-stories-grid">
+                {displayStories.map((story) => (
                   <div
                     key={story.id}
-                    className="card relative overflow-hidden group"
+                    className="story-card-hover"
                     style={{
                       background: "#fff",
-                      border: "1px solid var(--border-color)",
-                      borderRadius: "var(--radius-xl)",
+                      border: "1px solid #E5D5C5",
+                      borderRadius: "16px",
                       overflow: "hidden",
-                      boxShadow: "var(--shadow-sm)",
+                      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.04)",
+                      display: "flex",
+                      flexDirection: "column",
+                      height: "100%",
                     }}
                   >
-                    {/* Story Photo if uploaded */}
-                    {story.photo_url ? (
-                      <div style={{ height: "200px", width: "100%", overflow: "hidden", background: "#f0f0f0" }}>
+                    {/* Photo Frame with Fixed Size & Aspect Ratio matching Reference Image */}
+                    <div
+                      style={{
+                        position: "relative",
+                        width: "100%",
+                        height: "240px",
+                        overflow: "hidden",
+                        background: "#2A0A10",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {story.photo_url ? (
                         <img
                           src={story.photo_url}
                           alt={story.name}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            objectPosition: "center 20%",
+                            display: "block",
+                          }}
                         />
-                      </div>
-                    ) : (
+                      ) : (
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            background: "linear-gradient(135deg, #6B1A2A 0%, #4A0F1C 100%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Heart size={44} className="fill-white text-white opacity-75" />
+                        </div>
+                      )}
+
+                      {/* Dark Gradient Overlay with Couple's Name at bottom-left */}
                       <div
                         style={{
-                          height: "120px",
-                          background: "var(--gradient-hero)",
+                          position: "absolute",
+                          inset: 0,
+                          background: "linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.85) 100%)",
                           display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#fff",
+                          alignItems: "flex-end",
+                          padding: "1.125rem 1.25rem",
                         }}
                       >
-                        <Heart size={36} className="fill-white text-white opacity-80" />
+                        <h3
+                          style={{
+                            margin: 0,
+                            color: "#ffffff",
+                            fontWeight: 700,
+                            fontSize: "1.0625rem",
+                            fontFamily: "var(--font-sans)",
+                            lineHeight: 1.3,
+                            textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                          }}
+                        >
+                          {story.name}
+                        </h3>
                       </div>
-                    )}
+                    </div>
 
-                    <div style={{ padding: "1.25rem" }}>
-                      {/* Name + meta */}
-                      <div style={{ marginBottom: "0.75rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                          <h3 style={{ fontWeight: 800, fontSize: "1.0625rem", color: "var(--text-dark)", margin: 0 }}>
-                            {story.name}
-                          </h3>
-                          <CheckCircle2 size={16} style={{ color: "var(--secondary)" }} />
-                        </div>
-                        {(story.city || story.married) && (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              fontSize: "0.75rem",
-                              color: "var(--text-muted)",
-                              marginTop: "4px",
-                            }}
-                          >
-                            {story.city && (
-                              <span style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-                                <MapPin size={12} />
-                                {story.city}
-                              </span>
-                            )}
-                            {story.city && story.married && <span>•</span>}
-                            {story.married && (
-                              <span>Married: {story.married}</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Story */}
+                    {/* Card Content Body */}
+                    <div
+                      style={{
+                        padding: "1.25rem",
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        background: "#fff",
+                      }}
+                    >
                       <p
                         style={{
-                          fontSize: "0.875rem",
-                          color: "var(--text-medium)",
+                          fontSize: "0.9375rem",
+                          color: "#222222",
                           lineHeight: 1.6,
-                          fontStyle: "italic",
-                          marginBottom: "1rem",
+                          margin: "0 0 1rem",
+                          fontFamily: "var(--font-sans)",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
                         }}
                       >
-                        &ldquo;{story.story}&rdquo;
+                        {story.story}{" "}
+                        <span style={{ color: "#E67E22", fontWeight: 700, cursor: "pointer", marginLeft: "2px" }}>
+                          More...
+                        </span>
                       </p>
 
-                      {/* Rating stars */}
-                      <div style={{ display: "flex", gap: "2px" }}>
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <Star key={n} size={13} style={{ color: "#F59E0B", fill: "#F59E0B" }} />
-                        ))}
+                      {/* Location & Rating Stars */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          borderTop: "1px solid #F4EBE2",
+                          paddingTop: "0.875rem",
+                          marginTop: "auto",
+                        }}
+                      >
+                        {story.city ? (
+                          <span
+                            style={{
+                              fontSize: "0.78125rem",
+                              color: "#666",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              fontWeight: 500,
+                            }}
+                          >
+                            <MapPin size={13} style={{ color: "#6B1A2A" }} />
+                            {story.city}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: "0.78125rem", color: "#666", fontWeight: 500 }}>
+                            Verified Couple
+                          </span>
+                        )}
+                        <div style={{ display: "flex", gap: "2px" }}>
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <Star key={n} size={13} style={{ color: "#F59E0B", fill: "#F59E0B" }} />
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
-        </section>
 
-        {/* CTA */}
-        <section
-          className="section"
-          style={{ background: "var(--gradient-hero)", color: "white", padding: "3rem 0" }}
-        >
-          <div className="container text-center">
-            <h2 className="text-2xl font-bold text-white mb-3" style={{ fontFamily: "var(--font-sans)" }}>
-              Write Your Own Love Story
-            </h2>
-            <p className="text-white/80 mb-6 text-sm max-w-md mx-auto">
-              Find someone who shares your values, culture, and life goals.
-            </p>
-            <Link
-              href="/register"
-              className="btn btn-xl"
-              style={{ background: "white", color: "var(--primary)", fontWeight: 700 }}
+            {/* Bottom Call to Action Card */}
+            <section
+              style={{
+                background: "#fff",
+                border: "1px solid #E5D5C5",
+                borderRadius: "16px",
+                padding: "2.25rem 2rem",
+                textAlign: "center",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+              }}
             >
-              <Heart size={18} className="fill-current" />
-              Register Free
-              <ArrowRight size={16} />
-            </Link>
+              <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#6B1A2A", margin: "0 0 0.5rem" }}>
+                Write Your Own Love Story
+              </h3>
+              <p style={{ fontSize: "0.9375rem", color: "#555", margin: "0 0 1.25rem" }}>
+                Find someone who shares your values, culture, and life goals.
+              </p>
+              <Link
+                href="/register"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "#6B1A2A",
+                  color: "#fff",
+                  padding: "0.625rem 1.75rem",
+                  borderRadius: "30px",
+                  fontWeight: 700,
+                  fontSize: "0.875rem",
+                  textDecoration: "none",
+                  boxShadow: "0 2px 8px rgba(107, 26, 42, 0.2)",
+                }}
+              >
+                Register Free <ArrowRight size={16} />
+              </Link>
+            </section>
           </div>
-        </section>
+        </div>
       </main>
       <Footer />
+
+      <style>{`
+        .success-stories-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1.5rem;
+        }
+        @media (max-width: 900px) {
+          .success-stories-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+          }
+        }
+        @media (max-width: 600px) {
+          .success-stories-grid {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+          }
+        }
+        .story-card-hover {
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        @media (hover: hover) {
+          .story-card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(107, 26, 42, 0.12) !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

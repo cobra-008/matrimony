@@ -130,11 +130,12 @@
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-  -moz-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+html, body {
+  height: 100%;
+  overflow: hidden !important;
+  margin: 0;
+  padding: 0;
+  max-width: 100vw;
 }
 
 body {
@@ -147,17 +148,23 @@ body {
   font-size: 15px;
   font-weight: 400;
   letter-spacing: 0.01em;
-  overflow-x: hidden;
-  /* Offset fixed header so content isn't hidden beneath it */
-  padding-top: var(--navbar-height);
-  /* Safe area for PWA */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-top: 0 !important;
 }
 
-/* Prevent horizontal scroll globally */
-html, body {
-  max-width: 100vw;
+/* ── SCROLL VIEWPORT — Starts directly below fixed top header ── */
+#app-scroll-viewport, .app-scroll-viewport {
+  position: fixed;
+  top: var(--navbar-height, 70px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: scroll !important;
   overflow-x: hidden;
+  scrollbar-width: auto;
+  scrollbar-color: #888888 #f1f1f1;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
 }
 
 img {
@@ -431,12 +438,32 @@ img {
 }
 
 /* ============================================================
-   SCROLLBAR
+   SCROLLBAR — Visible Page Scrollbar
    ============================================================ */
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--bg-page); }
-::-webkit-scrollbar-thumb { background: #E0E0E0; border-radius: var(--radius-full); }
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888888;
+  border-radius: 6px;
+  border: 2px solid #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6B1A2A;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #4A0F1C;
+}
 
 /* ============================================================
    LAYOUT UTILITIES — Mobile-First

@@ -534,6 +534,18 @@ export default function InterestsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
 
+  const [received, setReceived] = useState<InterestRow[]>([]);
+  const [sent, setSent] = useState<InterestRow[]>([]);
+
+  // Count cache — null means not yet loaded (show '--')
+  const [receivedCounts, setReceivedCounts] = useState<{ all: number | null; pending: number | null; accepted: number | null; declined: number | null }>({ all: null, pending: null, accepted: null, declined: null });
+  const [sentCounts, setSentCounts] = useState<{ all: number | null; pending: number | null; accepted: number | null; declined: number | null }>({ all: null, pending: null, accepted: null, declined: null });
+
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+
   // Persist section/filter changes
   useEffect(() => { sessionStorage.setItem("interests_section", section); }, [section]);
   useEffect(() => { sessionStorage.setItem("interests_receivedFilter", receivedFilter); }, [receivedFilter]);
@@ -564,18 +576,6 @@ export default function InterestsPage() {
       </div>
     );
   }
-
-  const [received, setReceived] = useState<InterestRow[]>([]);
-  const [sent, setSent] = useState<InterestRow[]>([]);
-
-  // Count cache — null means not yet loaded (show '--')
-  const [receivedCounts, setReceivedCounts] = useState<{ all: number | null; pending: number | null; accepted: number | null; declined: number | null }>({ all: null, pending: null, accepted: null, declined: null });
-  const [sentCounts, setSentCounts] = useState<{ all: number | null; pending: number | null; accepted: number | null; declined: number | null }>({ all: null, pending: null, accepted: null, declined: null });
-
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -745,10 +745,11 @@ export default function InterestsPage() {
               width: "220px", flexShrink: 0,
               background: "#fff",
               border: "1px solid #e0e0e0",
-              borderRadius: "6px",
+              position: "sticky",
+              top: "80px",
+              maxHeight: "calc(100vh - 100px)",
               overflowY: "auto",
-              top: "72px",
-              overscrollBehavior: "contain",
+              overscrollBehaviorY: "auto",
             }}
           >
             {/* Interests Received */}

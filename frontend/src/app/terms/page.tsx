@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
@@ -456,40 +457,61 @@ const sections: Section[] = [
 ];
 
 export default function TermsPage() {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
+
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--bg-page)", minHeight: "calc(100vh - 120px)", padding: "2rem 0 4rem" }}>
-        <div className="container" style={{ maxWidth: "900px" }}>
-          {/* Header */}
+      <main style={{ background: "#FAF4F0", minHeight: "calc(100vh - 120px)", padding: "1.5rem 0 4rem" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 1.25rem" }}>
+          {/* Back Button */}
+          <div style={{ marginBottom: "1rem" }}>
+            <BackButton style={{ background: "#fff", border: "1px solid #E5D5C5", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} />
+          </div>
+
+          {/* Hero Banner Card — Matching Reference Image */}
           <div
             style={{
-              background: "linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)",
-              borderRadius: "12px",
-              padding: "2.5rem 2rem",
-              marginBottom: "2rem",
+              background: "#6B1A2A",
+              borderRadius: "16px",
+              padding: "2.25rem 2.5rem",
+              marginBottom: "1.75rem",
               color: "#fff",
+              boxShadow: "0 4px 20px rgba(107, 26, 42, 0.12)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.8">
-                <rect x="6" y="2" width="20" height="28" rx="2" />
-                <line x1="11" y1="9" x2="21" y2="9" />
-                <line x1="11" y1="14" x2="21" y2="14" />
-                <line x1="11" y1="19" x2="17" y2="19" />
-                <polyline points="18,23 20,25 24,20" strokeWidth="2.2" />
-              </svg>
-              <h1 style={{ margin: 0, fontSize: "clamp(1.25rem, 4vw, 1.75rem)", fontWeight: 800 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1.125rem", marginBottom: "0.75rem" }}>
+              <div
+                style={{
+                  background: "rgba(255, 255, 255, 0.12)",
+                  width: "52px",
+                  height: "52px",
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <polyline points="10 9 9 9 8 9" />
+                </svg>
+              </div>
+              <h1 style={{ margin: 0, fontSize: "clamp(2rem, 4vw, 2.5rem)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff", fontFamily: "var(--font-sans)" }}>
                 Terms of Use
               </h1>
             </div>
-            <p style={{ margin: 0, opacity: 0.85, fontSize: "0.9375rem", lineHeight: 1.6 }}>
-              Please read these Terms carefully before using Elite Tamil Matrimony. These Terms govern your
-              use of the Platform and protect both you and us.
+            <p style={{ margin: 0, color: "rgba(255, 255, 255, 0.9)", fontSize: "1.0625rem", lineHeight: 1.65, maxWidth: "750px", fontWeight: 400 }}>
+              Please read these Terms carefully before using Elite Tamil Matrimony. These Terms govern your use of the Platform and protect both you and us.
             </p>
-            <div style={{ marginTop: "1.25rem", display: "flex", gap: "1.5rem", flexWrap: "wrap", fontSize: "0.8125rem", opacity: 0.75 }}>
-              <span>📅 Last Updated: {LAST_UPDATED}</span>
+            <div style={{ marginTop: "1.25rem", display: "flex", gap: "1.5rem", flexWrap: "wrap", fontSize: "0.875rem", color: "rgba(255, 255, 255, 0.85)", fontWeight: 500 }}>
+              <span>🗓️ Last Updated: {LAST_UPDATED}</span>
               <span>✅ Effective Date: {EFFECTIVE_DATE}</span>
             </div>
           </div>
@@ -499,21 +521,21 @@ export default function TermsPage() {
             <nav
               style={{
                 background: "#fff",
-                border: "1px solid var(--border-color)",
-                borderRadius: "10px",
-                padding: "1.5rem",
-                boxShadow: "var(--shadow-sm)",
+                border: "1px solid #E5D5C5",
+                borderRadius: "14px",
+                padding: "1.5rem 1.75rem",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
               }}
             >
-              <h2 style={{ fontSize: "1rem", fontWeight: 700, margin: "0 0 1rem", color: "var(--text-dark)" }}>
+              <h2 style={{ fontSize: "1.0625rem", fontWeight: 700, margin: "0 0 1rem", color: "#111" }}>
                 Table of Contents
               </h2>
-              <ol style={{ margin: 0, paddingLeft: "1.25rem", display: "flex", flexDirection: "column", gap: "0.375rem" }}>
+              <ol style={{ margin: 0, paddingLeft: "1.25rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 {sections.map((s) => (
                   <li key={s.id}>
                     <a
                       href={`#${s.id}`}
-                      style={{ color: "var(--primary)", textDecoration: "none", fontSize: "0.875rem", lineHeight: 1.5 }}
+                      style={{ color: "#6B1A2A", textDecoration: "none", fontSize: "0.875rem", lineHeight: 1.5, fontWeight: 500 }}
                     >
                       {s.title}
                     </a>
@@ -529,21 +551,21 @@ export default function TermsPage() {
                 id={section.id}
                 style={{
                   background: "#fff",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "10px",
-                  padding: "1.75rem",
-                  boxShadow: "var(--shadow-sm)",
+                  border: "1px solid #E5D5C5",
+                  borderRadius: "14px",
+                  padding: "1.75rem 2rem",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
                   scrollMarginTop: "80px",
                 }}
               >
                 <h2
                   style={{
-                    fontSize: "1.125rem",
+                    fontSize: "1.25rem",
                     fontWeight: 700,
-                    color: "#1a3a6b",
+                    color: "#6B1A2A",
                     margin: "0 0 1.25rem",
                     paddingBottom: "0.75rem",
-                    borderBottom: "2px solid #dbeafe",
+                    borderBottom: "1.5px solid #F8ECE8",
                   }}
                 >
                   {section.title}
@@ -556,17 +578,17 @@ export default function TermsPage() {
           {/* Bottom nav */}
           <div
             style={{
-              marginTop: "2rem",
+              marginTop: "2.25rem",
               display: "flex",
               gap: "1rem",
               flexWrap: "wrap",
               justifyContent: "center",
             }}
           >
-            <Link href="/privacy-policy" className="btn btn-primary">
+            <Link href="/privacy-policy" style={{ background: "#6B1A2A", color: "#fff", padding: "0.625rem 1.5rem", borderRadius: "30px", textDecoration: "none", fontWeight: 700, fontSize: "0.875rem" }}>
               Read Privacy Policy →
             </Link>
-            <Link href="/" className="btn" style={{ background: "transparent", border: "1.5px solid var(--border-color)", color: "var(--text-medium)" }}>
+            <Link href="/" style={{ background: "#fff", border: "1.5px solid #6B1A2A", color: "#6B1A2A", padding: "0.625rem 1.5rem", borderRadius: "30px", textDecoration: "none", fontWeight: 700, fontSize: "0.875rem" }}>
               Back to Home
             </Link>
           </div>

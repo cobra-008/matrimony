@@ -769,47 +769,8 @@ function MatchesContent() {
   const tab = searchParams?.get("tab");
   const [activeSection, setActiveSection] = useState("daily_matches");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    if (tab && tab !== activeSection) {
-      setActiveSection(tab);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
-
-  // Lock body scroll when mobile sidebar is open to prevent background scrolling
-  useEffect(() => {
-    if (sidebarOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [sidebarOpen]);
-
   const router = useRouter();
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login");
-    }
-  }, [authLoading, user, router]);
 
-  if (authLoading || !user) {
-    return (
-      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navbar />
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
-          Loading...
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Keep sessionStorage in sync whenever the user changes section
-  useEffect(() => {
-    sessionStorage.setItem("matches_section", activeSection);
-  }, [activeSection]);
   const [profiles, setProfiles] = useState<RegisteredUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -858,15 +819,14 @@ function MatchesContent() {
   // Track last user ID to detect account switches
   const lastUserIdRef = useRef<string | null>(null);
 
-  // Persist filter state whenever it changes
-  useEffect(() => { sessionStorage.setItem("matches_nameSearch", nameSearch); }, [nameSearch]);
-  useEffect(() => { sessionStorage.setItem("matches_chips", JSON.stringify(activeChips)); }, [activeChips]);
-  useEffect(() => { sessionStorage.setItem("matches_ageFrom", ageFrom); }, [ageFrom]);
-  useEffect(() => { sessionStorage.setItem("matches_ageTo", ageTo); }, [ageTo]);
-  useEffect(() => { sessionStorage.setItem("matches_heightFrom", heightFrom); }, [heightFrom]);
-  useEffect(() => { sessionStorage.setItem("matches_heightTo", heightTo); }, [heightTo]);
+  useEffect(() => {
+    if (tab && tab !== activeSection) {
+      setActiveSection(tab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
 
-  // Lock body scroll when mobile sidebar is open to prevent background scroll bleed
+  // Lock body scroll when mobile sidebar is open to prevent background scrolling
   useEffect(() => {
     if (sidebarOpen) {
       document.body.style.overflow = "hidden";
@@ -876,7 +836,24 @@ function MatchesContent() {
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
 
-  const oppositeGender = user?.gender === "male" ? "female" : user?.gender === "female" ? "male" : null;
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
+
+  // Keep sessionStorage in sync whenever the user changes section
+  useEffect(() => {
+    sessionStorage.setItem("matches_section", activeSection);
+  }, [activeSection]);
+
+  // Persist filter state whenever it changes
+  useEffect(() => { sessionStorage.setItem("matches_nameSearch", nameSearch); }, [nameSearch]);
+  useEffect(() => { sessionStorage.setItem("matches_chips", JSON.stringify(activeChips)); }, [activeChips]);
+  useEffect(() => { sessionStorage.setItem("matches_ageFrom", ageFrom); }, [ageFrom]);
+  useEffect(() => { sessionStorage.setItem("matches_ageTo", ageTo); }, [ageTo]);
+  useEffect(() => { sessionStorage.setItem("matches_heightFrom", heightFrom); }, [heightFrom]);
+  useEffect(() => { sessionStorage.setItem("matches_heightTo", heightTo); }, [heightTo]);
 
   // Load hidden IDs from localStorage on user change
   useEffect(() => {
@@ -887,6 +864,8 @@ function MatchesContent() {
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  const oppositeGender = user?.gender === "male" ? "female" : user?.gender === "female" ? "male" : null;
 
   const loadSection = useCallback(async (sectionId: string, currentUser: typeof user) => {
     if (!currentUser) return;
@@ -948,7 +927,7 @@ function MatchesContent() {
     }
     setProfiles(result.slice(0, 200));
     setLoading(false);
-  }, []);
+  }, [oppositeGender]);
 
   // Load shortlisted IDs on mount
   useEffect(() => {
@@ -993,7 +972,7 @@ function MatchesContent() {
     lastUserIdRef.current = user.id;
     loadSection(activeSection, user);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSection, user?.id]);
+  }, [activeSection, user?.id, loadSection]);
 
   // Restore scroll position of the right panel when navigating back from a profile or switching sections
   useEffect(() => {
@@ -1017,6 +996,28 @@ function MatchesContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, activeSection]);
+
+  // For hidden profiles section
+  useEffect(() => {
+    if (activeSection !== "hidden_profiles" || !user) return;
+    if (hiddenIds.size === 0) { setHiddenProfiles([]); return; }
+    fetchMatchProfiles(user, oppositeGender as "male" | "female" | undefined)
+      .then(all => setHiddenProfiles(all.filter(p => hiddenIds.has(p.id))))
+      .catch(() => { });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection, user?.id, hiddenIds.size]);
+
+  if (authLoading || !user) {
+    return (
+      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   // Client-side chip filtering + hide + name search + advanced filters
   const allFiltered = profiles.filter((p) => {
@@ -1164,7 +1165,7 @@ function MatchesContent() {
   return (
     <>
       <Navbar />
-      <main style={{ background: "#f2f2f2", height: "calc(100vh - 64px)", overflow: "hidden", display: "flex", flexDirection: "column" }} className="matches-main-content">
+      <main style={{ background: "#f2f2f2", minHeight: "calc(100vh - 64px)", display: "flex", flexDirection: "column" }} className="matches-main-content">
         <div
           style={{
             maxWidth: "1100px",
@@ -1173,9 +1174,8 @@ function MatchesContent() {
             padding: "0.75rem",
             display: "flex",
             gap: "1rem",
-            alignItems: "stretch",
+            alignItems: "flex-start",
             flex: 1,
-            overflow: "hidden",
           }}
         >
 
@@ -1200,12 +1200,11 @@ function MatchesContent() {
                 border: "1px solid #e0e0e0",
                 borderRadius: "6px",
                 overflowY: "auto",
-                overscrollBehavior: "contain",
+                overscrollBehaviorY: "auto",
                 alignSelf: "flex-start",
                 position: "sticky",
-                top: 0,
-                height: "100%",
-                maxHeight: "100%",
+                top: "80px",
+                maxHeight: "calc(100vh - 100px)",
               }}
             >
             {/* "All Matches" header */}
@@ -1296,7 +1295,7 @@ function MatchesContent() {
           <div
             ref={rightPanelRef}
             onScroll={(e) => sessionStorage.setItem(`matches_scroll_${activeSection}`, String(e.currentTarget.scrollTop))}
-            style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px", paddingBottom: "2rem" }}>
+            style={{ flex: 1, minWidth: 0, paddingRight: "2px", paddingBottom: "2rem" }}>
             {/* Mobile: Section select button */}
             <div className="matches-mobile-header" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
               <button

@@ -6,6 +6,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import MigrationRunner from "@/components/ui/MigrationRunner";
 import CookieConsent from "@/components/ui/CookieConsent";
 import PageResilience from "@/components/ui/PageResilience";
+import ScrollToTop from "@/components/ui/ScrollToTop";
+import { NavigationProvider } from "@/components/ui/NavigationLoader";
 
 const lato = Lato({
   variable: "--font-lato",
@@ -84,22 +86,27 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-lato, 'Lato', sans-serif)" }}
       >
         <AuthProvider>
-          <PageResilience />
-          <MigrationRunner />
-          {children}
-          <CookieConsent />
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              style: {
-                fontFamily: "var(--font-lato, 'Lato', sans-serif)",
-                borderRadius: "4px",
-                border: "1px solid #DDDDDD",
-                fontSize: "14px",
-                maxWidth: "calc(100vw - 2rem)",
-              },
-            }}
-          />
+          <NavigationProvider>
+            <ScrollToTop />
+            <PageResilience />
+            <MigrationRunner />
+            <div id="app-scroll-viewport" className="app-scroll-viewport">
+              {children}
+            </div>
+            <CookieConsent />
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                style: {
+                  fontFamily: "var(--font-lato, 'Lato', sans-serif)",
+                  borderRadius: "4px",
+                  border: "1px solid #DDDDDD",
+                  fontSize: "14px",
+                  maxWidth: "calc(100vw - 2rem)",
+                },
+              }}
+            />
+          </NavigationProvider>
         </AuthProvider>
       </body>
     </html>

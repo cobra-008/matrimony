@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import {
-  ChevronDown, ArrowRight, CheckCircle, Shield, Users, Star,
+  ChevronDown, ChevronLeft, ChevronRight, ArrowRight, CheckCircle, Shield, Users, Star,
   Crown, Camera, Briefcase, FileText, MapPin, Heart,
   Users2, Sparkles, Eye, Search, User, Settings2, Mail, X, RefreshCw
 } from "lucide-react";
@@ -432,6 +432,21 @@ function AuthenticatedDashboard() {
   const [loadingRecs, setLoadingRecs] = useState(true);
   const [timeLeft, setTimeLeft] = useState("");
   const [hideCompleteBanner, setHideCompleteBanner] = useState(false);
+  const [recStartIndex, setRecStartIndex] = useState(0);
+  const [cardsToShow, setCardsToShow] = useState(4);
+
+  useEffect(() => {
+    const updateCardsToShow = () => {
+      if (typeof window !== "undefined") {
+        if (window.innerWidth < 600) setCardsToShow(2);
+        else if (window.innerWidth < 900) setCardsToShow(3);
+        else setCardsToShow(4);
+      }
+    };
+    updateCardsToShow();
+    window.addEventListener("resize", updateCardsToShow);
+    return () => window.removeEventListener("resize", updateCardsToShow);
+  }, []);
 
   useEffect(() => {
     if (localStorage.getItem('hideCompleteBanner') === 'true') {
@@ -676,6 +691,7 @@ function AuthenticatedDashboard() {
             top: "80px",
             maxHeight: "calc(100vh - 90px)",
             overflowY: "auto",
+            overscrollBehaviorY: "auto",
           }}
         >
           {/* Avatar + name */}
@@ -1015,27 +1031,13 @@ function AuthenticatedDashboard() {
             }}
           >
             {/* Heading row with countdown + View All */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "0.75rem", gap: "0.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.875rem", gap: "0.5rem", flexWrap: "wrap" }}>
               <div style={{ minWidth: 0 }}>
                 <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#111", margin: "0 0 2px" }}>Daily Recommendations</h2>
                 <p style={{ fontSize: "0.8125rem", color: "#888", margin: 0 }}>Recommended matches for today</p>
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", flexShrink: 0 }}>
-                {/* View All link */}
-                {!loadingRecs && dailyRecs.length > 0 && (
-                  <Link
-                    href="/daily-recs"
-                    style={{
-                      fontSize: "0.8125rem", fontWeight: 700,
-                      color: "var(--primary)", textDecoration: "none",
-                      whiteSpace: "nowrap",
-                      display: "flex", alignItems: "center", gap: "3px",
-                    }}
-                  >
-                    View All <ArrowRight size={13} />
-                  </Link>
-                )}
                 {/* Countdown */}
                 <div
                   style={{
@@ -1052,97 +1054,264 @@ function AuthenticatedDashboard() {
                   <div style={{ fontSize: "0.5625rem", fontWeight: 400, letterSpacing: "0.03em" }}>Refreshes in</div>
                   {timeLeft}
                 </div>
+
+                {/* View All Pill Link — Matching Website Color Palette */}
+                {!loadingRecs && dailyRecs.length > 0 && (
+                  <Link
+                    href="/matches?tab=daily_matches"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "4px",
+                      padding: "0.35rem 1rem",
+                      borderRadius: "9999px",
+                      background: "#F5E6E9",
+                      border: "1.5px solid #6B1A2A",
+                      color: "#6B1A2A",
+                      fontSize: "0.8125rem",
+                      fontWeight: 700,
+                      textDecoration: "none",
+                      whiteSpace: "nowrap",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "#6B1A2A";
+                      (e.currentTarget as HTMLElement).style.color = "#ffffff";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "#F5E6E9";
+                      (e.currentTarget as HTMLElement).style.color = "#6B1A2A";
+                    }}
+                  >
+                    View all <ChevronRight size={14} />
+                  </Link>
+                )}
               </div>
             </div>
 
-            {/* Horizontal scroll of profiles */}
-            <div
-              style={{
-                display: "flex",
-                gap: "0.75rem",
-                overflowX: "auto",
-                paddingBottom: "0.5rem",
-              }}
-            >
-              {loadingRecs
-                ? Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: "125px", flexShrink: 0,
-                        background: "#f0f0f0", borderRadius: "6px",
-                        height: "175px", animation: "pulse 1.5s ease-in-out infinite",
-                      }}
-                    />
-                  ))
-                : dailyRecs.slice(0, 4).map((p, idx) => {
-                    const photo = p.photoUrl;
-                    const age = p.dob
-                      ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
-                      : 0;
-                    return (
-                      <Link
-                        key={p.id}
-                        href={`/profile/${p.id}`}
+            {/* Daily Recommendations Grid with Arrow Navigation */}
+            <div style={{ position: "relative" }}>
+              {/* Left Arrow Button */}
+              {recStartIndex > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setRecStartIndex((prev) => Math.max(0, prev - 1))}
+                  aria-label="Previous profiles"
+                  style={{
+                    position: "absolute",
+                    left: "-14px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    zIndex: 10,
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: "#ffffff",
+                    border: "1px solid #E5D5C5",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    color: "#6B1A2A",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "#6B1A2A";
+                    (e.currentTarget as HTMLElement).style.color = "#ffffff";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "#ffffff";
+                    (e.currentTarget as HTMLElement).style.color = "#6B1A2A";
+                  }}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+              )}
+
+              {/* Right Arrow Button */}
+              {recStartIndex + cardsToShow < dailyRecs.length && (
+                <button
+                  type="button"
+                  onClick={() => setRecStartIndex((prev) => Math.min(dailyRecs.length - cardsToShow, prev + 1))}
+                  aria-label="Next profiles"
+                  style={{
+                    position: "absolute",
+                    right: "-14px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    zIndex: 10,
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: "#ffffff",
+                    border: "1px solid #E5D5C5",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    color: "#6B1A2A",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "#6B1A2A";
+                    (e.currentTarget as HTMLElement).style.color = "#ffffff";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "#ffffff";
+                    (e.currentTarget as HTMLElement).style.color = "#6B1A2A";
+                  }}
+                >
+                  <ChevronRight size={20} />
+                </button>
+              )}
+
+              {/* Fixed Grid Container - No horizontal scrolling */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: `repeat(${cardsToShow}, 1fr)`,
+                  gap: "0.875rem",
+                  overflow: "hidden",
+                }}
+              >
+                {loadingRecs
+                  ? Array.from({ length: cardsToShow }).map((_, i) => (
+                      <div
+                        key={i}
                         style={{
-                          width: "125px", flexShrink: 0,
-                          display: "block", textDecoration: "none",
+                          width: "100%",
+                          background: "#f5f5f5",
+                          borderRadius: "12px",
+                          height: "270px",
+                          animation: "pulse 1.5s ease-in-out infinite",
+                          border: "1px solid #E5D5C5",
                         }}
-                      >
-                        {photo ? (
-                          <img
-                            src={photo}
-                            alt={p.name}
-                            style={{
-                              width: "125px", height: "160px",
-                              objectFit: "cover", objectPosition: "top",
-                              borderRadius: "6px", display: "block",
-                            }}
-                          />
-                        ) : (
+                      />
+                    ))
+                  : dailyRecs.slice(recStartIndex, recStartIndex + cardsToShow).map((p) => {
+                      const photo = p.photoUrl;
+                      const age = p.dob
+                        ? Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+                        : 0;
+                      return (
+                        <Link
+                          key={p.id}
+                          href={`/profile/${p.id}`}
+                          className="profile-card-hover"
+                          style={{
+                            width: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            textDecoration: "none",
+                            background: "#fff",
+                            border: "1px solid #E5D5C5",
+                            borderRadius: "12px",
+                            overflow: "hidden",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                            transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                          }}
+                        >
+                          {/* Photo Frame with Fixed Size & Aspect Ratio */}
                           <div
                             style={{
-                              width: "125px", height: "160px",
-                              background: "#f5f5f5",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              borderRadius: "6px",
-                              color: "#ccc"
+                              width: "100%",
+                              height: "200px",
+                              overflow: "hidden",
+                              background: "#2A0A10",
+                              position: "relative",
+                              flexShrink: 0,
                             }}
                           >
-                            <User size={48} strokeWidth={1.5} />
-                          </div>
-                        )}
-                        <div style={{ marginTop: "5px", fontSize: "0.8125rem", fontWeight: 600, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {p.name}
-                        </div>
-                        <div style={{ fontSize: "0.75rem", color: "#888" }}>
-                          {[age > 0 ? `${age} Yrs` : null, p.height].filter(Boolean).join(", ")}
-                        </div>
-                      </Link>
-                    );
-                  })
-              }
+                            {photo ? (
+                              <img
+                                src={photo}
+                                alt={p.name}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                  objectPosition: "center 20%",
+                                  display: "block",
+                                }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  background: "linear-gradient(135deg, #6B1A2A 0%, #4A0F1C 100%)",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "rgba(255,255,255,0.7)",
+                                }}
+                              >
+                                <User size={48} strokeWidth={1.5} />
+                              </div>
+                            )}
 
-              {/* Arrow button to daily-recs — shown when more than 4 profiles exist */}
-              {!loadingRecs && dailyRecs.length > 4 && (
-                <Link
-                  href="/daily-recs"
-                  style={{
-                    width: "44px", flexShrink: 0,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: "#f5f5f5", border: "1px solid #e0e0e0",
-                    borderRadius: "6px", height: "160px",
-                    textDecoration: "none",
-                  }}
-                  title="View all daily recommendations"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2.5">
-                    <polyline points="9 18 15 12 9 6"/>
-                  </svg>
-                </Link>
-              )}
+                            {p.isVerified && (
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: "8px",
+                                  right: "8px",
+                                  background: "rgba(46, 125, 50, 0.9)",
+                                  color: "#fff",
+                                  fontSize: "0.6875rem",
+                                  fontWeight: 700,
+                                  padding: "2px 6px",
+                                  borderRadius: "6px",
+                                  backdropFilter: "blur(4px)",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "3px",
+                                }}
+                              >
+                                ✓ Verified
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Profile Info Details */}
+                          <div style={{ padding: "0.75rem 0.875rem", display: "flex", flexDirection: "column", gap: "2px" }}>
+                            <div
+                              style={{
+                                fontSize: "0.875rem",
+                                fontWeight: 700,
+                                color: "#111111",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                fontFamily: "var(--font-sans)",
+                              }}
+                            >
+                              {p.name}
+                            </div>
+                            <div style={{ fontSize: "0.75rem", color: "#666666", fontWeight: 500 }}>
+                              {[age > 0 ? `${age} Yrs` : null, p.height].filter(Boolean).join(" • ") || "Tamil Member"}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "0.6875rem",
+                                color: "#6B1A2A",
+                                fontWeight: 600,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                marginTop: "2px",
+                              }}
+                            >
+                              {[p.caste, p.city].filter(Boolean).join(", ") || "Tamil Matrimony"}
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+              </div>
             </div>
           </div>
         </div>

@@ -167,6 +167,38 @@ function SettingsContent() {
   const [activeSection, setActiveSection] = useState<Section>("account");
   const [modal, setModal] = useState<"phone" | "email" | "password" | "delete" | "logout" | null>(null);
 
+  // Account state
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newEmail, setNewEmail] = useState(user?.email || "");
+  const [newPhone, setNewPhone] = useState(user?.mobile || "");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  // Sessions state
+  const [sessions, setSessions] = useState<any[]>([]);
+
+  // Privacy
+  const [profileVisibility, setProfileVisibility] = useState<"public" | "logged_in" | "hidden">("public");
+  const [hideLastSeen, setHideLastSeen] = useState(false);
+  const [hideOnline, setHideOnline] = useState(false);
+  const [premiumOnly, setPremiumOnly] = useState(false);
+
+  // Notifications
+  const [emailNotif, setEmailNotif] = useState(true);
+  const [matchAlerts, setMatchAlerts] = useState(true);
+  const [messageAlerts, setMessageAlerts] = useState(true);
+  const [marketing, setMarketing] = useState(false);
+
+  // Display preferences only
+  const [darkMode, setDarkMode] = useState(false);
+  const [language, setLanguage] = useState("English");
+  const [distanceUnit, setDistanceUnit] = useState("Kilometers");
+  const [passwordChangedAt, setPasswordChangedAt] = useState<string | null>(null);
+
   // Jump to section from URL param (e.g. /settings?section=preferences)
   useEffect(() => {
     const urlSection = searchParams?.get("section") as Section | null;
@@ -182,31 +214,6 @@ function SettingsContent() {
     }
   }, [authLoading, user, router]);
 
-  if (authLoading || !user) {
-    return (
-      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navbar />
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
-          Loading...
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Account state
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [newEmail, setNewEmail] = useState(user?.email || "");
-  const [newPhone, setNewPhone] = useState(user?.mobile || "");
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-
-  // Sessions state
-  const [sessions, setSessions] = useState<any[]>([]);
   useEffect(() => {
     if (user?.id) {
       import("@/lib/supabase").then(({ supabase }) => {
@@ -227,8 +234,6 @@ function SettingsContent() {
     }
   }, [user?.id]);
 
-  // Track when password was last changed (persisted in localStorage)
-  const [passwordChangedAt, setPasswordChangedAt] = useState<string | null>(null);
   useEffect(() => {
     if (user?.id) {
       const stored = localStorage.getItem(`pwChangedAt_${user.id}`);
@@ -236,22 +241,17 @@ function SettingsContent() {
     }
   }, [user?.id]);
 
-  // Privacy
-  const [profileVisibility, setProfileVisibility] = useState<"public" | "logged_in" | "hidden">("public");
-  const [hideLastSeen, setHideLastSeen] = useState(false);
-  const [hideOnline, setHideOnline] = useState(false);
-  const [premiumOnly, setPremiumOnly] = useState(false);
-
-  // Notifications
-  const [emailNotif, setEmailNotif] = useState(true);
-  const [matchAlerts, setMatchAlerts] = useState(true);
-  const [messageAlerts, setMessageAlerts] = useState(true);
-  const [marketing, setMarketing] = useState(false);
-
-  // Display preferences only
-  const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState("English");
-  const [distanceUnit, setDistanceUnit] = useState("Kilometers");
+  if (authLoading || !user) {
+    return (
+      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
+          Loading...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
 
 

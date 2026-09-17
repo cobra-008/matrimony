@@ -704,26 +704,13 @@ function EditProfileContent() {
         .edit-sidebar { scrollbar-width: none; }
         .edit-nav-item:hover { background: var(--primary-light) !important; color: var(--primary) !important; }
         @media (min-width: 900px) {
-          body, html { overflow: hidden !important; }
-          .edit-main-wrap {
-            height: calc(100vh - 80px) !important;
-            overflow: hidden !important;
-            display: flex !important;
-            flex-direction: column !important;
-          }
-          .edit-layout-row {
-            flex: 1 !important;
-            min-height: 0 !important;
-            overflow: hidden !important;
-          }
-          .edit-center-col {
-            overflow-y: auto !important;
-            height: 100% !important;
-            padding-right: 12px !important;
-          }
           .edit-sidebar {
-            height: 100% !important;
+            position: sticky !important;
+            top: 80px !important;
+            max-height: calc(100vh - 100px) !important;
             overflow-y: auto !important;
+            overscroll-behavior-y: auto !important;
+            align-self: flex-start !important;
           }
         }
         @media (max-width: 899px) {
@@ -742,19 +729,16 @@ function EditProfileContent() {
             </div>
           )}
           {user && (<>
+          {/* ── Back Button ── */}
+          <div style={{ marginBottom: "1rem" }}>
+            <BackButton onClick={handleBack} style={{ background: "#fff", border: "1px solid #E5D5C5", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} />
+          </div>
+
           {/* ── Page header ── */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", flexWrap: "wrap", gap: "0.75rem" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-              <div style={{ marginTop: "2px" }}>
-                <button onClick={handleBack} className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--primary)] transition-colors p-2 -ml-2 rounded-lg hover:bg-gray-100 font-semibold text-sm">
-                  <ArrowLeft size={18} />
-                  <span>Back</span>
-                </button>
-              </div>
-              <div>
-                <h1 style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Edit Profile</h1>
-                <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginTop: "3px" }}>Update your information to get better matches</p>
-              </div>
+            <div>
+              <h1 style={{ fontSize: "1.375rem", fontWeight: 800, color: "var(--text-dark)", margin: 0 }}>Edit Profile</h1>
+              <p style={{ fontSize: "0.875rem", color: "var(--text-secondary)", marginTop: "3px" }}>Update your information to get better matches</p>
             </div>
             <div style={{ display: "flex", gap: "0.75rem" }}>
               <button onClick={handlePreview} className="btn btn-ghost" style={{ border: "1.5px solid var(--border-color)", display: "flex", alignItems: "center", gap: "5px" }}>
@@ -780,6 +764,7 @@ function EditProfileContent() {
               alignSelf: "flex-start",
               maxHeight: "calc(100vh - 100px)",
               overflowY: "auto",
+              overscrollBehaviorY: "auto",
             }}>
               <div style={{ padding: "1rem", borderBottom: "1px solid var(--border-light)" }}>
                 <ProfileProgress pct={pct} />

@@ -611,26 +611,13 @@ function ProfileDetailPage({
         .profile-sidebar, .profile-right-panel, .profile-center-col { scrollbar-width: none; }
         
         @media (min-width: 900px) {
-          body, html { overflow: hidden !important; } /* Prevent entire page from scrolling on desktop */
-          .profile-main-wrap { 
-            height: calc(100vh - 80px) !important; /* 80px for Navbar */
-            overflow: hidden !important;
-            display: flex !important;
-            flex-direction: column !important;
-          }
-          .profile-layout-row { 
-            flex: 1 !important;
-            min-height: 0 !important;
-            overflow: hidden !important;
-          }
-          .profile-center-col {
-            overflow-y: auto !important;
-            height: 100% !important;
-            padding-right: 12px !important;
-          }
           .profile-sidebar, .profile-right-panel {
-            height: 100% !important;
+            position: sticky !important;
+            top: 80px !important;
+            max-height: calc(100vh - 100px) !important;
             overflow-y: auto !important;
+            overscroll-behavior-y: auto !important;
+            align-self: flex-start !important;
           }
         }
         @media (max-width: 640px) {
@@ -742,6 +729,7 @@ function ProfileDetailPage({
                 alignSelf: "flex-start",
                 maxHeight: "calc(100vh - 100px)",
                 overflowY: "auto",
+                overscrollBehaviorY: "auto",
               }}
             >
               {/* Sidebar profile mini */}
@@ -1422,6 +1410,7 @@ function ProfileDetailPage({
                   alignSelf: "flex-start",
                   maxHeight: "calc(100vh - 100px)",
                   overflowY: "auto",
+                  overscrollBehaviorY: "auto",
                 }}
               >
                 {/* Add Partner Preferences */}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
@@ -438,44 +439,56 @@ const sections: Section[] = [
 ];
 
 export default function PrivacyPolicyPage() {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
+
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--bg-page)", minHeight: "calc(100vh - 120px)", padding: "2rem 0 4rem" }}>
-        <div className="container" style={{ maxWidth: "900px" }}>
+      <main style={{ background: "#FAF4F0", minHeight: "calc(100vh - 120px)", padding: "1.5rem 0 4rem" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 1.25rem" }}>
           {/* Back Button */}
-          <div style={{ marginBottom: "1.25rem", display: "inline-block" }}>
-            <BackButton style={{ background: "#fff", border: "1px solid #e0e0e0", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} />
+          <div style={{ marginBottom: "1rem" }}>
+            <BackButton style={{ background: "#fff", border: "1px solid #E5D5C5", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} />
           </div>
 
-          {/* Header */}
+          {/* Hero Banner Card — Matching Reference Image */}
           <div
             style={{
-              background: "linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)",
-              borderRadius: "12px",
-              padding: "2.5rem 2rem",
-              marginBottom: "2rem",
+              background: "#6B1A2A",
+              borderRadius: "16px",
+              padding: "2.25rem 2.5rem",
+              marginBottom: "1.75rem",
               color: "#fff",
-              boxShadow: "0 10px 30px rgba(220, 38, 38, 0.25)",
+              boxShadow: "0 4px 20px rgba(107, 26, 42, 0.12)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
-              <div style={{ background: "rgba(255,255,255,0.15)", padding: "12px", borderRadius: "12px", boxShadow: "inset 0 2px 4px rgba(255,255,255,0.1)" }}>
-                <svg width="36" height="36" viewBox="0 0 32 32" fill="none" stroke="#fff" strokeWidth="2">
-                  <path d="M16 3 L28 9 V17 C28 23 22 28 16 30 C10 28 4 23 4 17 V9 Z" />
-                  <polyline points="11,16 14,19 21,13" strokeWidth="2.5" />
+            <div style={{ display: "flex", alignItems: "center", gap: "1.125rem", marginBottom: "0.75rem" }}>
+              <div style={{
+                background: "rgba(255, 255, 255, 0.12)",
+                width: "52px",
+                height: "52px",
+                borderRadius: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <polyline points="9 12 11 14 15 10"/>
                 </svg>
               </div>
-              <h1 style={{ margin: 0, fontSize: "clamp(2rem, 5vw, 2.75rem)", fontWeight: 900, textShadow: "0 2px 10px rgba(0,0,0,0.15)", letterSpacing: "-1px" }}>
+              <h1 style={{ margin: 0, fontSize: "clamp(2rem, 4vw, 2.5rem)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff", fontFamily: "var(--font-sans)" }}>
                 Privacy Policy
               </h1>
             </div>
-            <p style={{ margin: 0, opacity: 0.9, fontSize: "1.0625rem", lineHeight: 1.6, maxWidth: "600px" }}>
-              Your privacy matters to us. This policy explains how Elite Tamil Matrimony collects, uses,
-              and protects your personal information.
+            <p style={{ margin: 0, color: "rgba(255, 255, 255, 0.9)", fontSize: "1.0625rem", lineHeight: 1.65, maxWidth: "750px", fontWeight: 400 }}>
+              Your privacy matters to us. This policy explains how Elite Tamil Matrimony collects, uses, and protects your personal information.
             </p>
-            <div style={{ marginTop: "1.25rem", display: "flex", gap: "1.5rem", flexWrap: "wrap", fontSize: "0.8125rem", opacity: 0.75 }}>
-              <span>📅 Last Updated: {LAST_UPDATED}</span>
+            <div style={{ marginTop: "1.25rem", display: "flex", gap: "1.5rem", flexWrap: "wrap", fontSize: "0.875rem", color: "rgba(255, 255, 255, 0.85)", fontWeight: 500 }}>
+              <span>🗓️ Last Updated: {LAST_UPDATED}</span>
               <span>✅ Effective Date: {EFFECTIVE_DATE}</span>
             </div>
           </div>
@@ -485,21 +498,21 @@ export default function PrivacyPolicyPage() {
             <nav
               style={{
                 background: "#fff",
-                border: "1px solid var(--border-color)",
-                borderRadius: "10px",
-                padding: "1.5rem",
-                boxShadow: "var(--shadow-sm)",
+                border: "1px solid #E5D5C5",
+                borderRadius: "14px",
+                padding: "1.5rem 1.75rem",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
               }}
             >
-              <h2 style={{ fontSize: "1rem", fontWeight: 700, margin: "0 0 1rem", color: "var(--text-dark)" }}>
+              <h2 style={{ fontSize: "1.0625rem", fontWeight: 700, margin: "0 0 1rem", color: "#111" }}>
                 Table of Contents
               </h2>
-              <ol style={{ margin: 0, paddingLeft: "1.25rem", display: "flex", flexDirection: "column", gap: "0.375rem" }}>
+              <ol style={{ margin: 0, paddingLeft: "1.25rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 {sections.map((s) => (
                   <li key={s.id}>
                     <a
                       href={`#${s.id}`}
-                      style={{ color: "var(--primary)", textDecoration: "none", fontSize: "0.875rem", lineHeight: 1.5 }}
+                      style={{ color: "#6B1A2A", textDecoration: "none", fontSize: "0.875rem", lineHeight: 1.5, fontWeight: 500 }}
                     >
                       {s.title}
                     </a>
@@ -515,21 +528,21 @@ export default function PrivacyPolicyPage() {
                 id={section.id}
                 style={{
                   background: "#fff",
-                  border: "1px solid var(--border-color)",
-                  borderRadius: "10px",
-                  padding: "1.75rem",
-                  boxShadow: "var(--shadow-sm)",
+                  border: "1px solid #E5D5C5",
+                  borderRadius: "14px",
+                  padding: "1.75rem 2rem",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
                   scrollMarginTop: "80px",
                 }}
               >
                 <h2
                   style={{
-                    fontSize: "1.125rem",
+                    fontSize: "1.25rem",
                     fontWeight: 700,
-                    color: "var(--primary)",
+                    color: "#6B1A2A",
                     margin: "0 0 1.25rem",
                     paddingBottom: "0.75rem",
-                    borderBottom: "2px solid var(--primary-light)",
+                    borderBottom: "1.5px solid #F8ECE8",
                   }}
                 >
                   {section.title}
@@ -542,17 +555,17 @@ export default function PrivacyPolicyPage() {
           {/* Bottom nav */}
           <div
             style={{
-              marginTop: "2rem",
+              marginTop: "2.25rem",
               display: "flex",
               gap: "1rem",
               flexWrap: "wrap",
               justifyContent: "center",
             }}
           >
-            <Link href="/terms" className="btn btn-primary">
+            <Link href="/terms" style={{ background: "#6B1A2A", color: "#fff", padding: "0.625rem 1.5rem", borderRadius: "30px", textDecoration: "none", fontWeight: 700, fontSize: "0.875rem" }}>
               Read Terms of Use →
             </Link>
-            <Link href="/" className="btn" style={{ background: "transparent", border: "1.5px solid var(--border-color)", color: "var(--text-medium)" }}>
+            <Link href="/" style={{ background: "#fff", border: "1.5px solid #6B1A2A", color: "#6B1A2A", padding: "0.625rem 1.5rem", borderRadius: "30px", textDecoration: "none", fontWeight: 700, fontSize: "0.875rem" }}>
               Back to Home
             </Link>
           </div>

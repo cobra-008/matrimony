@@ -4,26 +4,17 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
-import { Mail, Phone, MapPin, MessageCircle, Clock, Send, CheckCircle2 } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Send, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { useAuth } from "@/context/AuthContext";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      setForm((prev) => ({
-        ...prev,
-        name: prev.name || user.name || "",
-        email: prev.email || user.email || "",
-        phone: prev.phone || user.mobile || "",
-      }));
-    }
-  }, [user]);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,222 +23,451 @@ export default function ContactPage() {
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1200));
     setLoading(false);
     setSubmitted(true);
     toast.success("Message sent! We'll reply within 24 hours.");
   };
 
+  const CONTACT_INFO = [
+    {
+      icon: <Mail size={22} />,
+      label: "Email Support",
+      value: "support@elitetamilmatrimony.com",
+      href: "mailto:support@elitetamilmatrimony.com",
+      sub: "We reply within 24 hours",
+      color: "#6B1A2A",
+      bg: "#F5E6E9",
+    },
+    {
+      icon: <Phone size={22} />,
+      label: "Phone Support",
+      value: "+91 93606 53547",
+      href: "tel:+919360653547",
+      sub: "Mon–Sat, 9am–6pm IST",
+      color: "#2E7D32",
+      bg: "#E6F7EC",
+    },
+    {
+      icon: <MapPin size={22} />,
+      label: "Office Address",
+      value: "Sona Incubation Foundation, Sona College of Technology",
+      sub: "Junction Main Rd, Salem, Tamil Nadu 636005",
+      color: "#C8973A",
+      bg: "#FBF6EC",
+    },
+    {
+      icon: <Clock size={22} />,
+      label: "Support Hours",
+      value: "Monday – Saturday",
+      sub: "9:00 AM – 6:00 PM IST",
+      color: "#6B1A2A",
+      bg: "#F5E6E9",
+    },
+  ];
+
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--cream-bg)", minHeight: "100vh" }}>
-        {/* Hero */}
-        <section className="section" style={{ background: "var(--gradient-hero)" }}>
-          <div className="container text-center text-white">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", marginBottom: "0.75rem" }}>
-              <BackButton style={{ color: "#fff", background: "rgba(255,255,255,0.1)" }} />
-              <h1 className="text-heading-xl text-white" style={{ fontFamily: "var(--font-serif)", margin: 0 }}>
+      <main style={{ background: "#FAF4F0", minHeight: "calc(100vh - 120px)", padding: "1.5rem 0 4rem" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 1.25rem" }}>
+          {/* Back Button */}
+          <div style={{ marginBottom: "1rem" }}>
+            <BackButton style={{ background: "#fff", border: "1px solid #E5D5C5", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} />
+          </div>
+
+          {/* Hero Banner Card — Matching Terms, Privacy, About, and Success Stories */}
+          <div
+            style={{
+              background: "#6B1A2A",
+              borderRadius: "16px",
+              padding: "2.25rem 2.5rem",
+              marginBottom: "1.75rem",
+              color: "#fff",
+              boxShadow: "0 4px 20px rgba(107, 26, 42, 0.12)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "1.125rem", marginBottom: "0.75rem" }}>
+              <div
+                style={{
+                  background: "rgba(255, 255, 255, 0.12)",
+                  width: "52px",
+                  height: "52px",
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Mail size={28} className="text-white" />
+              </div>
+              <h1 style={{ margin: 0, fontSize: "clamp(2rem, 4vw, 2.5rem)", fontWeight: 800, letterSpacing: "-0.02em", color: "#fff", fontFamily: "var(--font-sans)" }}>
                 Contact Us
               </h1>
             </div>
-            <p className="text-white/70 max-w-md mx-auto text-sm">
+            <p style={{ margin: 0, color: "rgba(255, 255, 255, 0.9)", fontSize: "1.0625rem", lineHeight: 1.65, maxWidth: "750px", fontWeight: 400 }}>
               Our team is here to help. Reach out with questions, feedback, or support requests.
             </p>
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="container" style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 1rem" }}>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", alignItems: "flex-start" }}>
-              {/* Contact info */}
-              <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-                {[
-                  {
-                    icon: <Mail size={20} />,
-                    label: "Email Support",
-                    value: "support@elitetamilmatrimony.com",
-                    sub: "We reply within 24 hours",
-                    color: "var(--rose-primary)",
-                    bg: "var(--rose-50)",
-                  },
-                  {
-                    icon: <Phone size={20} />,
-                    label: "Phone Support",
-                    value: "+91 93606 53547",
-                    sub: "Mon–Sat, 9am–6pm IST",
-                    color: "hsl(142, 71%, 45%)",
-                    bg: "hsl(142, 71%, 95%)",
-                  },
-                  {
-                    icon: <MessageCircle size={20} />,
-                    label: "Live Chat",
-                    value: "Chat on the app",
-                    sub: "Available in the mobile app",
-                    color: "hsl(217, 91%, 55%)",
-                    bg: "hsl(217, 91%, 95%)",
-                  },
-                  {
-                    icon: <MapPin size={20} />,
-                    label: "Office",
-                    value: "2nd Floor, Sona College of Technology",
-                    sub: "Sona Valliappa Block, Sona Incubation Foundation, Junction Main Rd, Salem, Tamil Nadu 636005",
-                    color: "var(--saffron)",
-                    bg: "hsl(28, 88%, 95%)",
-                  },
-                  {
-                    icon: <Clock size={20} />,
-                    label: "Support Hours",
-                    value: "Mon–Sat",
-                    sub: "9:00 AM – 6:00 PM IST",
-                    color: "var(--gold-dark)",
-                    bg: "var(--gold-50)",
-                  },
-                ].map((item) => (
-                  <div key={item.label} className="card p-4" style={{ display: "flex", alignItems: "flex-start", gap: "1rem", background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)" }}>
-                    <div
-                      style={{
-                        width: "40px", height: "40px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                        background: item.bg, color: item.color
-                      }}
-                    >
-                      {item.icon}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: "0.875rem", marginTop: "2px" }}>{item.value}</div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px" }}>{item.sub}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Contact form */}
-              <div style={{ flex: "2 1 500px" }}>
-                <div className="card p-6 sm:p-8" style={{ background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-sm)", padding: "2rem" }}>
-                  {submitted ? (
-                    <div className="text-center py-10">
-                      <CheckCircle2 size={48} className="mx-auto mb-4 text-green-500" />
-                      <h3 className="font-bold text-[var(--text-primary)] text-xl mb-2" style={{ fontFamily: "var(--font-serif)" }}>
-                        Message Sent!
-                      </h3>
-                      <p className="text-sm text-[var(--text-secondary)] mb-6">
-                        Thank you for reaching out. Our team will reply within 24 hours at <strong>{form.email}</strong>.
-                      </p>
-                      <button
-                        onClick={() => { setSubmitted(false); setForm({ name: "", email: "", phone: "", subject: "", message: "" }); }}
-                        className="btn btn-outline"
-                      >
-                        Send Another Message
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <h2
-                        className="font-bold text-[var(--text-primary)] mb-6"
-                        style={{ fontFamily: "var(--font-serif)", fontSize: "1.3rem", marginBottom: "1.5rem" }}
-                      >
-                        Send us a message
-                      </h2>
-                      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
-                          <div style={{ flex: "1 1 200px" }}>
-                            <label className="form-label">Full Name *</label>
-                            <input
-                              type="text"
-                              className="form-input"
-                              placeholder="Your name"
-                              value={form.name}
-                              onChange={(e) => setForm({ ...form, name: e.target.value })}
-                              style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}
-                            />
-                          </div>
-                          <div style={{ flex: "1 1 200px" }}>
-                            <label className="form-label">Email *</label>
-                            <input
-                              type="email"
-                              className="form-input"
-                              placeholder="your@email.com"
-                              value={form.email}
-                              onChange={(e) => setForm({ ...form, email: e.target.value })}
-                              style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}
-                            />
-                          </div>
-                        </div>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
-                          <div style={{ flex: "1 1 200px" }}>
-                            <label className="form-label">Phone (optional)</label>
-                            <input
-                              type="tel"
-                              className="form-input"
-                              placeholder="+91 XXXXX XXXXX"
-                              value={form.phone}
-                              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                              style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}
-                            />
-                          </div>
-                          <div style={{ flex: "1 1 200px" }}>
-                            <label className="form-label">Subject</label>
-                            <select
-                              className="form-select"
-                              value={form.subject}
-                              onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                              style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)" }}
-                            >
-                              <option value="">Select a topic</option>
-                              <option value="account">Account Issues</option>
-                              <option value="billing">Billing & Subscription</option>
-                              <option value="profile">Profile Help</option>
-                              <option value="safety">Safety & Report</option>
-                              <option value="verification">Verification</option>
-                              <option value="feedback">Feedback</option>
-                              <option value="other">Other</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="form-label">Message *</label>
-                          <textarea
-                            className="form-input resize-none"
-                            rows={5}
-                            placeholder="Describe your query or feedback in detail..."
-                            value={form.message}
-                            onChange={(e) => setForm({ ...form, message: e.target.value })}
-                            style={{ width: "100%", padding: "0.75rem", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)", minHeight: "120px" }}
-                          />
-                          <div className="text-xs text-[var(--text-muted)] text-right mt-1">
-                            {form.message.length}/1000
-                          </div>
-                        </div>
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="btn btn-primary w-full justify-center"
-                        >
-                          {loading ? (
-                            <span className="flex items-center gap-2">
-                              <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                              Sending...
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-2">
-                              <Send size={16} />
-                              Send Message
-                            </span>
-                          )}
-                        </button>
-                      </form>
-                    </>
-                  )}
-                </div>
-              </div>
+            <div style={{ marginTop: "1.25rem", display: "flex", gap: "1.5rem", flexWrap: "wrap", fontSize: "0.875rem", color: "rgba(255, 255, 255, 0.85)", fontWeight: 500 }}>
+              <span>📞 24x7 Customer Support</span>
+              <span>📧 Fast Email Response</span>
+              <span>📍 Salem Headquarters</span>
             </div>
           </div>
-        </section>
+
+          {/* Main 2-Column Content Grid */}
+          <div className="contact-layout-grid">
+            {/* Left Column: Contact Cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              {CONTACT_INFO.map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #E5D5C5",
+                    borderRadius: "14px",
+                    padding: "1.25rem 1.5rem",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "1.125rem",
+                  }}
+                >
+                  {/* Icon Wrapper */}
+                  <div
+                    style={{
+                      width: "44px",
+                      height: "44px",
+                      borderRadius: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      background: item.bg,
+                      color: item.color,
+                      marginTop: "2px",
+                    }}
+                  >
+                    {item.icon}
+                  </div>
+
+                  {/* Text Information */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        color: "#6B1A2A",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {item.label}
+                    </div>
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        style={{
+                          fontSize: "0.9375rem",
+                          fontWeight: 700,
+                          color: "#111111",
+                          textDecoration: "none",
+                          lineHeight: 1.4,
+                          display: "block",
+                          wordBreak: "break-word",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "#6B1A2A")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "#111111")}
+                      >
+                        {item.value}
+                      </a>
+                    ) : (
+                      <div
+                        style={{
+                          fontSize: "0.9375rem",
+                          fontWeight: 700,
+                          color: "#111111",
+                          lineHeight: 1.4,
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {item.value}
+                      </div>
+                    )}
+                    <div style={{ fontSize: "0.8125rem", color: "#666666", marginTop: "4px", lineHeight: 1.45 }}>
+                      {item.sub}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Column: Contact Message Form */}
+            <div
+              style={{
+                background: "#fff",
+                border: "1px solid #E5D5C5",
+                borderRadius: "14px",
+                padding: "2rem 2.25rem",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+              }}
+            >
+              {submitted ? (
+                <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+                  <div
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      background: "#E6F7EC",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "0 auto 1.25rem",
+                      color: "#2E7D32",
+                    }}
+                  >
+                    <CheckCircle2 size={32} />
+                  </div>
+                  <h3 style={{ fontSize: "1.375rem", fontWeight: 700, color: "#111", margin: "0 0 0.5rem" }}>
+                    Message Sent!
+                  </h3>
+                  <p style={{ fontSize: "0.9375rem", color: "#555", lineHeight: 1.6, marginBottom: "1.75rem", maxWidth: "420px", margin: "0 auto 1.75rem" }}>
+                    Thank you for reaching out. Our support team will reply to <strong>{form.email}</strong> within 24 hours.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSubmitted(false);
+                      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+                    }}
+                    style={{
+                      background: "#fff",
+                      border: "1.5px solid #6B1A2A",
+                      color: "#6B1A2A",
+                      padding: "0.625rem 1.75rem",
+                      borderRadius: "30px",
+                      fontWeight: 700,
+                      fontSize: "0.875rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Send Another Message
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h2
+                    style={{
+                      fontSize: "1.25rem",
+                      fontWeight: 700,
+                      color: "#6B1A2A",
+                      margin: "0 0 1.5rem",
+                      paddingBottom: "0.75rem",
+                      borderBottom: "1.5px solid #F8ECE8",
+                    }}
+                  >
+                    Send us a message
+                  </h2>
+
+                  <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.125rem" }}>
+                    {/* Full Name & Email */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+                      <div>
+                        <label className="form-label" style={{ fontWeight: 600, color: "#333", fontSize: "0.8125rem" }}>
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          className="form-input"
+                          placeholder="Your name"
+                          value={form.name}
+                          onChange={(e) => setForm({ ...form, name: e.target.value })}
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem 1rem",
+                            border: "1.5px solid #E5D5C5",
+                            borderRadius: "8px",
+                            fontSize: "0.9375rem",
+                            outline: "none",
+                            background: "#fff",
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="form-label" style={{ fontWeight: 600, color: "#333", fontSize: "0.8125rem" }}>
+                          Email *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          className="form-input"
+                          placeholder="your@email.com"
+                          value={form.email}
+                          onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem 1rem",
+                            border: "1.5px solid #E5D5C5",
+                            borderRadius: "8px",
+                            fontSize: "0.9375rem",
+                            outline: "none",
+                            background: "#fff",
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Phone & Subject */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+                      <div>
+                        <label className="form-label" style={{ fontWeight: 600, color: "#333", fontSize: "0.8125rem" }}>
+                          Phone (optional)
+                        </label>
+                        <input
+                          type="tel"
+                          className="form-input"
+                          placeholder="+91 XXXXX XXXXX"
+                          value={form.phone}
+                          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem 1rem",
+                            border: "1.5px solid #E5D5C5",
+                            borderRadius: "8px",
+                            fontSize: "0.9375rem",
+                            outline: "none",
+                            background: "#fff",
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="form-label" style={{ fontWeight: 600, color: "#333", fontSize: "0.8125rem" }}>
+                          Subject
+                        </label>
+                        <select
+                          className="form-select"
+                          value={form.subject}
+                          onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                          style={{
+                            width: "100%",
+                            padding: "0.75rem 1rem",
+                            border: "1.5px solid #E5D5C5",
+                            borderRadius: "8px",
+                            fontSize: "0.9375rem",
+                            outline: "none",
+                            background: "#fff",
+                          }}
+                        >
+                          <option value="">Select a topic</option>
+                          <option value="account">Account Issues</option>
+                          <option value="billing">Billing &amp; Subscription</option>
+                          <option value="profile">Profile Help</option>
+                          <option value="safety">Safety &amp; Report</option>
+                          <option value="verification">Verification</option>
+                          <option value="feedback">Feedback</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Message */}
+                    <div>
+                      <label className="form-label" style={{ fontWeight: 600, color: "#333", fontSize: "0.8125rem" }}>
+                        Message *
+                      </label>
+                      <textarea
+                        required
+                        className="form-input"
+                        rows={5}
+                        placeholder="Describe your query or feedback in detail..."
+                        value={form.message}
+                        onChange={(e) => setForm({ ...form, message: e.target.value })}
+                        style={{
+                          width: "100%",
+                          padding: "0.75rem 1rem",
+                          border: "1.5px solid #E5D5C5",
+                          borderRadius: "8px",
+                          fontSize: "0.9375rem",
+                          outline: "none",
+                          background: "#fff",
+                          minHeight: "130px",
+                          resize: "vertical",
+                        }}
+                      />
+                      <div style={{ fontSize: "0.75rem", color: "#888", textAlign: "right", marginTop: "4px" }}>
+                        {form.message.length}/1000
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        background: "#6B1A2A",
+                        color: "#fff",
+                        padding: "0.875rem 2rem",
+                        borderRadius: "30px",
+                        fontWeight: 700,
+                        fontSize: "0.9375rem",
+                        border: "none",
+                        cursor: "pointer",
+                        transition: "background 0.15s, transform 0.1s",
+                        boxShadow: "0 4px 12px rgba(107, 26, 42, 0.2)",
+                        marginTop: "0.5rem",
+                      }}
+                    >
+                      {loading ? (
+                        <>
+                          <div
+                            style={{
+                              width: "18px",
+                              height: "18px",
+                              border: "2.5px solid rgba(255,255,255,0.3)",
+                              borderTopColor: "#fff",
+                              borderRadius: "50%",
+                              animation: "spin 0.75s linear infinite",
+                            }}
+                          />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send size={16} />
+                          Send Message
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       </main>
       <Footer />
+
+      <style>{`
+        .contact-layout-grid {
+          display: grid;
+          grid-template-columns: 380px 1fr;
+          gap: 1.75rem;
+          align-items: start;
+        }
+        @media (max-width: 900px) {
+          .contact-layout-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+        }
+      `}</style>
     </>
   );
 }
