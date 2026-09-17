@@ -44,42 +44,6 @@ export default function DailyMatchesCarousel() {
     if (user) load();
   }, [user?.id, load]);
 
-  const [avatarStartIndex, setAvatarStartIndex] = useState(0);
-  const [cardsToShow, setCardsToShow] = useState(6);
-
-  useEffect(() => {
-    const updateCardsToShow = () => {
-      if (typeof window !== "undefined") {
-        if (window.innerWidth < 500) setCardsToShow(3);
-        else if (window.innerWidth < 800) setCardsToShow(4);
-        else setCardsToShow(6);
-      }
-    };
-    updateCardsToShow();
-    window.addEventListener("resize", updateCardsToShow);
-    return () => window.removeEventListener("resize", updateCardsToShow);
-  }, []);
-
-  const handleNext = () => {
-    if (selectedIndex < profiles.length - 1) {
-      const nextIdx = selectedIndex + 1;
-      setSelectedIndex(nextIdx);
-      if (nextIdx >= avatarStartIndex + cardsToShow) {
-        setAvatarStartIndex(Math.min(profiles.length - cardsToShow, nextIdx - cardsToShow + 1));
-      }
-    }
-  };
-
-  const handlePrev = () => {
-    if (selectedIndex > 0) {
-      const prevIdx = selectedIndex - 1;
-      setSelectedIndex(prevIdx);
-      if (prevIdx < avatarStartIndex) {
-        setAvatarStartIndex(Math.max(0, prevIdx));
-      }
-    }
-  };
-
   const [sentInterests, setSentInterests] = useState<Set<string>>(new Set());
 
   const handleSendInterest = async (p: RegisteredUser) => {
@@ -98,7 +62,7 @@ export default function DailyMatchesCarousel() {
 
   const handleSkip = () => {
     if (selectedIndex < profiles.length - 1) {
-      handleNext();
+      setSelectedIndex(selectedIndex + 1);
     } else {
       toast.success("You've viewed all daily recommendations!");
     }
@@ -123,7 +87,7 @@ export default function DailyMatchesCarousel() {
           .daily-rec-card { flex-direction: column !important; min-height: unset !important; }
           .daily-rec-photo-col { width: 100% !important; height: 260px !important; }
           .daily-rec-detail-col { padding: 1.25rem !important; }
-          .daily-rec-action-row { flex-wrap: nowrap !important; gap: 0.5rem !important; overflow-x: auto; }
+          .daily-rec-action-row { flex-wrap: wrap !important; gap: 0.5rem !important; }
           .daily-rec-info-grid { grid-template-columns: 120px 1fr !important; }
         }
         @media (min-width: 600px) {
@@ -141,61 +105,29 @@ export default function DailyMatchesCarousel() {
             {profiles.length > 0 ? `${profiles.length} profiles for today` : "Loading…"}
           </p>
         </div>
-        {/* Navigation Arrow buttons */}
+        {/* Circle arrow button — links to Daily Matches section */}
         {!loading && profiles.length > 0 && (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            {selectedIndex > 0 && (
-              <button
-                type="button"
-                onClick={handlePrev}
-                title="Previous profile"
-                aria-label="Previous profile"
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  width: "40px", height: "40px",
-                  borderRadius: "50%",
-                  border: "2px solid var(--primary)",
-                  color: "var(--primary)",
-                  background: "#fff",
-                  cursor: "pointer",
-                  transition: "background 0.2s, color 0.2s",
-                  flexShrink: 0,
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "var(--primary)"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "#fff"; (e.currentTarget as HTMLButtonElement).style.color = "var(--primary)"; }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-            )}
-
-            {selectedIndex < profiles.length - 1 && (
-              <button
-                type="button"
-                onClick={handleNext}
-                title="Next profile"
-                aria-label="Next profile"
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  width: "40px", height: "40px",
-                  borderRadius: "50%",
-                  border: "2px solid var(--primary)",
-                  color: "var(--primary)",
-                  background: "#fff",
-                  cursor: "pointer",
-                  transition: "background 0.2s, color 0.2s",
-                  flexShrink: 0,
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "var(--primary)"; (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "#fff"; (e.currentTarget as HTMLButtonElement).style.color = "var(--primary)"; }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-            )}
-          </div>
+          <Link
+            href="/matches?tab=daily_matches"
+            title="View all daily matches"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: "40px", height: "40px",
+              borderRadius: "50%",
+              border: "2px solid var(--primary)",
+              color: "var(--primary)",
+              background: "#fff",
+              textDecoration: "none",
+              transition: "background 0.2s, color 0.2s",
+              flexShrink: 0,
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = "var(--primary)"; (e.currentTarget as HTMLAnchorElement).style.color = "#fff"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = "#fff"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--primary)"; }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </Link>
         )}
       </div>
 
@@ -212,58 +144,42 @@ export default function DailyMatchesCarousel() {
               Daily Pick {selectedIndex + 1} of {profiles.length}
             </span>
           </div>
-          {/* Avatar Carousel - Fixed grid, NO horizontal scrollbar */}
+          {/* Horizontal Avatar Carousel */}
           <div 
             style={{
-              position: "relative",
+              display: "flex",
+              gap: "1rem",
+              overflowX: "auto",
+              paddingBottom: "1rem",
               marginBottom: "1rem",
+              scrollbarWidth: "thin"
             }}
           >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${Math.min(profiles.length, cardsToShow)}, 1fr)`,
-                gap: "1rem",
-                overflow: "hidden",
-                paddingBottom: "0.5rem",
-              }}
-            >
-              {profiles.slice(avatarStartIndex, avatarStartIndex + cardsToShow).map((p, offsetIdx) => {
-                const realIdx = avatarStartIndex + offsetIdx;
-                return (
-                  <div
-                    key={p.id}
-                    onClick={() => {
-                      setSelectedIndex(realIdx);
-                      if (realIdx >= avatarStartIndex + cardsToShow) {
-                        setAvatarStartIndex(Math.min(profiles.length - cardsToShow, realIdx - cardsToShow + 1));
-                      } else if (realIdx < avatarStartIndex) {
-                        setAvatarStartIndex(Math.max(0, realIdx));
-                      }
-                    }}
-                    style={{
-                      width: "100%",
-                      aspectRatio: "1/1",
-                      borderRadius: "16px",
-                      overflow: "hidden",
-                      cursor: "pointer",
-                      border: selectedIndex === realIdx ? "3px solid var(--primary)" : "3px solid transparent",
-                      transition: "border 0.2s ease, transform 0.2s ease",
-                      transform: selectedIndex === realIdx ? "scale(1.03)" : "scale(1)",
-                      position: "relative",
-                      background: "#f0f0f0",
-                    }}
-                  >
-                    {p.photoUrl
-                      ? <img src={p.photoUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <GenderAvatar gender={p.gender} />}
-                    {selectedIndex !== realIdx && (
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.3)" }} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {visibleProfiles.map((p, idx) => (
+              <div
+                key={p.id}
+                onClick={() => setSelectedIndex(idx)}
+                style={{
+                  flexShrink: 0,
+                  width: "100px",
+                  height: "100px",
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  border: selectedIndex === idx ? "3px solid var(--primary)" : "3px solid transparent",
+                  transition: "border 0.2s ease, transform 0.2s ease",
+                  transform: selectedIndex === idx ? "scale(1.05)" : "scale(1)",
+                  position: "relative"
+                }}
+              >
+                {p.photoUrl
+                  ? <img src={p.photoUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  : <GenderAvatar gender={p.gender} />}
+                {selectedIndex !== idx && (
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.3)" }} />
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Main Profile Card */}
@@ -284,7 +200,7 @@ export default function DailyMatchesCarousel() {
               {/* Left Side: Large Photo */}
               <div className="daily-rec-photo-col" style={{ width: "min(40%, 340px)", flexShrink: 0, position: "relative" }}>
                 {activeProfile.photoUrl
-                  ? <img src={activeProfile.photoUrl} alt={activeProfile.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%", display: "block" }} />
+                  ? <img src={activeProfile.photoUrl} alt={activeProfile.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   : <GenderAvatar gender={activeProfile.gender} />}
                 <div style={{ 
                   position: "absolute", 
@@ -391,81 +307,89 @@ export default function DailyMatchesCarousel() {
                     borderTop: "1px solid var(--border-light)",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "flex-end",
+                    justifyContent: "space-between",
                     gap: "0.75rem",
-                    flexWrap: "nowrap",
                   }}
                 >
                   <button
                     onClick={handleDontShow}
                     style={{
-                      display: "flex", alignItems: "center", gap: "0.4rem",
-                      padding: "0.5rem 1.125rem", borderRadius: "30px",
-                      border: "1.5px solid #E5D5C5", background: "#fff",
-                      color: "#000000", fontWeight: 600, cursor: "pointer",
-                      fontSize: "0.875rem", minHeight: "40px", whiteSpace: "nowrap",
-                      fontFamily: "var(--font-sans)",
+                      display: "flex", alignItems: "center", gap: "0.5rem",
+                      padding: "0.625rem 1rem", borderRadius: "30px",
+                      border: "1px solid var(--border-color)", background: "#fff",
+                      color: "var(--text-medium)", fontWeight: 600, cursor: "pointer",
+                      fontSize: "0.875rem", minHeight: "44px", whiteSpace: "nowrap",
                     }}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2.5">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
                     Don&apos;t Show
                   </button>
 
-                  <button
-                    onClick={handleSkip}
-                    style={{
-                      display: "flex", alignItems: "center", gap: "0.4rem",
-                      padding: "0.5rem 1.25rem", borderRadius: "30px",
-                      border: "1.5px solid #6B1A2A", background: "#fff",
-                      color: "#6B1A2A", fontWeight: 700, cursor: "pointer",
-                      fontSize: "0.875rem", minHeight: "40px", whiteSpace: "nowrap",
-                      fontFamily: "var(--font-sans)",
-                    }}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B1A2A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="7 17 12 12 7 7" />
-                      <polyline points="13 17 18 12 13 7" />
-                    </svg>
-                    Skip
-                  </button>
-
-                  {sentInterests.has(activeProfile.id) ? (
-                    <button
+                  <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
+                    <Link
+                      href={`/profile/${activeProfile.id}?from=matches`}
                       style={{
-                        display: "flex", alignItems: "center", gap: "0.4rem",
-                        padding: "0.5rem 1.375rem", borderRadius: "30px",
-                        border: "1.5px solid #6B1A2A", background: "#FEF0F0",
-                        color: "#6B1A2A", fontWeight: 700, cursor: "default",
-                        fontSize: "0.875rem", minHeight: "40px", whiteSpace: "nowrap",
-                        fontFamily: "var(--font-sans)",
-                      }}
-                      disabled
-                    >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B1A2A" strokeWidth="2.5">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      Interest Sent ✓
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleSendInterest(activeProfile)}
-                      style={{
-                        display: "flex", alignItems: "center", gap: "0.4rem",
-                        padding: "0.5rem 1.375rem", borderRadius: "30px",
-                        border: "none", background: "#6B1A2A",
-                        color: "#fff", fontWeight: 700, cursor: "pointer",
-                        fontSize: "0.875rem", minHeight: "40px", whiteSpace: "nowrap",
-                        fontFamily: "var(--font-sans)",
+                        display: "flex", alignItems: "center", gap: "0.5rem",
+                        padding: "0.625rem 1.5rem", borderRadius: "30px",
+                        border: "1.5px solid var(--primary)", background: "#fff",
+                        color: "var(--primary)", fontWeight: 700, cursor: "pointer",
+                        fontSize: "0.875rem", minHeight: "44px", textDecoration: "none",
                       }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      View Profile
+                    </Link>
+                    <button
+                      onClick={handleSkip}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "0.5rem",
+                        padding: "0.625rem 1.5rem", borderRadius: "30px",
+                        border: "1px solid var(--primary)", background: "#fff",
+                        color: "var(--primary)", fontWeight: 700, cursor: "pointer",
+                        fontSize: "0.875rem", minHeight: "44px",
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M13 5l7 7-7 7M5 5l7 7-7 7" />
                       </svg>
-                      Send Interest
+                      Skip
                     </button>
-                  )}
+                    {sentInterests.has(activeProfile.id) ? (
+                      <button
+                        style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem",
+                          padding: "0.625rem 1.75rem", borderRadius: "30px",
+                          border: "1.5px solid #6B1A2A", background: "#FEF0F0",
+                          color: "#6B1A2A", fontWeight: 700, cursor: "default",
+                          fontSize: "0.875rem", minHeight: "44px",
+                        }}
+                        disabled
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Interest Sent
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleSendInterest(activeProfile)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem",
+                          padding: "0.625rem 1.75rem", borderRadius: "30px",
+                          border: "none", background: "var(--primary)",
+                          color: "#fff", fontWeight: 700, cursor: "pointer",
+                          fontSize: "0.875rem", minHeight: "44px",
+                        }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="white"/>
+                        </svg>
+                        Send Interest
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

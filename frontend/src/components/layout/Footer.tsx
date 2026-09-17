@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useMembership } from "@/hooks/useMembership";
-import { usePageTransition } from "@/components/ui/NavigationLoader";
 
 const FOOTER_LINKS = {
   "Help & Support": [
@@ -99,13 +98,6 @@ const SOCIAL_LINKS = [
 export default function Footer() {
   const { user } = useAuth();
   const { isPremium } = useMembership();
-  const { startNavigation } = usePageTransition();
-
-  const handleFooterLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    startNavigation(href);
-  };
-
   return (
     <>
       {/* ── Pre-Footer CTA Band ─────────────────────────────────────────── */}
@@ -257,7 +249,7 @@ export default function Footer() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <Link href="/" onClick={(e) => handleFooterLinkClick(e, "/")} style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
+              <Link href="/" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
                 <Image
                   src="/logo-transparent.png"
                   alt="Elite Tamil Matrimony"
@@ -340,7 +332,7 @@ export default function Footer() {
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 1.25rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                 {FOOTER_LINKS["Help & Support"].map((link) => (
                   <li key={link.href + link.label}>
-                    <Link href={link.href} onClick={(e) => handleFooterLinkClick(e, link.href)} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
+                    <Link href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
                       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>
                       {link.label}
@@ -356,7 +348,7 @@ export default function Footer() {
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                 {FOOTER_LINKS["Information"].map((link) => (
                   <li key={link.href + link.label}>
-                    <Link href={link.href} onClick={(e) => handleFooterLinkClick(e, link.href)} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
+                    <Link href={link.href} style={{ fontSize: "0.8125rem", color: "rgba(255,255,255,0.55)", textDecoration: "none", lineHeight: 1.6 }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
                       onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.55)")}>
                       {link.label}

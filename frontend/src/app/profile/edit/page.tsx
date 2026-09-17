@@ -731,7 +731,22 @@ function EditProfileContent() {
           {user && (<>
           {/* ── Back Button ── */}
           <div style={{ marginBottom: "1rem" }}>
-            <BackButton onClick={handleBack} style={{ background: "#fff", border: "1px solid #E5D5C5", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }} />
+            <button
+              onClick={handleBack}
+              aria-label="Go back"
+              style={{
+                display: "flex", alignItems: "center", gap: "0.25rem",
+                background: "#fff", border: "1px solid #E5D5C5",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                cursor: "pointer", color: "var(--text-primary, #111)",
+                padding: "0.25rem 0.375rem", borderRadius: "6px",
+                fontFamily: "var(--font-sans)", fontSize: "0.875rem", fontWeight: 600,
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
           </div>
 
           {/* ── Page header ── */}
