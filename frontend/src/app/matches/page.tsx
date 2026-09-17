@@ -766,6 +766,7 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
   isPremium: boolean;
 }) {
   const router = useRouter();
+  const oppositeGender = user.gender === "male" ? "female" : user.gender === "female" ? "male" : undefined;
 
   const [activeSection, setActiveSection] = useState("daily_matches");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -775,11 +776,11 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
 
 
   useEffect(() => {
-    if (tab && tab !== activeSection) {
-      setActiveSection(tab);
+    if (initialTab && initialTab !== activeSection) {
+      setActiveSection(initialTab);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
+  }, [initialTab]);
 
   // Lock body scroll when mobile sidebar is open to prevent background scrolling
   useEffect(() => {
@@ -790,25 +791,6 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
     }
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
-
-  const router = useRouter();
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login");
-    }
-  }, [authLoading, user, router]);
-
-  if (authLoading || !user) {
-    return (
-      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navbar />
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
-          Loading...
-        </div>
-        <Footer />
-      </div>
-    );
-  }
 
   // Keep sessionStorage in sync whenever the user changes section
   useEffect(() => {
@@ -843,33 +825,7 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
   // Track last user ID to detect account switches
   const lastUserIdRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (tab && tab !== activeSection) {
-      setActiveSection(tab);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
 
-  // Lock body scroll when mobile sidebar is open to prevent background scroll bleed
-  useEffect(() => {
-    if (sidebarOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [sidebarOpen]);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login");
-    }
-  }, [authLoading, user, router]);
-
-  // Keep sessionStorage in sync whenever the user changes section
-  useEffect(() => {
-    sessionStorage.setItem("matches_section", activeSection);
-  }, [activeSection]);
 
   // Persist filter state whenever it changes
   useEffect(() => { sessionStorage.setItem("matches_nameSearch", nameSearch); }, [nameSearch]);
@@ -1029,17 +985,7 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id, hiddenIds.size]);
 
-  if (authLoading || !user) {
-    return (
-      <div style={{ background: "#FDF8F5", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navbar />
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--primary)" }}>
-          Loading...
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+
 
   // Client-side chip filtering + hide + name search + advanced filters
   // Runs even when user is null so hook count never changes
@@ -1803,10 +1749,17 @@ function MatchesGuard() {
   const searchParams = useSearchParams();
   const tab = searchParams?.get("tab") ?? null;
   const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
 
   // Server render + first client paint: return a static spinner with NO auth-aware components.
   // This guarantees server HTML === client HTML, eliminating hydration mismatch.
