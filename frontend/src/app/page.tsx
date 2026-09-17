@@ -1373,7 +1373,7 @@ function GuestSuccessStories() {
             >
               {story.photo_url ? (
                 <div style={{ height: "160px", width: "100%", overflow: "hidden", background: "#f0f0f0" }}>
-                  <img src={story.photo_url} alt={story.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={story.photo_url} alt={story.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
                 </div>
               ) : (
                 <div style={{ height: "100px", background: "var(--gradient-hero)", display: "flex", alignItems: "center", justifyContent: "center" }}>
