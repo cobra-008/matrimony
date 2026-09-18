@@ -9,6 +9,7 @@ import ProfileCard from "@/components/ui/ProfileCard";
 import { MOCK_PROFILES, MOCK_GROOM_PROFILES } from "@/data/mock-profiles";
 import { RELIGIONS, MOTHER_TONGUES, EDUCATION_LEVELS } from "@/data/matrimony-data";
 import { Search, SlidersHorizontal, X, Grid3X3, List } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const ALL_BRIDES = MOCK_PROFILES;
 const ALL_GROOMS = MOCK_GROOM_PROFILES;
@@ -63,7 +64,46 @@ function SearchContent() {
     sessionStorage.setItem("search_regular_f", JSON.stringify(filters));
   }, [query, filters]);
 
-  const base = lookingFor === "bride" ? ALL_BRIDES : ALL_GROOMS;
+  const [dbProfiles, setDbProfiles] = useState<any[]>([]);
+  const [loadingProfiles, setLoadingProfiles] = useState(true);
+
+  useEffect(() => {
+    async function fetchRealProfiles() {
+      setLoadingProfiles(true);
+      const gender = lookingFor === "bride" ? "female" : "male";
+      const { data } = await supabase
+        .from('profiles')
+        .select('*, photos:profile_photos(*)')
+        .eq('gender', gender)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (data) {
+        const mapped = data.map((row: any) => ({
+          id: row.id,
+          name: row.name || "Unknown",
+          age: row.dob ? Math.floor((Date.now() - new Date(row.dob).getTime()) / (365.25 * 24 * 3600 * 1000)) : 0,
+          location: [row.city, row.state].filter(Boolean).join(", ") || "India",
+          occupation: row.occupation || "",
+          education: row.education || "",
+          religion: row.religion || "",
+          community: row.caste || "",
+          compatibilityScore: Math.floor(Math.random() * 30) + 60, // Mock score for now
+          isVerified: row.is_verified || false,
+          isOnline: row.is_online || false,
+          isPremium: row.is_premium || false,
+          photoUrl: row.photos && row.photos.length > 0 ? row.photos[0].url : row.photo_url,
+          matchReasons: [],
+          gender: row.gender,
+        }));
+        setDbProfiles(mapped);
+      }
+      setLoadingProfiles(false);
+    }
+    fetchRealProfiles();
+  }, [lookingFor]);
+
+  const base = dbProfiles;
 
   const filtered = base.filter((p) => {
     if (query) {
