@@ -3,7 +3,7 @@
 // Activated only when user accepts cookie consent.
 // Caches the app shell, static assets, and key pages for offline/fast loading.
 
-const CACHE_NAME = "etm-v1";
+const CACHE_NAME = "etm-v2";
 
 // Assets to pre-cache on install
 const PRECACHE_URLS = [
@@ -43,8 +43,10 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       caches.match(event.request).then(
         (cached) => cached || fetch(event.request).then((res) => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          if (res && res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
           return res;
         })
       )
@@ -52,12 +54,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // For HTML pages — network-first, fall back to cache
+  // For HTML pages and RSC payloads — network-first, fall back to cache
   event.respondWith(
     fetch(event.request)
       .then((res) => {
-        const clone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        if (res && res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
         return res;
       })
       .catch(() => caches.match(event.request))
