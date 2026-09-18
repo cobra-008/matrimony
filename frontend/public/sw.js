@@ -32,8 +32,8 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // Don't intercept non-GET requests or API calls
-  if (event.request.method !== "GET" || url.pathname.startsWith("/api/")) return;
+  // Don't intercept non-GET requests, API calls, or unsupported schemes
+  if (event.request.method !== "GET" || url.pathname.startsWith("/api/") || !url.protocol.startsWith('http')) return;
 
   // For static assets — cache-first
   if (

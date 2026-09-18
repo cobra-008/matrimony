@@ -1197,9 +1197,18 @@ export async function shortlistProfile(
   userId: string,
   targetId: string
 ): Promise<void> {
-  await supabase
+  const { data: existing } = await supabase
     .from('shortlists')
-    .upsert({ user_id: userId, target_id: targetId });
+    .select('id')
+    .eq('user_id', userId)
+    .eq('target_id', targetId)
+    .maybeSingle();
+
+  if (!existing) {
+    await supabase
+      .from('shortlists')
+      .insert({ user_id: userId, target_id: targetId });
+  }
 }
 
 /**
@@ -1279,13 +1288,25 @@ export async function sendInterest(
   receiverId: string,
   message?: string
 ): Promise<{ error?: string }> {
-  const { error } = await supabase
+  const { data: existing } = await supabase
     .from('interests')
-    .upsert(
-      { sender_id: senderId, receiver_id: receiverId, status: 'pending', message: message || null },
-      { onConflict: 'sender_id,receiver_id', ignoreDuplicates: false }
-    );
-  return { error: error?.message };
+    .select('id')
+    .eq('sender_id', senderId)
+    .eq('receiver_id', receiverId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from('interests')
+      .update({ status: 'pending', message: message || null })
+      .eq('id', existing.id);
+    return { error: error?.message };
+  } else {
+    const { error } = await supabase
+      .from('interests')
+      .insert({ sender_id: senderId, receiver_id: receiverId, status: 'pending', message: message || null });
+    return { error: error?.message };
+  }
 }
 
 /**
