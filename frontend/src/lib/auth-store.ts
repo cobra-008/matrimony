@@ -1197,6 +1197,11 @@ export async function shortlistProfile(
   userId: string,
   targetId: string
 ): Promise<void> {
+  if (targetId.startsWith('ETM')) {
+    console.log(`[Mock] Shortlisted profile ${targetId}`);
+    return;
+  }
+
   const { data: existing } = await supabase
     .from('shortlists')
     .select('id')
@@ -1218,6 +1223,7 @@ export async function removeShortlist(
   userId: string,
   targetId: string
 ): Promise<void> {
+  if (targetId.startsWith('ETM')) return;
   await supabase
     .from('shortlists')
     .delete()
@@ -1248,6 +1254,7 @@ export async function recordProfileView(
   viewerId: string,
   viewedId: string
 ): Promise<void> {
+  if (viewedId.startsWith('ETM')) return;
   await supabase
     .from('profile_views')
     .insert({ viewer_id: viewerId, viewed_id: viewedId });
@@ -1288,6 +1295,11 @@ export async function sendInterest(
   receiverId: string,
   message?: string
 ): Promise<{ error?: string }> {
+  if (receiverId.startsWith('ETM')) {
+    console.log(`[Mock] Sent interest to ${receiverId}`);
+    return {};
+  }
+
   const { data: existing } = await supabase
     .from('interests')
     .select('id')
@@ -1434,6 +1446,7 @@ export async function getInterestStatus(
  * Check if userId has shortlisted targetId.
  */
 export async function isShortlisted(userId: string, targetId: string): Promise<boolean> {
+  if (targetId.startsWith('ETM')) return false;
   const { data } = await supabase
     .from('shortlists')
     .select('id')
@@ -2334,6 +2347,7 @@ export async function recordProfileViewWithNotification(
   viewedId: string,
   viewerName?: string
 ): Promise<void> {
+  if (viewedId.startsWith('ETM')) return;
   const { data: existing } = await supabase
     .from('profile_views')
     .select('id')
@@ -2366,9 +2380,23 @@ export async function shortlistProfileWithNotification(
   targetId: string,
   userName?: string
 ): Promise<void> {
-  await supabase
+  if (targetId.startsWith('ETM')) {
+    console.log(`[Mock] Shortlisted profile with notification ${targetId}`);
+    return;
+  }
+
+  const { data: existing } = await supabase
     .from('shortlists')
-    .upsert({ user_id: userId, target_id: targetId });
+    .select('id')
+    .eq('user_id', userId)
+    .eq('target_id', targetId)
+    .maybeSingle();
+
+  if (!existing) {
+    await supabase
+      .from('shortlists')
+      .insert({ user_id: userId, target_id: targetId });
+  }
 
   await createNotification(
     targetId,
@@ -2390,14 +2418,33 @@ export async function sendInterestWithNotification(
   senderName?: string,
   message?: string
 ): Promise<{ error?: string }> {
-  const { error } = await supabase
-    .from('interests')
-    .upsert(
-      { sender_id: senderId, receiver_id: receiverId, status: 'pending', message: message || null },
-      { onConflict: 'sender_id,receiver_id', ignoreDuplicates: false }
-    );
+  if (receiverId.startsWith('ETM')) {
+    console.log(`[Mock] Sent interest with notification to ${receiverId}`);
+    return {};
+  }
 
-  if (!error) {
+  let finalError;
+  const { data: existing } = await supabase
+    .from('interests')
+    .select('id')
+    .eq('sender_id', senderId)
+    .eq('receiver_id', receiverId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase
+      .from('interests')
+      .update({ status: 'pending', message: message || null })
+      .eq('id', existing.id);
+    finalError = error;
+  } else {
+    const { error } = await supabase
+      .from('interests')
+      .insert({ sender_id: senderId, receiver_id: receiverId, status: 'pending', message: message || null });
+    finalError = error;
+  }
+
+  if (!finalError) {
     await createNotification(
       receiverId,
       'interest',
