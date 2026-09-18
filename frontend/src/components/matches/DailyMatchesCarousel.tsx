@@ -173,7 +173,7 @@ export default function DailyMatchesCarousel() {
                 }}
               >
                 {p.photoUrl
-                  ? <img src={p.photoUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ? <img src={p.photoUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
                   : <GenderAvatar gender={p.gender} />}
                 {selectedIndex !== idx && (
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.3)" }} />
@@ -200,7 +200,7 @@ export default function DailyMatchesCarousel() {
               {/* Left Side: Large Photo */}
               <div className="daily-rec-photo-col" style={{ width: "min(40%, 340px)", flexShrink: 0, position: "relative" }}>
                 {activeProfile.photoUrl
-                  ? <img src={activeProfile.photoUrl} alt={activeProfile.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ? <img src={activeProfile.photoUrl} alt={activeProfile.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
                   : <GenderAvatar gender={activeProfile.gender} />}
                 <div style={{ 
                   position: "absolute", 
@@ -307,8 +307,8 @@ export default function DailyMatchesCarousel() {
                     borderTop: "1px solid var(--border-light)",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
                     gap: "0.75rem",
+                    flexWrap: "wrap"
                   }}
                 >
                   <button
@@ -327,69 +327,69 @@ export default function DailyMatchesCarousel() {
                     Don&apos;t Show
                   </button>
 
-                  <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
-                    <Link
-                      href={`/profile/${activeProfile.id}?from=matches`}
-                      style={{
-                        display: "flex", alignItems: "center", gap: "0.5rem",
-                        padding: "0.625rem 1.5rem", borderRadius: "30px",
-                        border: "1.5px solid var(--primary)", background: "#fff",
-                        color: "var(--primary)", fontWeight: 700, cursor: "pointer",
-                        fontSize: "0.875rem", minHeight: "44px", textDecoration: "none",
-                      }}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      View Profile
-                    </Link>
+                  <Link
+                    href={`/profile/${activeProfile.id}?from=matches`}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "0.5rem",
+                      padding: "0.625rem 1.5rem", borderRadius: "30px",
+                      border: "1.5px solid var(--primary)", background: "#fff",
+                      color: "var(--primary)", fontWeight: 700, cursor: "pointer",
+                      fontSize: "0.875rem", minHeight: "44px", textDecoration: "none",
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    View Profile
+                  </Link>
+
+                  <button
+                    onClick={handleSkip}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "0.5rem",
+                      padding: "0.625rem 1.5rem", borderRadius: "30px",
+                      border: "1px solid var(--primary)", background: "#fff",
+                      color: "var(--primary)", fontWeight: 700, cursor: "pointer",
+                      fontSize: "0.875rem", minHeight: "44px",
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                    Skip
+                  </button>
+
+                  {sentInterests.has(activeProfile.id) ? (
                     <button
-                      onClick={handleSkip}
                       style={{
                         display: "flex", alignItems: "center", gap: "0.5rem",
-                        padding: "0.625rem 1.5rem", borderRadius: "30px",
-                        border: "1px solid var(--primary)", background: "#fff",
-                        color: "var(--primary)", fontWeight: 700, cursor: "pointer",
+                        padding: "0.625rem 1.75rem", borderRadius: "30px",
+                        border: "1.5px solid #6B1A2A", background: "#FEF0F0",
+                        color: "#6B1A2A", fontWeight: 700, cursor: "default",
+                        fontSize: "0.875rem", minHeight: "44px",
+                      }}
+                      disabled
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      Interest Sent
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleSendInterest(activeProfile)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "0.5rem",
+                        padding: "0.625rem 1.75rem", borderRadius: "30px",
+                        border: "none", background: "var(--primary)",
+                        color: "#fff", fontWeight: 700, cursor: "pointer",
                         fontSize: "0.875rem", minHeight: "44px",
                       }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="white"/>
                       </svg>
-                      Skip
+                      Send Interest
                     </button>
-                    {sentInterests.has(activeProfile.id) ? (
-                      <button
-                        style={{
-                          display: "flex", alignItems: "center", gap: "0.5rem",
-                          padding: "0.625rem 1.75rem", borderRadius: "30px",
-                          border: "1.5px solid #6B1A2A", background: "#FEF0F0",
-                          color: "#6B1A2A", fontWeight: 700, cursor: "default",
-                          fontSize: "0.875rem", minHeight: "44px",
-                        }}
-                        disabled
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        Interest Sent
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleSendInterest(activeProfile)}
-                        style={{
-                          display: "flex", alignItems: "center", gap: "0.5rem",
-                          padding: "0.625rem 1.75rem", borderRadius: "30px",
-                          border: "none", background: "var(--primary)",
-                          color: "#fff", fontWeight: 700, cursor: "pointer",
-                          fontSize: "0.875rem", minHeight: "44px",
-                        }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" fill="white"/>
-                        </svg>
-                        Send Interest
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
