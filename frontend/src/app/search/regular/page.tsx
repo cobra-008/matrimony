@@ -123,36 +123,9 @@ function SearchContent() {
 
   // Restore and track scroll position
   useEffect(() => {
-    const saved = sessionStorage.getItem("search_regular_scroll");
-    if (saved) {
-      const scrollY = parseInt(saved, 10);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.scrollTo(0, scrollY);
-        });
-      });
-    }
-    
-    const handleScroll = () => {
-      sessionStorage.setItem("search_regular_scroll", String(window.scrollY));
-    };
-    
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const resetFilters = () => {
-    setQuery("");
-    setFilters({ religion: "", mother_tongue: "", age_min: "18", age_max: "45", education: "", verified_only: false });
-    sessionStorage.removeItem("search_regular_q");
-    sessionStorage.removeItem("search_regular_f");
-    sessionStorage.removeItem("search_filters_state");
-  };
-
-  return (
-    <>
-      <Navbar />
-      <main style={{ background: "var(--bg-page)", minHeight: "100vh", paddingTop: "70px" }}>
+    requestAnimationFrame(() => {
+        window.scrollTo(0, 0);
+      });>
         {/* Search bar — sticky */}
         <div
           className="search-regular-sticky"

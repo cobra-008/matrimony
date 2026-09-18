@@ -771,15 +771,20 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
   const [activeSection, setActiveSection] = useState("your_matches");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      document.documentElement.style.scrollBehavior = "auto";
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-      const vp = document.getElementById("app-scroll-viewport");
-      if (vp) vp.scrollTop = 0;
-      const timer = setTimeout(() => { document.documentElement.style.scrollBehavior = ""; }, 50);
-      return () => clearTimeout(timer);
+            if (typeof window !== "undefined") {
+      const resetScroll = () => {
+        document.documentElement.style.scrollBehavior = "auto";
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        const vp = document.getElementById("app-scroll-viewport");
+        if (vp) vp.scrollTop = 0;
+      };
+      resetScroll();
+      const t1 = setTimeout(resetScroll, 10);
+      const t2 = setTimeout(resetScroll, 50);
+      const t3 = setTimeout(() => { document.documentElement.style.scrollBehavior = ""; }, 100);
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
     }
   }, [activeSection]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -965,27 +970,16 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, user?.id]);
 
-  // Restore scroll position of the right panel when navigating back from a profile or switching sections
+  // Scroll right panel to top when navigating back from a profile or switching sections
   useEffect(() => {
     if (loading) return; // wait until profiles have loaded and rendered
-    const saved = sessionStorage.getItem(`matches_scroll_${activeSection}`);
-    if (saved) {
-      const scrollTop = parseInt(saved, 10);
-      // Double RAF: first RAF waits for paint, second waits for layout
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (rightPanelRef.current) {
-            rightPanelRef.current.scrollTop = scrollTop;
-          }
-        });
-      });
-    } else {
-      // If no saved scroll, go to top
-       if (rightPanelRef.current) {
+        if (rightPanelRef.current) {
           rightPanelRef.current.scrollTop = 0;
-       }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        }
+      });
+    });
   }, [loading, activeSection]);
 
   // For hidden profiles section
@@ -1251,7 +1245,6 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
           {/* ── MAIN ────────────────────────────────────────────────────── */}
           <div
             ref={rightPanelRef}
-            onScroll={(e) => sessionStorage.setItem(`matches_scroll_${activeSection}`, String(e.currentTarget.scrollTop))}
             style={{ flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "2px", paddingBottom: "2rem" }}>
             {/* Mobile: Section select button */}
             <div className="matches-mobile-header" style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>

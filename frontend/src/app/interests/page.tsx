@@ -555,8 +555,7 @@ function InterestsContent() {
   // Restore sidebar scroll position
   useEffect(() => {
     if (sidebarOpen && sidebarRef.current) {
-      const saved = sessionStorage.getItem("interests_sidebar_scroll");
-      if (saved) sidebarRef.current.scrollTop = parseInt(saved, 10);
+      sidebarRef.current.scrollTop = 0;
     }
   }, [sidebarOpen]);
 
@@ -724,7 +723,6 @@ function InterestsContent() {
             ref={sidebarRef}
             className="interests-sidebar"
             onScroll={() => {
-              if (sidebarRef.current) sessionStorage.setItem("interests_sidebar_scroll", String(sidebarRef.current.scrollTop));
             }}
             style={{
               width: "220px", flexShrink: 0,
