@@ -722,8 +722,6 @@ function InterestsContent() {
           <aside
             ref={sidebarRef}
             className="interests-sidebar"
-            onScroll={() => {
-            }}
             style={{
               width: "220px", flexShrink: 0,
               background: "#fff",

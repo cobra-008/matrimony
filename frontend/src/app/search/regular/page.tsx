@@ -121,11 +121,27 @@ function SearchContent() {
     return true;
   });
 
-  // Restore and track scroll position
+  // Scroll to top on mount
   useEffect(() => {
     requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         window.scrollTo(0, 0);
-      });>
+      });
+    });
+  }, []);
+
+  const resetFilters = () => {
+    setQuery("");
+    setFilters({ religion: "", mother_tongue: "", age_min: "18", age_max: "45", education: "", verified_only: false });
+    sessionStorage.removeItem("search_regular_q");
+    sessionStorage.removeItem("search_regular_f");
+    sessionStorage.removeItem("search_filters_state");
+  };
+
+  return (
+    <>
+      <Navbar />
+      <main style={{ background: "var(--bg-page)", minHeight: "100vh", paddingTop: "70px" }}>
         {/* Search bar — sticky */}
         <div
           className="search-regular-sticky"
