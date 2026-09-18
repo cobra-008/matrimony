@@ -6,6 +6,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import MigrationRunner from "@/components/ui/MigrationRunner";
 import CookieConsent from "@/components/ui/CookieConsent";
 import PageResilience from "@/components/ui/PageResilience";
+import ScrollToTop from "@/components/ui/ScrollToTop";
 
 const lato = Lato({
   variable: "--font-lato",
@@ -84,6 +85,7 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-lato, 'Lato', sans-serif)" }}
       >
         <AuthProvider>
+          <ScrollToTop />
           <PageResilience />
           <MigrationRunner />
           {children}
