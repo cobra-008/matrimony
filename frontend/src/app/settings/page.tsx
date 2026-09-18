@@ -165,6 +165,19 @@ function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeSection, setActiveSection] = useState<Section>("account");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const vp = document.getElementById("app-scroll-viewport");
+      if (vp) vp.scrollTop = 0;
+      const timer = setTimeout(() => { document.documentElement.style.scrollBehavior = ""; }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [activeSection]);
   const [modal, setModal] = useState<"phone" | "email" | "password" | "delete" | "logout" | null>(null);
 
   // Account state

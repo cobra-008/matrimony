@@ -276,6 +276,19 @@ const AGE_OPTS = AGE_OPTIONS.map((a) => ({ value: String(a.value), label: `${a.v
 function SearchContent() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<SearchTab>("criteria");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const vp = document.getElementById("app-scroll-viewport");
+      if (vp) vp.scrollTop = 0;
+      const timer = setTimeout(() => { document.documentElement.style.scrollBehavior = ""; }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab]);
   const [profileIdInput, setProfileIdInput] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [nameResults, setNameResults] = useState<Array<{id:string;name:string;gender?:string;dob?:string;city?:string;state?:string;occupation?:string}>>([]);

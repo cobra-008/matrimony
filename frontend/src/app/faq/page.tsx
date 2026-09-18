@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import BackButton from "@/components/ui/BackButton";
 import Footer from "@/components/layout/Footer";
@@ -105,6 +105,19 @@ const NEW_FAQ_DATA = [
 export default function FAQPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const vp = document.getElementById("app-scroll-viewport");
+      if (vp) vp.scrollTop = 0;
+      const timer = setTimeout(() => { document.documentElement.style.scrollBehavior = ""; }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [activeCategory]);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   // Filter logic

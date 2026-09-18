@@ -769,6 +769,19 @@ function MatchesContent({ user, canMessage, canViewContact, initialTab, isPremiu
   const oppositeGender = user.gender === "male" ? "female" : user.gender === "female" ? "male" : undefined;
 
   const [activeSection, setActiveSection] = useState("your_matches");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const vp = document.getElementById("app-scroll-viewport");
+      if (vp) vp.scrollTop = 0;
+      const timer = setTimeout(() => { document.documentElement.style.scrollBehavior = ""; }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [activeSection]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);

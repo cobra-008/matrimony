@@ -393,6 +393,19 @@ function ProfileDetailPage({
   }>({ isOpen: false, message: "", onConfirm: () => {} });
 
   const [activeSection, setActiveSection] = useState("Basic Information");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const vp = document.getElementById("app-scroll-viewport");
+      if (vp) vp.scrollTop = 0;
+      const timer = setTimeout(() => { document.documentElement.style.scrollBehavior = ""; }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [activeSection]);
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
