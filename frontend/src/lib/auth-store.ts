@@ -630,6 +630,7 @@ export async function loginWithOtpSession(
   accessToken: string,
   refreshToken: string
 ): Promise<RegisteredUser | null> {
+  await supabase.auth.signOut();
   const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
   if (error || !data.user) return null;
   await recordUserSession(data.user.id);
