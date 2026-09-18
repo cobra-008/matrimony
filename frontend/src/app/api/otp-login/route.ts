@@ -16,22 +16,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "profileId is required." }, { status: 400 });
     }
 
-    // 1. Verify the profile actually exists
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .select("id, auth_email, mobile")
-      .eq("id", profileId)
-      .single();
+    // 1. Fetch exact user email directly from Supabase Auth
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.getUserById(profileId);
 
-    if (profileError || !profile) {
-      return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    // 2. Generate a magic link for the auth user — admin only
+    const targetEmail = authData.user.email;
+    if (!targetEmail) {
+      return NextResponse.json({ error: "User has no email." }, { status: 400 });
+    }
+
+    // 2. Generate a magic link for the exact auth user — admin only
     //    This creates a one-time sign-in link without needing the password.
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "magiclink",
-      email: profile.auth_email || `${profile.mobile}@etm.app`,
+      email: targetEmail,
     });
 
     if (linkError || !linkData) {
