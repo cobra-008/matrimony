@@ -2457,5 +2457,5 @@ export async function sendInterestWithNotification(
     );
   }
 
-  return { error: error?.message };
+  return { error: finalError?.message };
 }
